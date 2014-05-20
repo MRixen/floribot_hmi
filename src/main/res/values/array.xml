@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="properties_screen_orientation">
+        <item>Portrait</item>
+        <item>Landscape</item>
+        <item>Reverse Landscape</item>
+    </string-array>
+</resources>
