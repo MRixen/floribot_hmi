@@ -2,12 +2,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="#fffef2"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
 
-    <de.hs_heilbronn.floribot.android.floribot_hmi.gui.CustomView
-        android:id="@+id/myCustomView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
+    <SurfaceView
+        android:id="@+id/surface_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
     <Button
         android:id="@+id/connectButton"
         android:text="Connect"
@@ -20,16 +21,66 @@
         android:layout_marginBottom="5dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
-   <EditText
-        android:id="@+id/textFieldUri"
-        android:layout_width="180dp"
-        android:layout_height="40dp"
-        android:inputType="textUri"
-        android:layout_marginRight="55dp"
-        android:layout_toLeftOf="@id/connectButton"
-        android:background="@drawable/textfield_layout"
-        android:layout_alignParentBottom="true"
+    <TextView
+        android:id="@+id/textView_master_destination"
+        android:text="Master address: "
         android:layout_marginBottom="10dp"
-        android:textColor="#FFFFFF"/>
+        android:layout_marginTop="90dp"
+        android:layout_marginLeft="10dp"
+        android:layout_width="wrap_content"
+        android:textSize="14dp"
+        android:textColor="#ffffff"
+        android:layout_marginRight="15dp"
+        android:layout_height="wrap_content" />
+       <TextView
+           android:id="@+id/textView_topic_publisher"
+           android:text="Publisher topic: "
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_marginBottom="10dp"
+           android:textSize="14dp"
+           android:textColor="#ffffff"
+           android:layout_alignLeft="@id/textView_master_destination"
+           android:layout_below="@id/textView_master_destination"/>
+
+       <TextView
+           android:id="@+id/textView_topic_subscriber"
+           android:text="Subscriber topic: "
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:textSize="14dp"
+           android:textColor="#ffffff"
+           android:layout_alignLeft="@id/textView_topic_publisher"
+           android:layout_below="@id/textView_topic_publisher"/>
+       <EditText
+           android:id="@+id/editText_master_destination"
+           android:layout_width="220dp"
+           android:layout_height="wrap_content"
+           android:inputType="textUri"
+           android:textColor="#ffffff"
+           android:textSize="14dp"
+           android:layout_alignTop="@id/textView_master_destination"
+           android:layout_toRightOf="@id/textView_master_destination"
+           android:background="@drawable/edittext_layout"/>
+       <EditText
+           android:id="@+id/editText_topic_publisher"
+           android:layout_width="210dp"
+           android:layout_height="wrap_content"
+           android:inputType="text"
+           android:textSize="14dp"
+           android:textColor="#ffffff"
+           android:layout_alignLeft="@id/editText_master_destination"
+           android:layout_alignTop="@id/textView_topic_publisher"
+           android:background="@drawable/edittext_layout"/>
+       <EditText
+           android:id="@+id/editText_topic_subscriber"
+           android:layout_width="200dp"
+           android:layout_height="wrap_content"
+           android:inputType="text"
+           android:textSize="14dp"
+           android:textColor="#ffffff"
+           android:layout_alignLeft="@id/editText_master_destination"
+           android:layout_alignTop="@id/textView_topic_subscriber"
+           android:background="@drawable/edittext_layout"/>
 
 </RelativeLayout>

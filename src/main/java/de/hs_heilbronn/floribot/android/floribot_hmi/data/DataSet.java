@@ -19,10 +19,6 @@ public class DataSet extends Application {
 
     public static float bottomBarHeightInDp = 60;
 
-    // Divider to divide the total display width
-    public float topBarWidthDivider = 3;
-    public float bottomBarLineOffset = 90; // dp
-
     // Color for top and bottom bar
     public int barColor = Color.parseColor("#0071ff");
     public int barLineColor = Color.parseColor("#FFFFFF");

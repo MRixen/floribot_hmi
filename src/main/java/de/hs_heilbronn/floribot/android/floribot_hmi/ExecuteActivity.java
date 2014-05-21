@@ -14,7 +14,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorS
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.SensorDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.MySurfaceView;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.SurfaceViewExecuteActivity;
 
 
 public class ExecuteActivity extends BaseClass {
@@ -23,10 +23,10 @@ public class ExecuteActivity extends BaseClass {
     private ToggleButton sensorDriveModeEnabled;
     private ToggleButton button_manual;
     private ToggleButton button_auto;
-
+    private SurfaceViewExecuteActivity surfaceViewExecuteActivity;
     private SurfaceView surface;
     private SurfaceHolder holder;
-    private MySurfaceView myView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,17 +34,19 @@ public class ExecuteActivity extends BaseClass {
 
         setContentView(R.layout.activity_execute);
 
+        //---DEBUG
+        surface = (SurfaceView) findViewById(R.id.surface_execute);
+        surface.setZOrderOnTop(false);
+        holder = surface.getHolder();
+        surfaceViewExecuteActivity = new SurfaceViewExecuteActivity(this, holder);
+        surfaceViewExecuteActivity.resume();
+        //-----
+
         DataSet.sensorDataAcquisition = new SensorDataAcquisition(getApplicationContext());
 
         sensorDriveModeEnabled = (ToggleButton) findViewById(R.id.button_sensor_switch);
         button_manual = (ToggleButton) findViewById(R.id.button_manual);
         button_auto = (ToggleButton) findViewById(R.id.button_auto);
-
-        // Initialize surface view
-        surface = (SurfaceView) findViewById(R.id.mySurface);
-        surface.setZOrderOnTop(true);
-        holder = surface.getHolder();
-        myView = new MySurfaceView();
 
     }
 
@@ -52,13 +54,21 @@ public class ExecuteActivity extends BaseClass {
     protected void onStart() {
         super.onStart();
         nodeExecutorService = new NodeExecutorService();
-        myView.startDrawThread(holder, this);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        // Restart surface view
+        surfaceViewExecuteActivity.resume();
 
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        surfaceViewExecuteActivity.pause();
     }
 
     public void onButtonClicked(View v){
@@ -68,6 +78,7 @@ public class ExecuteActivity extends BaseClass {
 
         switch (v.getId()){
             case(R.id.button_manual):
+                Log.d("@button manual: ", "inside...");
                 // Disable automatic drive mode
                 button_auto.setChecked(false);
                 if( ((ToggleButton) v).isChecked() ) {
@@ -80,6 +91,7 @@ public class ExecuteActivity extends BaseClass {
                 else{
                     Log.d("@ExecuteActivity#onButtonClicked", "button_manual is disabled");
                     sensorDriveModeEnabled.setEnabled(false);
+                    sensorDriveModeEnabled.setChecked(false);
                     // Stop sensor acquisition thread if is still alive
                     DataSet.sensorDataAcquisition.stopSensorDataAcquisitionThread();
                 }
@@ -192,14 +204,10 @@ public class ExecuteActivity extends BaseClass {
                             // Stop publisher thread
                             DataSet.talker.stopPublisherThread();
 
-                            //DEBUG
-                            myView.stopDrawThread();
-                            //---
-
                             stopService(MainActivity.myService);
                             // Go back to MainActivity
                             finish();
-                            overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
+                            //overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                         }
                         // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                         if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {

@@ -6,12 +6,10 @@
 
 
 
-    <de.hs_heilbronn.floribot.android.floribot_hmi.gui.CustomView
-        android:id="@+id/myCustomView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"/>
-
-
+    <SurfaceView
+        android:id="@+id/surface_execute"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
     <Button
         android:id="@+id/button_exit"
         android:text="Exit"
@@ -24,34 +22,6 @@
         android:layout_marginBottom="5dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"/>
-
-
-
-<!--    <ImageButton
-        android:id="@+id/button_manual"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="55dp"
-        android:layout_marginBottom="5dp"
-        android:layout_toLeftOf="@id/button_exit"
-        android:onClick="onButtonClicked"
-        android:src="@drawable/ic_action_manual"
-        android:background="@drawable/overflow_state"/>-->
-
-<!--    <ImageButton
-        android:id="@+id/button_auto"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_alignParentBottom="true"
-        android:layout_marginRight="40dp"
-        android:layout_marginBottom="5dp"
-        android:layout_toLeftOf="@id/button_manual"
-        android:onClick="onButtonClicked"
-        android:src="@drawable/ic_action_auto"
-        android:background="@drawable/overflow_state"/>-->
-
-    <!--FOR DEBUGGING-->
     <ToggleButton
         android:id="@+id/button_manual"
         android:layout_width="50dp"
@@ -64,9 +34,6 @@
         android:textOff=""
         android:textOn=""
         android:background="@drawable/control_mode_button_manual_selector"/>
-    <!--FOR DEBUGGING-->
-
-    <!--FOR DEBUGGING-->
     <ToggleButton
         android:id="@+id/button_auto"
         android:layout_width="50dp"
@@ -79,72 +46,61 @@
         android:textOn=""
         android:textOff=""
         android:background="@drawable/control_mode_button_auto_selector"/>
-    <!--FOR DEBUGGING-->
-    <!--NEED TO BE CORRECT-->
-
     <ToggleButton
         android:id="@+id/button_sensor_switch"
-        android:layout_width="100dp"
-        android:layout_height="60dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginRight="35dp"
-        android:layout_marginTop="10dp"
-        android:textOn="Sensor on"
-        android:textOff="Sensor off"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginRight="40dp"
+        android:layout_marginBottom="5dp"
+        android:layout_toLeftOf="@id/button_auto"
+        android:textOn=""
+        android:textOff=""
         android:checked="false"
         android:enabled="false"
         android:background="@drawable/sensor_button_selector"
         android:onClick="onButtonClicked"/>
-    <Button
-        android:id="@+id/button_up"
-        android:text=""
-        android:layout_width="40dp"
-        android:layout_height="45dp"
-        android:onClick="onButtonClicked"
-        android:layout_marginTop="20dp"
-        android:layout_below="@id/button_sensor_switch"
-        android:layout_marginRight="65.5dp"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/joystick_button_up_selector"/>
+
     <Button
         android:id="@+id/button_right"
         android:text=""
-        android:layout_width="40dp"
-        android:layout_height="45dp"
+        android:layout_width="60dp"
+        android:layout_height="65dp"
         android:onClick="onButtonClicked"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="90dp"
         android:layout_alignParentRight="true"
-        android:layout_marginRight="20dp"
-        android:layout_marginTop="5dp"
-        android:layout_below="@id/button_up"
+        android:layout_alignParentBottom="true"
         android:background="@drawable/joystick_button_right_selector"/>
     <Button
         android:id="@+id/button_down"
         android:text=""
-        android:layout_width="40dp"
-        android:layout_height="45dp"
+        android:layout_width="60dp"
+        android:layout_height="65dp"
         android:onClick="onButtonClicked"
-        android:layout_below="@id/button_up"
         android:layout_toLeftOf="@id/button_right"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_marginTop="5dp"
+        android:layout_alignBottom="@id/button_right"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:background="@drawable/joystick_button_down_selector"/>
     <Button
         android:id="@+id/button_left"
         android:text=""
-        android:layout_width="40dp"
-        android:layout_height="45dp"
+        android:layout_width="60dp"
+        android:layout_height="65dp"
         android:onClick="onButtonClicked"
-        android:layout_marginTop="5dp"
-        android:layout_below="@id/button_up"
+        android:layout_alignBottom="@id/button_down"
         android:layout_toLeftOf="@id/button_down"
         android:background="@drawable/joystick_button_left_selector"/>
+    <Button
+        android:id="@+id/button_up"
+        android:text=""
+        android:layout_width="60dp"
+        android:layout_height="65dp"
+        android:onClick="onButtonClicked"
+        android:layout_above="@id/button_down"
+        android:layout_alignRight="@id/button_down"
+        android:background="@drawable/joystick_button_up_selector"/>
 
-
-
-    <SurfaceView
-        android:id="@+id/mySurface"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <!--NEED TO BE CORRECT-->
 </RelativeLayout>

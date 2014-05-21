@@ -11,6 +11,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -20,6 +22,7 @@ import java.net.URISyntaxException;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.SurfaceViewMainActivity;
 
 import static android.os.Process.myPid;
 
@@ -42,7 +45,7 @@ public class MainActivity extends BaseClass {
             // unexpectedly disconnected -- that is, its process crashed.
         }
     };
-    private EditText textField;
+    private EditText textViewMasterAddress;
     private String masterId;
     private WifiManager wifiManager;
     private ProgressDialog progressDialog;
@@ -50,17 +53,30 @@ public class MainActivity extends BaseClass {
     private PowerManager pm;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
+    private SurfaceViewMainActivity surfaceView;
+    private SurfaceHolder holder;
+    private SurfaceViewMainActivity surfaceViewMainActivity;
+    private SurfaceView surface;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
+        //---DEBUG
+        surface = (SurfaceView) findViewById(R.id.surface_main);
+        surface.setZOrderOnTop(false);
+        holder = surface.getHolder();
+        surfaceViewMainActivity = new SurfaceViewMainActivity(this,holder);
+        surfaceViewMainActivity.resume();
+        //-----
 
+        //--------
 
         // Get master id from input field
-        textField = (EditText) findViewById(R.id.textFieldUri);
+        textViewMasterAddress = (EditText) findViewById(R.id.editText_master_destination);
         myService = new Intent(this, NodeExecutorService.class);
 
         progressDialog = new ProgressDialog(this);
@@ -69,12 +85,22 @@ public class MainActivity extends BaseClass {
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
 
+    }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        surfaceViewMainActivity.pause();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
 
         if(wakeLock != null) {
             // Turn off power management
@@ -93,6 +119,8 @@ public class MainActivity extends BaseClass {
     @Override
     protected void onResume() {
         super.onResume();
+
+        surfaceViewMainActivity.resume();
     }
 
     @Override
@@ -106,8 +134,8 @@ public class MainActivity extends BaseClass {
         switch (v.getId()) {
             case (R.id.connectButton):
 
-                //masterId = textField.getText().toString();
-                masterId = "http://192.168.137.191:11311";
+                masterId = textViewMasterAddress.getText().toString();
+                //masterId = "http://192.168.137.191:11311";
 
                 if (masterId.length() != 0) {
                     handler = new Handler() {
@@ -123,7 +151,7 @@ public class MainActivity extends BaseClass {
                                 Log.d("@MainActivity#HandleMessage: ", "Start service...");
                                 Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
                                 startActivity(executeActivity);
-                                overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
+                                //overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                             } else {
                                 progressDialog.cancel();
                                 Log.d("@MainActivity#ErrorMessage: ", errorMessage);
@@ -242,4 +270,5 @@ public class MainActivity extends BaseClass {
         };
         t.start();
     }
+
 }
