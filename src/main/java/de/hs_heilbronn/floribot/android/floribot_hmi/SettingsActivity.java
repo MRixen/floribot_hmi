@@ -1,7 +1,9 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,19 +15,75 @@ import android.widget.TextView;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
-public class SettingsActivity extends BaseClass implements AdapterView.OnItemSelectedListener{
+public class SettingsActivity extends BaseClass {
 
-    private String[] array;
+    private String[] screenOrientationArray;
+    private String[] themeArray;
+    private SharedPreferences sharedPreferences;
+    private SharedPreferences.Editor editor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_properties);
+        setContentView(R.layout.layout_properties);
 
-       array = getResources().getStringArray(R.array.screen_orientation_entries);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        Spinner spinner = (Spinner) findViewById(R.id.properties_spinner);
-        spinner.setAdapter(new MySpinnerAdapter(this,array));
+        screenOrientationArray = getResources().getStringArray(R.array.screen_orientation_entries);
+        Spinner screenOrientationSpinner = (Spinner) findViewById(R.id.properties_screen_orientation_spinner);
+        screenOrientationSpinner.setAdapter(new MySpinnerAdapter(this,screenOrientationArray));
+        screenOrientationSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d("@onItemClick", "position: " + position);
+                Log.d("@onItemClick", "id: " + id);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+
+        // Manage the actual theme
+        themeArray = getResources().getStringArray(R.array.theme_entries);
+        Spinner themeSpinner = (Spinner) findViewById(R.id.properties_theme_spinner);
+        themeSpinner.setAdapter(new MySpinnerAdapter(this,themeArray));
+        themeSpinner.setSelection(sharedPreferences.getInt("theme", 0));
+        themeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch(position){
+                    case 0:
+                        // Save new theme in shared preferences
+                        editor = sharedPreferences.edit();
+                        editor.putInt("theme", position);
+                        //Log.d("settings1", "position: " + position);
+                        //Log.d("settings1", "context: " + getApplicationContext());
+                        editor.commit();
+                        //Log.d("settings2", "position: " + sharedPreferences.getInt("theme", 0));
+                        break;
+                    case 1:
+                        // Save new theme in shared preferences
+                        editor = sharedPreferences.edit();
+                        editor.putInt("theme", position);
+                        // Log.d("settings1", "position: " + position);
+                        //Log.d("settings1", "context: " + getApplicationContext());
+                        editor.commit();
+                        //Log.d("settings2", "position: " + sharedPreferences.getInt("theme", 0));
+                        break;
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
     }
 
     @Override
@@ -36,15 +94,17 @@ public class SettingsActivity extends BaseClass implements AdapterView.OnItemSel
 
     private class MySpinnerAdapter extends BaseAdapter{
         private LayoutInflater mInflater;
+        private String[] objects;
 
         public MySpinnerAdapter(Context context, String[] objects){
+            this.objects = objects;
             mInflater = LayoutInflater.from(context);
 
         }
 
         @Override
         public int getCount() {
-            return array.length;
+            return objects.length;
         }
 
         @Override
@@ -67,7 +127,7 @@ public class SettingsActivity extends BaseClass implements AdapterView.OnItemSel
             convertView = inflater.inflate(R.layout.custom_spinner, parent, false);
 
             TextView main_text = (TextView) convertView.findViewById(R.id.custom_spinner_detail);
-            main_text.setText(array[position]);
+            main_text.setText(objects[position]);
 
             convertView.setBackgroundResource(R.drawable.my_list_selector);
 
@@ -85,16 +145,6 @@ public class SettingsActivity extends BaseClass implements AdapterView.OnItemSel
         super.onDestroy();
     }
 
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        Log.d("@SettingsActivity#onItemSelected: ", "pos = " + position);
-        Log.d("@SettingsActivity#onItemSelected: ", "id = " + id);
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-        Log.d("@SettingsActivity#onNothingSelected: ", "nothing selected...");
-    }
 
 }
 

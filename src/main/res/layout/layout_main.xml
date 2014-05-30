@@ -1,0 +1,110 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ffffff"
+    tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
+    <SurfaceView
+        android:id="@+id/surface_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <include layout="@layout/layout_topbar" />
+
+    <TextView
+        android:id="@+id/header_main"
+        android:text="Connection establishment"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="5dp"
+        android:layout_alignParentTop="true"
+        android:textColor="#ffffff"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/connectButton"
+        android:text="Connect"
+        android:textColor="#FFFFFF"
+        android:layout_width="70dp"
+        android:layout_height="50dp"
+        android:background="@drawable/connect_button_selector"
+        android:onClick="onButtonClicked"
+        android:layout_marginRight="15dp"
+        android:layout_marginBottom="5dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true" />
+
+    <TextView
+        android:id="@+id/textView_master_destination"
+        android:text="Master address: "
+        android:layout_marginBottom="15dp"
+        android:layout_marginTop="65dp"
+        android:layout_marginLeft="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:gravity="center_vertical"
+        android:layout_marginRight="15dp" />
+
+    <TextView
+        android:id="@+id/textView_topic_publisher"
+        android:text="Publisher topic: "
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:layout_marginBottom="15dp"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:gravity="center_vertical"
+        android:layout_alignLeft="@id/textView_master_destination"
+        android:layout_below="@id/textView_master_destination" />
+
+    <TextView
+        android:id="@+id/textView_topic_subscriber"
+        android:text="Subscriber topic: "
+        android:layout_width="wrap_content"
+        android:layout_height="45dp"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:gravity="center_vertical"
+        android:layout_alignLeft="@id/textView_topic_publisher"
+        android:layout_below="@id/textView_topic_publisher" />
+
+    <EditText
+        android:id="@+id/editText_master_destination"
+        android:layout_width="240dp"
+        android:layout_height="45dp"
+        android:inputType="textUri"
+        android:textColor="#ffffff"
+        android:textSize="14sp"
+        android:gravity="center_vertical"
+        android:layout_alignTop="@id/textView_master_destination"
+        android:layout_toRightOf="@id/textView_master_destination"
+        android:background="@drawable/edittext_layout" />
+
+    <EditText
+        android:id="@+id/editText_topic_publisher"
+        android:layout_width="215dp"
+        android:layout_height="45dp"
+        android:inputType="text"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:gravity="center_vertical"
+        android:layout_alignLeft="@id/editText_master_destination"
+        android:layout_alignTop="@id/textView_topic_publisher"
+        android:background="@drawable/edittext_layout" />
+
+    <EditText
+        android:id="@+id/editText_topic_subscriber"
+        android:layout_width="190dp"
+        android:layout_height="45dp"
+        android:gravity="center_vertical"
+        android:inputType="text"
+        android:textSize="14sp"
+        android:textColor="#ffffff"
+        android:layout_alignLeft="@id/editText_master_destination"
+        android:layout_alignTop="@id/textView_topic_subscriber"
+        android:background="@drawable/edittext_layout" />
+
+</RelativeLayout>

@@ -2,6 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="#000000"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity">
 
 
@@ -10,6 +11,17 @@
         android:id="@+id/surface_execute"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+    <include layout="@layout/layout_topbar"/>
+    <TextView
+        android:id="@+id/header_main"
+        android:text="Connection overview"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="5dp"
+        android:layout_alignParentTop="true"
+        android:textColor="#ffffff"
+        android:layout_marginTop="5dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
     <Button
         android:id="@+id/button_exit"
         android:text="Exit"
@@ -47,7 +59,7 @@
         android:textOff=""
         android:background="@drawable/control_mode_button_auto_selector"/>
     <ToggleButton
-        android:id="@+id/button_sensor_switch"
+        android:id="@+id/button_sensor_calibration"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
@@ -61,7 +73,14 @@
         android:background="@drawable/sensor_button_selector"
         android:onClick="onButtonClicked"/>
 
-    <Button
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true">
+    </FrameLayout>
+
+    <!--<Button
         android:id="@+id/button_right"
         android:text=""
         android:layout_width="60dp"
@@ -102,5 +121,5 @@
         android:layout_above="@id/button_down"
         android:layout_alignRight="@id/button_down"
         android:background="@drawable/joystick_button_up_selector"/>
-
+-->
 </RelativeLayout>

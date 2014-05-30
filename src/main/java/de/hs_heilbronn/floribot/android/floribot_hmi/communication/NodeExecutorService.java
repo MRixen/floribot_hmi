@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -44,7 +45,13 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        String masterId = intent.getStringExtra("masterAddress");
+        // Get parameter for connection establishment
+        Bundle connectionData= intent.getBundleExtra("connectionData");
+        String masterId = null;
+        masterId = connectionData.getString("masterId");
+        String topicPublisher = connectionData.getString("topicPublisher");
+        String topicSubscriber = connectionData.getString("topicSubscriber");
+
         URI uri = URI.create(masterId);
 
         Log.d("@NodeExecutorService#onCreate: ", "Start foreground");
@@ -55,7 +62,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
 
         Log.d("@NodeExecutorService#startPublisher: ", "Start publisher");
-        DataSet.talker = new Talker2(getApplicationContext());
+        DataSet.talker = new Publisher(getApplicationContext(), topicPublisher);
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
         nodeConfiguration.setMasterUri(uri);
 

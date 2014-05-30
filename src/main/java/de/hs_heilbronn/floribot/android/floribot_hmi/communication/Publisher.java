@@ -10,7 +10,6 @@ import android.util.Log;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
-import org.ros.node.topic.Publisher;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import sensor_msgs.Joy;
@@ -18,16 +17,19 @@ import sensor_msgs.Joy;
 /**
  * Created by mr on 17.05.14.
  */
-public class Talker2  extends AbstractNodeMain {
+public class Publisher extends AbstractNodeMain {
 
     private final Context context;
+    private final String topicPublisher;
     private DataSet.DriveMode driveMode;
     public Thread t;
     private Handler loopHandler = null;
-    private Publisher<Joy> publisher;
+    private org.ros.node.topic.Publisher<Joy> publisher;
 
-    public Talker2(Context context) {
+    public Publisher(Context context, String topicPublisher) {
         this.context = context;
+        this.topicPublisher = topicPublisher;
+
     }
 
     @Override
@@ -38,7 +40,7 @@ public class Talker2  extends AbstractNodeMain {
     @Override
     public void onStart(final ConnectedNode connectedNode) {
         // Create publisher
-        publisher = connectedNode.newPublisher("chatter", Joy._TYPE);
+        publisher = connectedNode.newPublisher(topicPublisher, Joy._TYPE);
 
     }
 
@@ -79,7 +81,7 @@ public class Talker2  extends AbstractNodeMain {
                     loopHandler = new Handler();
 
                     // Handler to receive date and publish
-                    DataSet.handler = new Handler() {
+                    DataSet.handlerForPublishingData = new Handler() {
                         public void handleMessage(Message msg) {
 
                             Bundle bundle = msg.getData();
