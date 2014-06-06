@@ -1,0 +1,69 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <TextView
+                android:id="@+id/textView_about_app_description_part_one"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:text="@string/about_app_description_part_one" />
+
+            <ImageView
+                android:id="@+id/imageView_about_app_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/textView_about_app_description_part_one"
+                android:src="@drawable/example_image" />
+
+            <TextView
+                android:id="@+id/textView_about_app_description_two"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/imageView_about_app_description"
+                android:text="@string/about_app_description_part_two" />
+
+            <TextView
+                android:id="@+id/textView_about_app_functions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/textView_about_app_description_two"
+                android:text="@string/about_app_functions" />
+
+            <TextView
+                android:id="@+id/textView_app_author"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/textView_about_app_functions"
+                android:text="@string/app_author" />
+
+            <TextView
+                android:id="@+id/textView_app_version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/textView_app_author"
+                android:text="@string/app_version" />
+
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>

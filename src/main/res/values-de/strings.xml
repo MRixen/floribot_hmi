@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--Parameter for about activity-->
+    <string name="about_app_description_part_one">
+        <large><b>Beschreibung der App:</b></large>
+        <small>
+        \nDie App FloriBot HMI wurde, im Rahmen einer Abschlussarbeit, an der Hochschule Heilbronn entwickelt.
+        Mit dieser App ist es möglich einen Roboter mit Differenzialantrieb (FloriBot - Roboter der Hochschule Heilbronn) in zwei Achsen zu steuern,
+        d.h. Translation in x-Richtung und Rotation um die z-Achse.
+        </small>
+    </string>
+
+     <string name="about_app_description_part_two">
+        <small>
+        \nDas Betriebssystem des Roboters ist das Robot Operating System (ROS).
+        Die Funktionen der App sind im Allgemeinen das Versenden und Empfangen von Daten auf vorhandenen Topics.
+        Dabei wird, zum Steuern des Roboters, ein Publisher erzeugt, welcher (abhängig vom Betriebsmodus) Beschleunigungswerte auf einem Topic bereitstellt.
+        Mit Hilfe des Subscribers werden die, vom Roboter gesendeten, Bestätigungsdaten empfangen.
+        </small>
+    </string>
+
+    <string name="about_app_functions">
+        <large><b>Funktionen der App:</b></large>
+         <small>
+        \nZur Steuerung des Roboters stehen zwei Betriebsmodi zur Verfügung. Der manuelle, sowie der automatische Betriebsmodus.
+        Im manuellen Betriebsmodus kann der Roboter wahlweise mit dem Beschleunigungssensor (sofern vorhanden) oder mit Tasten gesteuert werden.
+        Wird der manuelle Betriebsmodus mit Tasten verwendet, so kann der Beschleunigungswert durch einen Schieberegler reguliert werden.
+        \nZur Visualisierung der Beschleunigungsgröße (Translation und Rotation) stehen zwei Progressbalken zur Verfügung.
+        Diese sind jedoch nur im manuellen Modus mit Beschleunigungssensor aktiv.
+        </small>
+    </string>
+
+    <string name="app_author">
+        <large><b>Author:</b></large>
+        \n<small>Manuel-Leonhard Rixen</small>
+    </string>
+
+    <string name="app_version">
+        <large><b>Version:</b></large>
+        \n<small>1.0</small>
+    </string>
+
+    <!--Parameter for help activity-->
+    <string name="help_connection_parameter_text">
+        <large><b>Verbindung einstellen:</b></large>\n
+        <small>1. Eingabe der ROS-Master-Adresse in Feld eins.</small>
+        \n<small>2. Eingabe des Topic-Namens zum Senden von Daten.</small>
+        \n<small>3. Eingabe des Topic-Names zum Empfangen von Daten.</small>
+    </string>
+
+    <string name="help_sensor_control_text">
+        <large><b>Steuerung mit Beschleunigungssensor:</b></large>\n
+        <small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
+        \n<small>2. Drücken der Taste für das Aktivieren des Beschleunigungssensors.</small>
+        \n<small>3. Bestätigen der Ausgangsposition des Gerätes.</small>
+        \n<small>4. Steuerung durch die Bewegung des Gerätes mit gleichzeitig gedrückter Totmanntaste.</small>
+    </string>
+
+    <string name="help_joystick_control_text">
+        <large><b>Steuerung mit Tasten:</b></large>\n
+        <small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
+        \n<small>2. Beschleunigung per Schieberegler einstellen.</small>
+        \n<small>3. Gewünschte Taste gedrückt halten.</small>
+    </string>
+
+    <string name="help_auto_control_text">
+        <large><b>Automatische Steuerung:</b></large>\n
+        <small>1. Drücken der Taste für automatischer Betriebsmodus.</small>
+    </string>
+
+    <string name="help_exit_connection_text">
+        <large><b>Verbindung beenden:</b></large>\n
+        <small>1. Drücken der Taste zum Beenden.</small>
+    </string>
+
+    <!--General Parameter-->
+    <string name="app_name">FloriBot HMI</string>
+
+    <!--Parameter for service-->
+    <string name="ticker_message">Starte service...</string>
+    <string name="notification_text">Klicken für zurück.</string>
+    <string name="notification_title">FloriBot</string>
+
+    <!--Overflow parameter-->
+    <string name="title_help">Hilfe</string>
+    <string name="title_about">Über</string>
+    <string name="title_property">Einstellungen</string>
+    <string name="theme_header">Theme</string>
+
+    <!--Parameter for main activity-->
+    <string name="title_main">Verbindung einrichten</string>
+    <string name="title_connect_button_main">Verbinden</string>
+    <string name="toast_enter_master">Bitte Master-Adresse eingeben!</string>
+    <string name="toast_enter_topic_publisher">Bitte Publisher-Adresse eingeben!</string>
+    <string name="toast_enter_topic_subscriber">Bitte Subscriber-Adresse eingeben!</string>
+    <string name="dialog_init_publisher">Die Verbindung wird aufgebaut.</string>
+
+    <!--Parameter for execute activity-->
+    <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in Ausgangsposition!</string>
+    <string name="dialog_negative_button">Abbrechen</string>
+    <string name="dialog_positive_button">OK</string>
+    <string name="dialog_message_shutdown_publisher">Verbindung beenden?</string>
+    <string name="title_master_address">Master-Adresse: </string>
+    <string name="title_topic_publisher">Publisher-Topic: </string>
+    <string name="title_topic_subscriber">Subscriber-Topic: </string>
+    <string name="title_execute">Steuerungsmenü</string>
+    <string name="title_exit_button_execute">Beenden</string>
+    <string name="dialog_title_publisher_exit">Warnung</string>
+
+
+</resources>

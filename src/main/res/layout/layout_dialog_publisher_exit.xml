@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="400dp"
+    android:layout_height="wrap_content"
+    android:background="#ffffff">
+
+    <TextView
+        android:id="@+id/textView_exit_publisher"
+        android:text=""
+        android:textSize="18sp"
+        android:layout_centerHorizontal="true"
+        android:gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_marginBottom="50dp"/>
+
+    <Button
+        android:id="@+id/positive_button"
+        android:text="@string/dialog_positive_button"
+        android:textColor="#000000"
+        android:layout_below="@id/textView_exit_publisher"
+        android:background="@drawable/dialog_button_selector"
+        android:layout_width="100dp"
+        android:layout_height="50dp"/>
+
+    <Button
+        android:id="@+id/negative_button"
+        android:text="@string/dialog_negative_button"
+        android:background="@drawable/dialog_button_selector"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:textColor="#000000"
+        android:layout_alignParentRight="true"
+        android:layout_alignBottom="@id/positive_button"/>
+
+</RelativeLayout>

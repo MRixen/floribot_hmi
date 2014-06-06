@@ -11,28 +11,30 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.JoystickEventExecutor;
 
 /**
  * Created by mr on 17.05.14.
+ *
+ * Within this class there are the thread for collecting sensor data and the joystick event data
  */
 public class ControlDataAcquisition {
 
     private final Context context;
-    private Handler loopHandler;
-    private SensorManager sensorManager;
-    private Sensor mSensor;
-    private int[] buttonData = new int[10];
 
-    public Thread sensorDataAcquisitionThread, joystickDataAcquisitionThread,testThread, JoystickDataAcquisitionThread_TEST;
-    private boolean listenToSensor;
-    private boolean firstRunFlag;
+    public Thread sensorDataAcquisitionThread, joystickDataAcquisitionThread, joystickEventExecutorThread;
+    private Handler loopHandler;
+
+    private SensorManager sensorManager;
+
+    private int[] buttonData = new int[10];
+    private float[] axesData = {0,0,0};
+    private float[] sensorDataRot = new float[3];
     private double alpha = 0;
-    float[] sensorDataRot = new float[3];
+    private boolean listenToSensor;
     private boolean firstStart;
-    private Handler loopHandlerTEST;
-    private Thread JoystickEventExecutorThread;
 
     public ControlDataAcquisition(Context context) {
         this.context = context;
@@ -40,31 +42,31 @@ public class ControlDataAcquisition {
 
     public void startControlDataAcquisitionThread(String controlMode) {
 
-        if(controlMode.equals("SensorControl")) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_sensor))) {
             firstStart = true;
             // Start thread, if no thread is alive
             if (sensorDataAcquisitionThread == null) {
-                Log.d("@ControlDataAcquisition#startControlDataAcquisitionThread: ", "Start sensor acquisition thread...");
+                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start sensor acquisition thread...");
                 listenToSensor = true;
                 sensorDataAcquisitionThread = new SensorDataAcquisitionThread();
                 sensorDataAcquisitionThread.start();
             }
         }
-        if(controlMode.equals("JoystickControl")) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_joystick))) {
             DataSet.isRunning = true;
 
             // Start thread, if no thread is alive
             if (joystickDataAcquisitionThread == null) {
-                Log.d("@ControlDataAcquisition#startControlDataAcquisitionThread: ", "Start joystick acquisition thread...");
+                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start joystick acquisition thread...");
                 joystickDataAcquisitionThread = new JoystickDataAcquisitionThread();
                 joystickDataAcquisitionThread.start();
             }
         }
     }
 
-    public void stopControlDataAcquisitionThread(String controlMode){
+    public void stopControlDataAcquisitionThread(String controlMode) {
 
-        if(controlMode.equals("SensorControl")) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_sensor))) {
             // Unregister sensor listener and stop message loop inside thread
             try {
                 listenToSensor = false;
@@ -73,7 +75,7 @@ public class ControlDataAcquisition {
                 }
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
-                Log.d("@ControlDataAcquisition#stopControlDataAcquisitionThread#SensorControl#StopHandlerException: ", String.valueOf(e));
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->SensorControl->StopHandlerException: ", String.valueOf(e));
             }
             // Stop thread
             try {
@@ -81,69 +83,64 @@ public class ControlDataAcquisition {
                 }
                 sensorDataAcquisitionThread = null;
             } catch (Exception e) {
-                Log.d("@ControlDataAcquisition#stopControlDataAcquisitionThread#SensorControl#StopThreadException: ", String.valueOf(e));
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->SensorControl->StopThreadException: ", String.valueOf(e));
             }
         }
-        if(controlMode.equals("JoystickControl")) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_joystick))) {
             try {
                 DataSet.isRunning = false;
-                JoystickEventExecutorThread = null;
+                joystickEventExecutorThread = null;
 
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
-                Log.d("@ControlDataAcquisition#stopControlDataAcquisitionThread#JoystickControl#StopHandlerException: ", String.valueOf(e));
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl->StopHandlerException: ", String.valueOf(e));
             }
             // Stop thread
             try {
                 while (joystickDataAcquisitionThread.isAlive()) {
-                    Log.d("@ControlDataAcquisition#stopControlDataAcquisitionThread#JoystickControl: ", " is alive...");
+                    Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl: ", " is alive...");
                 }
                 joystickDataAcquisitionThread = null;
             } catch (Exception e) {
-                Log.d("@ControlDataAcquisition#stopControlDataAcquisitionThread#JoystickControl#StopThreadException: ", String.valueOf(e));
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl->StopThreadException: ", String.valueOf(e));
             }
         }
     }
 
-    public class SensorDataAcquisitionThread extends Thread{
+    public class SensorDataAcquisitionThread extends Thread {
 
-    public MySensorListener msl = new MySensorListener();
+        public SensorListener sensorListener = new SensorListener();
 
-        public void run () {
+        public void run() {
+            try {
+                // Get sensor object and acc sensor
+                sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+                Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        try {
-            firstRunFlag = true;
-            // Get sensor object
-            sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
-            // Get acc sensor
-            mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
-            Looper.prepare();
-            // Handler to cancel the message loop
-            loopHandler = new Handler();
-            // Register listener to sensor
-            sensorManager.registerListener(msl, mSensor, SensorManager.SENSOR_DELAY_NORMAL, loopHandler);
-            Looper.loop();
-        } catch (Exception e) {
-            Log.d("SensorDataAcquisition#Run#LoopException: ", e.toString());
+                Looper.prepare();
+                // Handler to cancel the message loop
+                loopHandler = new Handler();
+                // Register listener to sensor
+                sensorManager.registerListener(sensorListener, accSensor, SensorManager.SENSOR_DELAY_NORMAL, loopHandler);
+                Looper.loop();
+            } catch (Exception e) {
+                Log.d("ControlDataAcquisition->SensorDataAcquisitionThread->Run->LoopException: ", e.toString());
+            }
         }
-    }
 
-        private class MySensorListener implements SensorEventListener {
+        private class SensorListener implements SensorEventListener {
 
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
             }
 
             public void onSensorChanged(SensorEvent sensorEvent) {
 
-                if(listenToSensor) {
+                if (listenToSensor) {
                     if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                   float[] sensorData = sensorEvent.values;
+                        float[] sensorData = sensorEvent.values;
                         if (firstStart) {
-                            // If we want landscape then we need the positive!!!
-                            alpha = -( ((Math.PI / 2) / 9.81) * sensorData[2]) ;
-                            Log.d("alpha: ", String.valueOf(alpha));
-                            Log.d("firstStart: ", String.valueOf(firstStart));
+                            // If we want display in landscape (not in reverse landscape -> by default) then we need the positive of alpha!
+                            alpha = -(((Math.PI / 2) / 9.81) * sensorData[2]);
                             firstStart = false;
                         }
 
@@ -157,20 +154,17 @@ public class ControlDataAcquisition {
                         for (int i = 0; i < sensorData.length; i++) {
                             for (int j = 0; j < sensorData.length; j++) {
                                 sensorDataRot[i] += Rot_y[i][j] * sensorData[j];
-                                Log.d("Rot_y[" + i + "][" + j + "] = ", String.valueOf(Rot_y[i][j]));
+                                //Log.d("Rot_y[" + i + "][" + j + "] = ", String.valueOf(Rot_y[i][j]));
                             }
                         }
-
-                        //buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] = 1;
 
                         // Handler to receive date and publish
                         DataSet.handlerForControlDataAcquisition = new Handler() {
                             public void handleMessage(Message msg) {
                                 Bundle bundle = msg.getData();
                                 if (bundle != null) {
-                                    buttonData = bundle.getIntArray("buttonData");
+                                    buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
                                 }
-
                             }
                         };
 
@@ -183,8 +177,8 @@ public class ControlDataAcquisition {
                         Message msg1 = new Message();
                         Message msg2 = new Message();
 
-                        bundle.putFloatArray("axesData", sensorDataRot);
-                        bundle.putIntArray("buttonData", buttonData);
+                        bundle.putFloatArray(context.getResources().getString(R.string.axes_state_array), sensorDataRot);
+                        bundle.putIntArray(context.getResources().getString(R.string.button_state_array), buttonData);
 
                         msg1.setData(bundle);
                         msg2.setData(bundle);
@@ -194,11 +188,9 @@ public class ControlDataAcquisition {
                                 DataSet.handlerForVisualization.sendMessage(msg2);
                             }
                         }
-                        //Log.d("@onSensorChanged#run: ", Thread.currentThread().getName());
                     }
-                }
-                else {
-                    Log.d("@SensorDataAcquisition#onSensorChanged: ", "Unregister sensor listener...");
+                } else {
+                    Log.d("@ControlDataAcquisition->SensorDataAcquisitionThread->onSensorChanged: ", "Unregister sensor listener.");
                     sensorManager.unregisterListener(this);
                     sensorManager = null;
                 }
@@ -208,60 +200,62 @@ public class ControlDataAcquisition {
 
     public class JoystickDataAcquisitionThread extends Thread {
 
-        float[] axesData = {10, 10, 10};
-
-
         public void run() {
             // Start joystick executor thread
-            JoystickEventExecutorThread = new JoystickEventExecutor();
-            JoystickEventExecutorThread.start();
+            joystickEventExecutorThread = new JoystickEventExecutor(context);
+            joystickEventExecutorThread.start();
 
             try {
                 Looper.prepare();
                 // Handler to cancel the message loop
                 loopHandler = new Handler();
 
-                    // Handler to receive date and publish
-                    DataSet.handlerForControlDataAcquisition = new Handler() {
-                        public void handleMessage(Message msg) {
-                            Bundle bundle = msg.getData();
-                            if (bundle != null) {
-                                buttonData = bundle.getIntArray("buttonData");
-                                Log.d("JoystickDataAcquisitionThread#Run#handleMessage: ", " message received...");
-                            }
-                        }
-                    };
-                    JoystickEventExecutor joystickEventExecutor = new JoystickEventExecutor();
-                    joystickEventExecutor.setJoystickEventListener(new JoystickEventExecutor.JoystickEventListener() {
-                        @Override
-                        public void joystickEvent(int count) {
-                            // Send sensor data to robot
-                            Bundle dataBundle = new Bundle();
-                            Message msg1 = new Message();
-                            Message msg2 = new Message();
-
-                            dataBundle.putFloatArray("axesData", axesData);
-                            dataBundle.putIntArray("buttonData", buttonData);
-
-                            msg1.setData(dataBundle);
-                            msg2.setData(dataBundle);
-
-                            // !!!!!!!!!!!!!!!!
-                            // THIS CAN BE REMOVED!!!!!!
-                            // !!!!!!!!!!!!!!!!
-                            if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread != null) {
-                                if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread.isAlive()) {
-                                    DataSet.handlerForPublishingData.sendMessage(msg1);
-                                    //DataSet.handlerForVisualization.sendMessage(msg2);
-
+                // Handler to receive date and publish
+                DataSet.handlerForControlDataAcquisition = new Handler() {
+                    public void handleMessage(Message msg) {
+                        Bundle bundle = msg.getData();
+                        if (bundle != null) {
+                            buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
+                            float speed = (float) bundle.getInt(context.getResources().getString(R.string.speed));
+                            // Check if actual speed is different from last to avoid for loop execution
+                            if (speed != axesData[0]) {
+                                for (int i = 0; i <= axesData.length - 1; i++) {
+                                    axesData[i] = speed;
                                 }
                             }
+
                         }
-                    });
+                    }
+                };
+                JoystickEventExecutor joystickEventExecutor = new JoystickEventExecutor(context);
+                joystickEventExecutor.setJoystickEventListener(new JoystickEventExecutor.JoystickEventListener() {
+                    @Override
+                    public void joystickEvent() {
+                        // Send sensor data to robot
+                        Bundle dataBundle = new Bundle();
+                        Message msg1 = new Message();
+                        Message msg2 = new Message();
+
+                        dataBundle.putFloatArray(context.getResources().getString(R.string.axes_state_array), axesData);
+                        dataBundle.putIntArray(context.getResources().getString(R.string.button_state_array), buttonData);
+
+                        msg1.setData(dataBundle);
+                        msg2.setData(dataBundle);
+
+                        // !!!!!!!!!!!!!!!!
+                        // THIS CAN BE REMOVED!!!!!!
+                        // !!!!!!!!!!!!!!!!
+                        if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread != null) {
+                            if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread.isAlive()) {
+                                DataSet.handlerForPublishingData.sendMessage(msg1);
+                            }
+                        }
+                    }
+                });
 
                 Looper.loop();
             } catch (Exception e) {
-                Log.d("JoystickDataAcquisitionThread#Run#LoopException: ", e.toString());
+                Log.d("ControlDataAcquisition->JoystickDataAcquisitionThread->Run->LoopException: ", e.toString());
             }
         }
     }

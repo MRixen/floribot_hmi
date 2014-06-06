@@ -47,8 +47,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
 
         // Get parameter for connection establishment
         Bundle connectionData= intent.getBundleExtra("connectionData");
-        String masterId = null;
-        masterId = connectionData.getString("masterId");
+        String masterId = connectionData.getString("masterId");
         String topicPublisher = connectionData.getString("topicPublisher");
         String topicSubscriber = connectionData.getString("topicSubscriber");
 

@@ -1,0 +1,105 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginBottom="10dp">
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent">
+
+            <TextView
+                android:id="@+id/textView_help_connection_parameter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:text="@string/help_connection_parameter_text" />
+
+            <ImageView
+                android:id="@+id/imageView_help_connection_parameter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:layout_below="@id/textView_help_connection_parameter"
+                android:src="@drawable/example_image" />
+
+            <TextView
+                android:id="@+id/textView_help_sensor_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/imageView_help_connection_parameter"
+                android:text="@string/help_sensor_control_text" />
+
+            <ImageView
+                android:id="@+id/imageView_help_sensor_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/textView_help_sensor_control"
+                android:src="@drawable/example_image" />
+
+            <TextView
+                android:id="@+id/textView_help_joystick_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/imageView_help_sensor_control"
+                android:text="@string/help_joystick_control_text" />
+
+            <ImageView
+                android:id="@+id/imageView_help_joystick_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/textView_help_joystick_control"
+                android:src="@drawable/example_image" />
+
+            <TextView
+                android:id="@+id/textView_help_auto_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/imageView_help_joystick_control"
+                android:text="@string/help_auto_control_text" />
+
+            <ImageView
+                android:id="@+id/imageView_help_auto_control"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/textView_help_auto_control"
+                android:src="@drawable/example_image" />
+
+            <TextView
+                android:id="@+id/textView_help_exit_connection_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_below="@id/imageView_help_auto_control"
+                android:text="@string/help_exit_connection_text" />
+
+            <ImageView
+                android:id="@+id/imageView_help_exit_connection_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="5dp"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/textView_help_exit_connection_text"
+                android:src="@drawable/example_image" />
+        </RelativeLayout>
+    </ScrollView>
+</RelativeLayout>

@@ -5,39 +5,40 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
-import android.util.Log;
 
 import java.util.Arrays;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Publisher;
 
 /**
  * Created by mr on 10.05.14.
+ *
+ * This class provides global data for all classes
  */
 public class DataSet extends Application {
 
+    private static Context context;
 
     public static ControlDataAcquisition controlDataAcquisition;
-    public static Handler handlerForJoystickButton;
-    public static boolean isRunning;
     public static JoystickEventExecutor.JoystickEventListener joystickEventListener = null;
-    private final Context context;
+
+    public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
+    public static Publisher talker;
+
+    public static boolean isRunning;
+    private int arrayOffset, pxWidth, pxHeight;
+    private float factorHeight, factorWidth, bottomBarWidthInPx, offsetToBottomBarExtensionInPx, bottomBarHeightInPx;
+    float[] pointsArray;
 
 
     public DataSet(Context context) {
         this.context = context;
     }
 
-    // Init talker for publisher
-    public static Publisher talker;
-   // public static SensorDataAcquisition sensorDataAcquisition;
-    public static Handler handlerForPublishingData = null;
-    public static Handler handlerForControlDataAcquisition = null;
-    public static Handler handlerForVisualization = null;
-
-    // Init constants for buttons
     public static enum DriveMode{
+        // Constants for control buttons
         MANUAL_DRIVE,
         AUTOMATIC_DRIVE,
         MOVE_PAN_TILT_WITH_IMU,
@@ -48,27 +49,14 @@ public class DataSet extends Application {
         MOVE_BACKWARD_WITH_BUTTON
     }
 
-    //----Parameters for surface----
-    private int arrayOffset;
-    private int pxWidth, pxHeight;
-    private float dpWidth, dpHeight, factorHeight, factorWidth;
-    float[] pointsArray;
-
-    public float topBarHeightInDp = 30;
-    public float bottomBarHeightInDp = 55;
-    public float bottomBarWidthInDp = 100;
-    public float bottomBarWidthInPx;
-
-    private float lineWidth = 2;
-
     public static enum ThemeColor{
         // Background color, foreground color, text color
-        STANDARD("#fffef2", "#0071ff", "#fffef2"),
-        INVERT("#0071ff", "#fffef2", "#0071ff");
+        BlueLight(context.getResources().getColor(R.color.ModernWhite), context.getResources().getColor(R.color.ModernBlue), context.getResources().getColor(R.color.ModernWhite)),
+        GreenLight(context.getResources().getColor(R.color.White), context.getResources().getColor(R.color.ModernGreen), context.getResources().getColor(R.color.White));
 
-        public final String backgroundColor, foregroundColor, textColor;
+        public final int backgroundColor, foregroundColor, textColor;
 
-        ThemeColor(String backgroundColor, String foregroundColor, String textColor) {
+        ThemeColor(int backgroundColor, int foregroundColor, int textColor) {
             this.backgroundColor = backgroundColor;
             this.foregroundColor = foregroundColor;
             this.textColor = textColor;
@@ -81,16 +69,16 @@ public class DataSet extends Application {
 
         pxWidth = displayMetrics.widthPixels;
         pxHeight = displayMetrics.heightPixels;
-        dpWidth = pxWidth / displayMetrics.density;
-        dpHeight = pxHeight / displayMetrics.density;
+        float dpWidth = pxWidth / displayMetrics.density;
+        float dpHeight = pxHeight / displayMetrics.density;
 
         // Factor dp to px
         factorHeight = (pxHeight / dpHeight);
         factorWidth = (pxWidth / dpWidth);
-        Log.d("@DatSet", "factorHeight" + factorHeight);
-        Log.d("@DatSet", "factorWidth" + factorWidth);
 
-        bottomBarWidthInPx = factorWidth * bottomBarWidthInDp;
+        bottomBarWidthInPx = factorWidth * getRes(R.integer.bottomBarWidthInDp);
+        offsetToBottomBarExtensionInPx = factorWidth * getRes(R.integer.offsetToBottomBarExtensionInDp);
+        bottomBarHeightInPx = factorHeight * getRes(R.integer.bottomBarHeightInDp);
 
         arrayOffset = 0;
     }
@@ -100,18 +88,14 @@ public class DataSet extends Application {
         // Initialize surface data
         SurfaceInit();
 
-        float middleBarMarginTopInDp = 65;
-        float middleBarWidthInDp = 390;
-        float middleBarHeightInDp = 45;
-        float middleBarOffsetInDp = 15;
+        float beamMarginTop = context.getResources().getDimensionPixelSize(R.dimen.beamMarginTop);
+        float beamWidth = context.getResources().getDimensionPixelSize(R.dimen.beamWidth);
+        float beamHeight = context.getResources().getDimensionPixelSize(R.dimen.beamHeight);
+        float beamOffset = context.getResources().getDimensionPixelSize(R.dimen.beamOffset);
 
-        float middleBarMarginTopInPx = factorHeight * middleBarMarginTopInDp;
-        float middleBarWidthInPx = factorHeight * middleBarWidthInDp;
-        float middleBarHeightInPx = factorHeight * middleBarHeightInDp;
-        float middleBarOffsetInPx = factorHeight * middleBarOffsetInDp;
 
         float[] middleBarPoints = new float[8];
-        int pathCount = 2;
+        int pathQuantity = 2;
 
 
         // Get draw data for top bar
@@ -119,27 +103,27 @@ public class DataSet extends Application {
 
         for(int i=0;i<=2;i++){
             // Point top left
-            middleBarPoints[0] = 0;
-            middleBarPoints[1] = middleBarMarginTopInPx + middleBarHeightInPx * i + middleBarOffsetInPx * i;
+            middleBarPoints[0] = beamOffset;
+            middleBarPoints[1] = beamMarginTop + beamHeight * i + beamOffset * i;
             // Point top right
-            middleBarPoints[2] = (float) (middleBarWidthInPx - ((middleBarOffsetInPx*Math.tan(Math.PI/6)) + middleBarHeightInPx*Math.tan(Math.PI/6)) * i);
-            middleBarPoints[3] = middleBarMarginTopInPx + middleBarHeightInPx * i + middleBarOffsetInPx * i;
+            middleBarPoints[2] = beamWidth;
+            middleBarPoints[3] = beamMarginTop + beamHeight * i + beamOffset * i;
             // Point bottom right
-            middleBarPoints[4] = (float) (middleBarWidthInPx - middleBarHeightInPx*Math.tan(Math.PI/6) - (middleBarHeightInPx*Math.tan(Math.PI/6) + middleBarOffsetInPx*Math.tan(Math.PI/6))* i) ;
-            middleBarPoints[5] = middleBarMarginTopInPx + middleBarHeightInPx * i + middleBarHeightInPx + middleBarOffsetInPx * i;
+            middleBarPoints[4] = beamWidth;
+            middleBarPoints[5] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
             // Point bottom left
-            middleBarPoints[6] = 0;
-            middleBarPoints[7] = middleBarMarginTopInPx + middleBarHeightInPx * i + middleBarHeightInPx + middleBarOffsetInPx * i;
+            middleBarPoints[6] = beamOffset;
+            middleBarPoints[7] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
 
             pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + middleBarPoints.length + 1);
             setPointArray(middleBarPoints);
-            pathCount++;
+            pathQuantity++;
         }
 
         // Return surface data
         Bundle surfaceData = new Bundle();
-        surfaceData.putFloatArray("pointsArray", pointsArray);
-        surfaceData.putInt("pathCount", pathCount);
+        surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
+        surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
 
         return surfaceData;
     }
@@ -152,11 +136,8 @@ public class DataSet extends Application {
         float[] bottomBarPoints = new float[8];
         float[] svRectArray = new float[12];
 
-        float bottomBarHeightInPx = factorHeight * bottomBarHeightInDp;
-        float bottomBarExtensionWidthInDp = 400;
-        float bottomBarExtensionWidthInPx = factorWidth * bottomBarExtensionWidthInDp;
-        int pathCount = 2; // Number of paths to draw
-
+        float bottomBarExtensionWidthInPx = factorWidth * getRes(R.integer.bottomBarExtensionWidthInDp);
+        int pathQuantity = 2; // Number of paths to draw
 
         // Get draw data for top bar
         GenerateStandardLayout();
@@ -164,12 +145,12 @@ public class DataSet extends Application {
         // ----- Create path for bottom bar extension -----
         // Point top left
         bottomBarPoints[0] = pxWidth - bottomBarExtensionWidthInPx;
-        bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * topBarHeightInDp;
+        bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
         // Point top right
-        bottomBarPoints[2] = pxWidth - bottomBarWidthInPx - lineWidth;
-        bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * topBarHeightInDp;
+        bottomBarPoints[2] = pxWidth - bottomBarWidthInPx - offsetToBottomBarExtensionInPx;
+        bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
         // Point bottom right
-        bottomBarPoints[4] = (float) (pxWidth - bottomBarWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6) - lineWidth );
+        bottomBarPoints[4] = (float) (pxWidth - bottomBarWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6) - offsetToBottomBarExtensionInPx );
         bottomBarPoints[5] = pxHeight;
         // Point bottom left
         bottomBarPoints[6] = (float) (pxWidth - bottomBarExtensionWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6));
@@ -177,38 +158,34 @@ public class DataSet extends Application {
 
         pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + bottomBarPoints.length+1);
         setPointArray(bottomBarPoints);
-        pathCount++;
+        pathQuantity++;
         // -------------------------------------
 
-        // Create data for sensor visualization (This data is excluded from normal surface data)
-        float svBorderPadding = 5;
-        float svWidth = 20;
-        float svBottom = 90;
-        float svOffset = 10;
+        // Create data for sensor visualization (This data is excluded from normal surface data)               
         // Note: Camera width need to be the full length of sensor visualization beam
-        float cameraViewWidthInPx = 400;
-        float cameraViewHeightInPx = 200;
+        float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
+        float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
 
         // Create rectangle for top sensor visualization (visualization for steer amount)
         // -------------------------------------
         // Distance from left display border to left side of rectangle
-        svRectArray[0] = factorWidth * (svBorderPadding + svWidth + svOffset) + cameraViewWidthInPx/2;
+        svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx/2;
         // Distance from top display border to top side of rectangle
-        svRectArray[1] = factorHeight * (topBarHeightInDp + svBorderPadding);
+        svRectArray[1] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp));
         // Distance from left display border to right side of rectangle
         svRectArray[2] = svRectArray[0];
         // Distance from top display border to bottom side of rectangle
-        svRectArray[3] = factorHeight * (topBarHeightInDp + svBorderPadding + svWidth);
+        svRectArray[3] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
         // -------------------------------------
 
         // Create rectangle for left sensor visualization (visualization for drive amount)
         // -------------------------------------
         // Distance from left display border to left side of rectangle
-        svRectArray[4] = factorWidth * svBorderPadding;
+        svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
         // Distance from top display border to top side of rectangle
-        svRectArray[5] = factorHeight * (topBarHeightInDp  + svBorderPadding + svWidth + svOffset) + cameraViewHeightInPx/2;
+        svRectArray[5] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx/2;
         // Distance from left display border to right side of rectangle
-        svRectArray[6] = factorWidth * (svBorderPadding + svWidth);
+        svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
         // Distance from top display border to bottom side of rectangle
         svRectArray[7] = svRectArray[5];
         // -------------------------------------
@@ -219,31 +196,33 @@ public class DataSet extends Application {
         // Create rectangle for pseudo camera preview
         // -------------------------------------
         // Distance from left display border to left side of rectangle
-        svRectArray[8] = factorWidth * (svBorderPadding + svWidth + svOffset);
+        svRectArray[8] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
         // Distance from top display border to top side of rectangle
-        svRectArray[9] = factorHeight * (topBarHeightInDp  + svBorderPadding + svWidth + svOffset);
+        svRectArray[9] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
         // Distance from left display border to right side of rectangle
-        svRectArray[10] = factorWidth * (svBorderPadding + svWidth + svOffset) + cameraViewWidthInPx;
+        svRectArray[10] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx;
         // Distance from top display border to bottom side of rectangle
-        svRectArray[11] = factorHeight * (topBarHeightInDp  + svBorderPadding + svWidth + svOffset) + cameraViewHeightInPx;
+        svRectArray[11] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx;
         // -------------------------------------
 
 
         // Return surface data
         Bundle surfaceData = new Bundle();
-        surfaceData.putFloatArray("pointsArray", pointsArray);
-        surfaceData.putInt("pathCount", pathCount);
-        surfaceData.putFloatArray("svRectArray", svRectArray);
+        surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
+        surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
+        surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
 
         return surfaceData;
+    }
+    
+    private int getRes(int res){
+        return context.getResources().getInteger(res);
     }
 
     private void GenerateStandardLayout() {
 
         float[] topBarPoints = new float[8];
         float[] bottomBarPoints = new float[8];
-        float bottomBarHeightInPx = factorHeight * bottomBarHeightInDp;
-
 
         // ----- Create path for top bar -----
         // Point top left
@@ -254,10 +233,10 @@ public class DataSet extends Application {
         topBarPoints[3] = 0;
         // Point bottom right
         topBarPoints[4] = pxWidth;
-        topBarPoints[5] = factorHeight * topBarHeightInDp;
+        topBarPoints[5] = factorHeight * getRes(R.integer.topBarHeightInDp);
         // Point bottom left
         topBarPoints[6] = 0;
-        topBarPoints[7] = factorHeight * topBarHeightInDp;
+        topBarPoints[7] = factorHeight * getRes(R.integer.topBarHeightInDp);
 
         pointsArray = new float[topBarPoints.length + 1];
         setPointArray(topBarPoints);
@@ -266,10 +245,10 @@ public class DataSet extends Application {
         // ----- Create path for bottom bar -----
         // Point top left
         bottomBarPoints[0] = pxWidth - bottomBarWidthInPx;
-        bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * topBarHeightInDp;
+        bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
         // Point top right
         bottomBarPoints[2] = pxWidth;
-        bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * topBarHeightInDp;
+        bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
         // Point bottom right
         bottomBarPoints[4] = pxWidth;
         bottomBarPoints[5] = pxHeight;

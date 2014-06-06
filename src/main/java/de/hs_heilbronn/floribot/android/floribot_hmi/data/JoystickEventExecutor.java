@@ -1,28 +1,33 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
-import android.util.Log;
+import android.content.Context;
+
+import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 
 /**
  * Created by mr on 30.05.14.
+ *
+ * This class provides acceleration data for control with joystick buttons
  */
 public class JoystickEventExecutor extends Thread {
 
-    private final int rate = 200;
+    private final Context context;
+
+    public JoystickEventExecutor(Context context) {
+        this.context = context;
+    }
 
     public void setJoystickEventListener(JoystickEventListener joystickEventListener) {
         DataSet.joystickEventListener = joystickEventListener;
     }
 
     public void run() {
-      int counter = 0;
         while (DataSet.isRunning) {
             if (DataSet.joystickEventListener != null) {
-                DataSet.joystickEventListener.joystickEvent(counter);
-                counter++;
-                Log.d("@JoystickEventExecutor#run: ", " Thread: " +  Thread.currentThread().getName());
+                DataSet.joystickEventListener.joystickEvent();
             }
             try {
-                Thread.sleep(rate);
+                Thread.sleep(context.getResources().getInteger(R.integer.joystick_delay));
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -30,7 +35,6 @@ public class JoystickEventExecutor extends Thread {
     }
 
     public interface JoystickEventListener {
-        public void joystickEvent(int count);
+        public void joystickEvent();
     }
-
 }

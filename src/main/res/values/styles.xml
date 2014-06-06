@@ -2,6 +2,30 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <item name="dropDownListViewStyle">@style/CustomDropDownListViewStyle</item>
+        <item name="android:spinnerStyle">@style/CustomSpinnerStyle</item>
+
     </style>
 
+    <style name="dialog_style" parent="@android:style/Theme.Dialog">
+        <item name="android:textColor">@color/dialogTextColor</item>
+        <item name="android:windowTitleStyle">@style/dialogTitleStyle</item>
+    </style>
+
+    <style name="dialogTitleStyle" parent="@android:style/Theme.Dialog">
+        <item name="android:textSize">@dimen/dialogTitleTextSize</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!--Style for drop down menu, e.g. overflow menu, e.g. options menu-->
+    <style name="CustomDropDownListViewStyle" parent="Widget.AppCompat.Light.PopupMenu">
+        <item name="android:dropDownSelector">@drawable/spinner_view_state</item>
+    </style>
+
+    <!--Style for spinner drop down view-->
+    <!--Note: Spinner background attribute is not working here.
+    It is set in layout file (layout_property)-->
+    <style name="CustomSpinnerStyle" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:dropDownSelector">@drawable/spinner_view_state</item>
+    </style>
 </resources>

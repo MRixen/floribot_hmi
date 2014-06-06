@@ -2,19 +2,18 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#000000"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity">
-
-
 
     <SurfaceView
         android:id="@+id/surface_execute"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-    <include layout="@layout/layout_topbar"/>
+        android:layout_height="wrap_content" />
+
+    <include layout="@layout/layout_top_bar" />
+
     <TextView
         android:id="@+id/header_main"
-        android:text="Connection overview"
+        android:text="@string/title_execute"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="5dp"
         android:layout_alignParentTop="true"
@@ -22,18 +21,20 @@
         android:layout_marginTop="5dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
+
     <Button
         android:id="@+id/button_exit"
-        android:text="Exit"
+        android:text="@string/title_exit_button_execute"
         android:textColor="#FFFFFF"
         android:layout_width="70dp"
         android:layout_height="50dp"
-        android:background="@drawable/connect_button_selector"
+        android:background="@drawable/button_selector"
         android:onClick="onButtonClicked"
         android:layout_marginRight="15dp"
         android:layout_marginBottom="5dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true" />
+
     <ToggleButton
         android:id="@+id/button_manual"
         android:layout_width="50dp"
@@ -45,7 +46,8 @@
         android:onClick="onButtonClicked"
         android:textOff=""
         android:textOn=""
-        android:background="@drawable/control_mode_button_manual_selector"/>
+        android:background="@drawable/control_mode_manual_selector" />
+
     <ToggleButton
         android:id="@+id/button_auto"
         android:layout_width="50dp"
@@ -57,7 +59,8 @@
         android:onClick="onButtonClicked"
         android:textOn=""
         android:textOff=""
-        android:background="@drawable/control_mode_button_auto_selector"/>
+        android:background="@drawable/control_mode_auto_selector" />
+
     <ToggleButton
         android:id="@+id/button_sensor_calibration"
         android:layout_width="50dp"
@@ -71,55 +74,12 @@
         android:checked="false"
         android:enabled="false"
         android:background="@drawable/sensor_button_selector"
-        android:onClick="onButtonClicked"/>
+        android:onClick="onButtonClicked" />
 
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentRight="true">
-    </FrameLayout>
+        android:layout_alignParentRight="true" />
 
-    <!--<Button
-        android:id="@+id/button_right"
-        android:text=""
-        android:layout_width="60dp"
-        android:layout_height="65dp"
-        android:onClick="onButtonClicked"
-        android:layout_marginRight="10dp"
-        android:layout_marginBottom="90dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentBottom="true"
-        android:background="@drawable/joystick_button_right_selector"/>
-    <Button
-        android:id="@+id/button_down"
-        android:text=""
-        android:layout_width="60dp"
-        android:layout_height="65dp"
-        android:onClick="onButtonClicked"
-        android:layout_toLeftOf="@id/button_right"
-        android:layout_alignBottom="@id/button_right"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:background="@drawable/joystick_button_down_selector"/>
-    <Button
-        android:id="@+id/button_left"
-        android:text=""
-        android:layout_width="60dp"
-        android:layout_height="65dp"
-        android:onClick="onButtonClicked"
-        android:layout_alignBottom="@id/button_down"
-        android:layout_toLeftOf="@id/button_down"
-        android:background="@drawable/joystick_button_left_selector"/>
-    <Button
-        android:id="@+id/button_up"
-        android:text=""
-        android:layout_width="60dp"
-        android:layout_height="65dp"
-        android:onClick="onButtonClicked"
-        android:layout_above="@id/button_down"
-        android:layout_alignRight="@id/button_down"
-        android:background="@drawable/joystick_button_up_selector"/>
--->
 </RelativeLayout>

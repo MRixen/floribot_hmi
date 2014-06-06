@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--PARAMETER FOR LAYOUT ON MAIN ACTIVITY-->
+    <!--Parameter for middle bar-->
+    <dimen name="textViewMarginLeft">20dp</dimen>
+    <dimen name="editTextWidth">210dp</dimen>
+    <dimen name="textSize">14sp</dimen>
+    <dimen name="beamMarginTop">65dp</dimen>
+    <dimen name="beamWidth">360dp</dimen>
+    <dimen name="beamHeight">40dp</dimen>
+    <dimen name="beamOffset">15dp</dimen>
+    <!-- -->
+
+    <!--PARAMETER FOR LAYOUT ON EXECUTE ACTIVITY-->
+    <!--Parameter for sensor visualization-->
+    <integer name="svBorderMarginInDp">5</integer>
+    <integer name="svBeamWidthInDp">20</integer>
+    <integer name="svOffsetInDp">10</integer>
+    <!--Parameter for bottom bar extension-->
+    <integer name="offsetToBottomBarExtensionInDp">2</integer>
+    <integer name="bottomBarExtensionWidthInDp">400</integer>
+    <!-- -->
+
+    <!--Parameter for global layout-->
+    <integer name="topBarHeightInDp">30</integer>
+    <integer name="bottomBarHeightInDp">55</integer>
+    <integer name="bottomBarWidthInDp">100</integer>
+    <!-- -->
+
+    <!--PARAMETER FOR OVERFLOW MENU-->
+    <!--Parameter for dialog box-->
+    <dimen name="dialogTitleTextSize">20sp</dimen>
+    <color name="dialogTextColor">#000000</color>
+    <!--Parameter for spinner-->
+    <dimen name="dropDownWidth">200dp</dimen>
+    <!-- -->
+
+    <!--ONLY FOR DEBUG
+    -> For camera preview -->
+    <integer name="cameraViewWidthInPx">400</integer>
+    <integer name="cameraViewHeightInPx">200</integer>
+    <!-- -->
+
+    <!--Parameter for publisher initialization-->
+    <integer name="deadTimeWakeLockWifi">20</integer> <!--unit: second-->
+    <integer name="deadTimeEnableWifi">20</integer>
+    <integer name="deadTimeWakeLockPower">10</integer>
+    <integer name="deadTimeSurfaceValidation">20</integer>
+    <integer name="joystick_delay">200</integer>
+    <integer name="DIVIDER">1000000000</integer>
+    <!-- -->
+
+
+</resources>

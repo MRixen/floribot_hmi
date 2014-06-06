@@ -5,17 +5,13 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
-import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,23 +23,31 @@ import java.net.URISyntaxException;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.MySurfaceView;
 
 import static android.os.Process.myPid;
 
-public class MainActivity extends BaseClass {
+public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
+    private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
+    private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
+    private Button buttonConnect;
+    private String masterId, topicPublisher, topicSubscriber;
 
-    public static boolean threadInterruption;
-    public static Intent myService;
-    private NodeExecutorService myServiceClass;
+    private WifiManager wifiManager;
+    private PowerManager powerManager;
+    private PowerManager.WakeLock wakeLock;
+    private WifiManager.WifiLock wifiLock;
+    //private SharedPreferences sharedPreferences;
 
-    //Class for interacting with the main interface of the service.
+    //private DataSet dataSet;
+    private Handler handler;
+    private ProgressDialog progressDialog;
+
+    public static Intent nodeExecutorService;
+
     private ServiceConnection mConnection = new ServiceConnection() {
-
+        //Class for interacting with the main interface of the service.
         public void onServiceConnected(ComponentName className, IBinder service) {
-            myServiceClass = ((NodeExecutorService.LocalBinder) service).getService();
-            Log.d("@onServiceConnected: ", "....");
+            NodeExecutorService mService = ((NodeExecutorService.LocalBinder) service).getService();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -51,24 +55,7 @@ public class MainActivity extends BaseClass {
             // unexpectedly disconnected -- that is, its process crashed.
         }
     };
-    private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
-    private String masterId, topicPublisher, topicSubscriber;
-    private WifiManager wifiManager;
-    private ProgressDialog progressDialog;
-    private Handler handler;
-    private PowerManager pm;
-    private PowerManager.WakeLock wakeLock;
-    private WifiManager.WifiLock wifiLock;
-    //private SurfaceViewMainActivity surfaceView;
-    private SurfaceHolder holder;
-    //private SurfaceViewMainActivity surfaceViewMainActivity;
-    private SurfaceView surface;
-    private SharedPreferences sharedPreferences;
-    private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
-    private Button buttonConnect;
-    private MySurfaceView mySurfaceView;
-    private DataSet dataSet;
-
+    private Bundle surfaceDataBundle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,26 +63,48 @@ public class MainActivity extends BaseClass {
 
         setContentView(R.layout.layout_main);
 
-        // Get master id from input field
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
+
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
+
         buttonConnect = (Button) findViewById(R.id.connectButton);
 
-        myService = new Intent(this, NodeExecutorService.class);
-
         progressDialog = new ProgressDialog(this);
-        progressDialog.setMessage("Please wait...");
+        progressDialog.setMessage(getResources().getString(R.string.dialog_init_publisher));
         progressDialog.setIndeterminate(true);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        //dataSet = new DataSet(this);
 
-        dataSet = new DataSet(this);
+        nodeExecutorService = new Intent(this, NodeExecutorService.class);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadPreferences();
+        // Set color for text
+
+        editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        editTextTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        textViewMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        textViewTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        textViewTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        // Set surface for main activity
+        setGlobalLayout(R.id.surface_main);
+        surfaceDataBundle = dataSet.SurfaceDataMain();
+        setSurfaceView(surfaceDataBundle);
     }
 
     @Override
@@ -103,19 +112,12 @@ public class MainActivity extends BaseClass {
         super.onPause();
         getEditTextFieldEntries();
         savePreferences();
-
-        mySurfaceView.pause();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
+        globalLayout.pause();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-
         if(wakeLock != null) {
             // Turn off power management
             if (wakeLock.isHeld()) {
@@ -131,36 +133,8 @@ public class MainActivity extends BaseClass {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        loadPreferences();
-        // Set color for text
-        DataSet.ThemeColor[] themeColors = DataSet.ThemeColor.values();
-        editTextMasterId.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        editTextTopicPublisher.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        editTextTopicSubscriber.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        textViewMasterId.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        textViewTopicPublisher.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        textViewTopicSubscriber.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-        buttonConnect.setTextColor(Color.parseColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor));
-
-        setSurfaceView(R.id.surface_main);
-        // Set surface for main activity
-        Bundle surfaceDataBundle = dataSet.SurfaceDataMain();
-        mySurfaceView.resume(surfaceDataBundle);
-    }
-
-    private void setSurfaceView(int layout_surface) {
-        surface = (SurfaceView) findViewById(layout_surface);
-        surface.setZOrderOnTop(false);
-        holder = surface.getHolder();
-        mySurfaceView = new MySurfaceView(this,holder);
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d("onDestroy: ", "ok...");
         android.os.Process.killProcess(myPid());
     }
 
@@ -174,152 +148,136 @@ public class MainActivity extends BaseClass {
                     handler = new Handler() {
                         public void handleMessage(Message msg) {
                             Bundle stateBundle = msg.getData();
-                            String errorMessage = stateBundle.getString("errorMessage");
-                            Boolean state = stateBundle.getBoolean("state");
+                            String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_init_publisher));
+                            Boolean state = stateBundle.getBoolean(getResources().getString(R.string.state_init_publisher));
                             if (state) {
                                 progressDialog.cancel();
                                 Bundle connectionData = new Bundle();
-                                connectionData.putString("masterId", masterId);
-                                connectionData.putString("topicPublisher", topicPublisher);
-                                connectionData.putString("topicSubscriber", topicSubscriber);
-                                myService.putExtra("connectionData", connectionData);
+                                connectionData.putString(getResources().getString(R.string.shared_pref_master), masterId);
+                                connectionData.putString(getResources().getString(R.string.shared_pref_topic_publisher), topicPublisher);
+                                connectionData.putString(getResources().getString(R.string.shared_pref_topic_subscriber), topicSubscriber);
+                                nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
                                 // Start service
-                                startService(myService);
-                                Log.d("@MainActivity#HandleMessage: ", "Start service...");
+                                startService(nodeExecutorService);
+                                Log.d("@MainActivity#handleMessage: ", "Start service.");
                                 Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
                                 startActivity(executeActivity);
-                                //overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
+                                overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                             } else {
                                 progressDialog.cancel();
-                                Log.d("@MainActivity#ErrorMessage: ", errorMessage);
+                                Log.d("@MainActivity#handleMessage: ", "ErrorMessage: " + errorMessage);
                             }
                         }
                     };
                     progressDialog.show();
                     initForPublisher();
                 } else {
-                    if(masterId.length() == 0 )Toast.makeText(this, "Enter master address!", Toast.LENGTH_SHORT).show();
-                    if(topicPublisher.length() == 0 )Toast.makeText(this, "Enter topic for publisher!", Toast.LENGTH_SHORT).show();
-                    if(topicSubscriber.length() == 0 )Toast.makeText(this, "Enter topic for subscriber!", Toast.LENGTH_SHORT).show();
+                    if(masterId.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
+                    if(topicPublisher.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_topic_publisher), Toast.LENGTH_SHORT).show();
+                    if(topicSubscriber.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_topic_subscriber), Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
     }
 
-    private void savePreferences() {
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("masterId", masterId);
-        editor.putString("topicPublisher", topicPublisher);
-        editor.putString("topicSubscriber", topicSubscriber);
-        //editor.putInt("theme", DataSet.currentTheme);
-        editor.commit();
-    }
-
-    private void loadPreferences(){
-        editTextMasterId.setText(sharedPreferences.getString("masterId", ""));
-        editTextTopicPublisher.setText(sharedPreferences.getString("topicPublisher", ""));
-        editTextTopicSubscriber.setText(sharedPreferences.getString("topicSubscriber", ""));
-    }
-
     public void initForPublisher() {
 
         Thread t = new Thread(){
-        @Override
-        public void run(){
-            boolean flag = true;
-            long timeElapsed;
-            final int DIVIDER = 1000000000;
-            String TAG = "wakeLockTag";
+            @Override
+            public void run(){
+                boolean flag = true;
+                long timeElapsed;
+
+                String TAG = "wakeLockTag";
 
                 // Check uri syntax
                 try {
                     new URI(masterId);
                 } catch (URISyntaxException e) {
-                    Log.d("@NodeExecutorService#onStartCommand: ", "Invalid master ID");
+                    Log.d("@NodeExecutorService#onStartCommand: ", "Invalid master ID!");
                     flag = false;
-                    sendMessageToHandler("Invalid master ID", false);
+                    sendMessageToHandler("Invalid master ID!", false);
                 }
                 //----------------------------------------------
 
-            if(flag) {
-                Log.d("@MainActivity#initForPublisher: ", "Uri syntax ok");
+                if(flag) {
+                    Log.d("@MainActivity#initForPublisher: ", "Uri syntax ok.");
 
-                // Control power management
-                pm = (PowerManager) getSystemService(POWER_SERVICE);
-                wakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
-                wakeLock.acquire();
+                    // Control power management
+                    powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+                    wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
+                    wakeLock.acquire();
 
-                long startTime = System.nanoTime();
-                while (!wakeLock.isHeld()) {
-                    timeElapsed = (System.nanoTime() - startTime) / DIVIDER;
-                    if (timeElapsed >= 10) {
+                    long startTime = System.nanoTime();
+                    while (!wakeLock.isHeld()) {
+                        timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
+                        if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockPower)) {
+                            flag = false;
+                            sendMessageToHandler("No display wake lock established!", false);
+                            break;
+                        }
+                    }
+                }
+                //----------------------------------------------
+
+                if(flag) {
+                    Log.d("@MainActivity#initForPublisher: ", "Display wake lock ok.");
+
+                    // Wifi activation
+                    wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+                    if(!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true);
+
+                    long startTime = System.nanoTime();
+                while (!wifiManager.isWifiEnabled()) {
+                    timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
+                    if (timeElapsed >= getResources().getInteger(R.integer.deadTimeEnableWifi)) {
                         flag = false;
-                        sendMessageToHandler("No display wake lock established", false);
+                        sendMessageToHandler("No wifi activation established!", false);
                         break;
                     }
                 }
-            }
+                }
                 //----------------------------------------------
 
-            if(flag) {
-                Log.d("@MainActivity#initForPublisher: ", "Display wake lock ok");
+                if(flag) {
+                    Log.d("@MainActivity#initForPublisher: ", "Wifi on ok");
 
-                // Wifi activation
-                wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-                if(!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true);
+                    // Wifi wake lock
+                    int wifiLockType = WifiManager.WIFI_MODE_FULL;
+
+                    // Check if WIFI_MODE_FULL_HIGH_PERF is supported (supported since API Level 12)
+                    try {
+                        wifiLockType = WifiManager.class.getField("WIFI_MODE_FULL_HIGH_PERF").getInt(null);
+                    } catch (Exception e) {
+                        Log.w(TAG, "Unable to acquire high performance wifi lock.");
+                    }
+
+                    wifiLock = wifiManager.createWifiLock(wifiLockType, TAG);
+                    wifiLock.acquire();
 
                 long startTime = System.nanoTime();
-                /*while (!wifiManager.isWifiEnabled()) {
-                    timeElapsed = (System.nanoTime() - startTime) / DIVIDER;
-                    if (timeElapsed >= 20) {
-                        flag = false;
-                        sendMessageToHandler("No wifi activation established", false);
-                        break;
-                    }
-                }*/
-            }
-                //----------------------------------------------
-
-            if(flag) {
-                Log.d("@MainActivity#initForPublisher: ", "Wifi on ok");
-
-                // Wifi wake lock
-                int wifiLockType = WifiManager.WIFI_MODE_FULL;
-
-                // Check if WIFI_MODE_FULL_HIGH_PERF is supported (supported since API Level 12)
-                try {
-                    wifiLockType = WifiManager.class.getField("WIFI_MODE_FULL_HIGH_PERF").getInt(null);
-                } catch (Exception e) {
-                    Log.w(TAG, "Unable to acquire high performance wifi lock.");
-                }
-
-                wifiLock = wifiManager.createWifiLock(wifiLockType, TAG);
-                wifiLock.acquire();
-
-               /* long startTime = System.nanoTime();
                 while (!wifiLock.isHeld()) {
-                    timeElapsed = (System.nanoTime() - startTime) / DIVIDER;
-                    Log.d("@MainActivity#initForPublisher: ", "Elapsed time = " + timeElapsed);
-                    if (timeElapsed >= 20) {
+                    timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
+                    if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockWifi)) {
                         flag = false;
                         sendMessageToHandler("No wifi wake lock established", false);
                         break;
                     }
-                }*/
-            }
+                }
+                }
                 //----------------------------------------------
 
-            if(flag) {
-                Log.d("@MainActivity#initForPublisher: ", "Wifi wake lock ok");
-                sendMessageToHandler("Everything is ok", true);
-            }
+                if(flag) {
+                    Log.d("@MainActivity#initForPublisher: ", "Wifi wake lock ok.");
+                    sendMessageToHandler("Publisher initialization successful.", true);
+                }
             }
 
             private void sendMessageToHandler(String errorMessage, Boolean state){
                 Bundle bundle = new Bundle();
                 Message msg = new Message();
-                bundle.putString("errorMessage", errorMessage);
-                bundle.putBoolean("state", state);
+                bundle.putString(getResources().getString(R.string.error_message_init_publisher), errorMessage);
+                bundle.putBoolean(getResources().getString(R.string.state_init_publisher), state);
                 msg.setData(bundle);
                 handler.sendMessage(msg);
             }
@@ -331,5 +289,28 @@ public class MainActivity extends BaseClass {
         masterId = editTextMasterId.getText().toString();
         topicPublisher = editTextTopicPublisher.getText().toString();
         topicSubscriber = editTextTopicSubscriber.getText().toString();
+    }
+
+    private void savePreferences() {
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString(getResources().getString(R.string.shared_pref_master), masterId);
+        editor.putString(getResources().getString(R.string.shared_pref_topic_publisher), topicPublisher);
+        editor.putString(getResources().getString(R.string.shared_pref_topic_subscriber), topicSubscriber);
+        editor.putInt("theme", current_theme);
+        editor.commit();
+    }
+
+    private void loadPreferences(){
+        editTextMasterId.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_master), ""));
+        editTextTopicPublisher.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_topic_publisher), ""));
+        editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_topic_subscriber), ""));
+    }
+
+    @Override
+    public void themeCallback(int current_theme) {
+        this.current_theme = current_theme;
+        savePreferences();
+        globalLayout.pause();
+        setSurfaceView(surfaceDataBundle);
     }
 }
