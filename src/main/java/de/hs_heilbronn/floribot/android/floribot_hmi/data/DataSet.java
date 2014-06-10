@@ -7,11 +7,13 @@ import android.os.Handler;
 import android.util.DisplayMetrics;
 
 import java.util.Arrays;
+import java.util.List;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Publisher;
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.SubscriberString;
+import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Subscriber;
+import sensor_msgs.JoyFeedback;
 
 /**
  * Created by mr on 10.05.14.
@@ -29,7 +31,7 @@ public class DataSet extends Application {
     public static Publisher publisher;
 
     public static boolean isRunning;
-    public static SubscriberString subscriberString;
+    public static Subscriber subscriber;
     public static SubscriberInterface subscriberInterface;
     private int arrayOffset, pxWidth, pxHeight;
     private float factorHeight, factorWidth, bottomBarWidthInPx, offsetToBottomBarExtensionInPx, bottomBarHeightInPx;
@@ -278,6 +280,6 @@ public class DataSet extends Application {
 
     // INterface for communication between subscriber and main thread
     public interface SubscriberInterface {
-        public void subscriberCallback(String s);
+        public void subscriberCallback(List<JoyFeedback> message);
     }
 }

@@ -145,10 +145,6 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         public void themeCallback(int current_theme);
     }
 
-    public interface subscriberInterface{
-        public void subscriberCallback();
-    }
-
     public class SpinnerAdapter extends BaseAdapter {
         private String[] objects;
 
@@ -194,6 +190,8 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         }
     }
 
+
+
     public void setGlobalLayout(int layout) {
         SurfaceView surface = (SurfaceView) findViewById(layout);
         surface.setZOrderOnTop(false);
@@ -202,7 +200,6 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
     }
 
     public void setSurfaceView(Bundle bundle){
-
         globalLayout.resume(bundle);
     }
 }

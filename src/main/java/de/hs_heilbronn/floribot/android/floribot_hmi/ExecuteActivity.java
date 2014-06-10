@@ -15,11 +15,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.util.List;
+
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
+import sensor_msgs.JoyFeedback;
 
 
 public class ExecuteActivity extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, DataSet.SubscriberInterface{
@@ -33,8 +36,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     public static NodeExecutorService nodeExecutorService;
     private int speed;
     private SeekBar seekBar_speed;
-    private ImageView led_manual,led_auto;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +49,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         button_manual = (ToggleButton) findViewById(R.id.button_manual);
         button_auto = (ToggleButton) findViewById(R.id.button_auto);
         button_sensor_calibration = (ToggleButton) findViewById(R.id.button_sensor_calibration);
-        led_manual = (ImageView) findViewById(R.id.led_manual);
-        led_auto = (ImageView) findViewById(R.id.led_auto);
 
         DataSet.subscriberInterface = this;
     }
@@ -93,7 +92,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     button_sensor_calibration.setEnabled(true);
                     // Start publisher thread
                     DataSet.publisher.startPublisherThread();
-                    DataSet.subscriberString.startSubscriberThread();
+                    DataSet.subscriber.startSubscriberThread();
                     DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                 }
                 else{
@@ -119,7 +118,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                     // Start publisher thread
                     DataSet.publisher.startPublisherThread();
-                    DataSet.subscriberString.startSubscriberThread();
+                    DataSet.subscriber.startSubscriberThread();
                     // Start automatic mode thread
                     DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                 }
@@ -333,7 +332,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                     // Stop publisher thread
                     DataSet.publisher.stopPublisherThread();
-                    DataSet.subscriberString.stopSubscriberThread();
+                    DataSet.subscriber.stopSubscriberThread();
 
                     stopService(MainActivity.nodeExecutorService);
                     // Go back to MainActivity
@@ -366,24 +365,36 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
 
     @Override
-    public void subscriberCallback(String s) {
-        Log.d("@ExecuteActivity->subscriberCallback", "Switch led on...");
-        Log.d("@ExecuteActivity->messageContent", s);
-        if(s.equals("LedManualOn")){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    led_manual.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_led_on));
-                }
-            });
+    public void subscriberCallback(List<JoyFeedback> messageList) {
+        Log.d("@ExecuteActivity->subscriberCallback", "Change led state");
+
+        ImageView led_manual = (ImageView) findViewById(R.id.led_manual);
+        ImageView led_auto = (ImageView) findViewById(R.id.led_auto);
+
+        int mSize = messageList.size();
+        for(int i=0;i<mSize;i++){
+            JoyFeedback object = messageList.get(i);
+            switch(object.getId()){
+                case(0):
+                    // Set led for manual mode
+                    if(object.getIntensity() > 0) setFeedbackLed(led_manual, R.drawable.ic_led_on);
+                    else setFeedbackLed(led_manual, R.drawable.ic_led_off);
+                    break;
+                case(1):
+                    // Set led for auto mode
+                    if(object.getIntensity() > 0) setFeedbackLed(led_auto, R.drawable.ic_led_on);
+                    else setFeedbackLed(led_auto, R.drawable.ic_led_off);
+                    break;
+            }
         }
-        if(s.equals("LedManualOff")){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    led_manual.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_led_off));
-                }
-            });
-        }
+    }
+
+    private void setFeedbackLed(final ImageView ledType, final int led) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ledType.setBackgroundDrawable(getResources().getDrawable(led));
+            }
+        });
     }
 }

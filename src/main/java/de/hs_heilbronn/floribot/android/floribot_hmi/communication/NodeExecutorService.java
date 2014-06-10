@@ -67,10 +67,10 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         nodeMainExecutor.execute(DataSet.publisher, nodeConfiguration);
 
         Log.d("@NodeExecutorService#startPublisher: ", "Start subscriber");
-        DataSet.subscriberString = new SubscriberString(getApplicationContext(), topicSubscriber);
+        DataSet.subscriber = new Subscriber(getApplicationContext(), topicSubscriber);
         nodeConfiguration = NodeConfiguration.newPublic(String.valueOf(InetAddressFactory.newNonLoopback().getHostAddress()), uri);
         nodeConfiguration.setMasterUri(uri);
-        nodeMainExecutor.execute(DataSet.subscriberString, nodeConfiguration);
+        nodeMainExecutor.execute(DataSet.subscriber, nodeConfiguration);
         //----------------------------------------------
 
         return START_STICKY;
@@ -92,7 +92,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     public void onDestroy() {
         Log.d("@onDestroy: ", "Destroy service...");
         shutdownNodeMain(DataSet.publisher);
-        shutdownNodeMain(DataSet.subscriberString);
+        shutdownNodeMain(DataSet.subscriber);
         super.onDestroy();
     }
 

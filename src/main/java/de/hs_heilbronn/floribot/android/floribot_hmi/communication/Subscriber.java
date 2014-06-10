@@ -10,21 +10,24 @@ import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
+import java.util.List;
+
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import sensor_msgs.JoyFeedback;
+import sensor_msgs.JoyFeedbackArray;
 
 /**
  * Created by mr on 21.05.14.
  */
-public class SubscriberJoy extends AbstractNodeMain implements BaseClass.subscriberInterface{
+public class Subscriber extends AbstractNodeMain{
 
     private final Context context;
     private final String topicSubscriber;
-    org.ros.node.topic.Subscriber<JoyFeedback> subscriber;
+    org.ros.node.topic.Subscriber<JoyFeedbackArray> subscriber;
     public Thread t;
     private Handler loopHandler = null;
 
-    public SubscriberJoy(Context context, String topicSubscriber) {
+    public Subscriber(Context context, String topicSubscriber) {
         this.context = context;
         this.topicSubscriber = topicSubscriber;
     }
@@ -65,11 +68,6 @@ public class SubscriberJoy extends AbstractNodeMain implements BaseClass.subscri
         }
     }
 
-    @Override
-    public void subscriberCallback() {
-
-    }
-
     public class SubscriberThread extends Thread {
 
         public void run() {
@@ -82,15 +80,12 @@ public class SubscriberJoy extends AbstractNodeMain implements BaseClass.subscri
                 // Handler to cancel the message loop
                 loopHandler = new Handler();
 
-                subscriber.addMessageListener(new MessageListener<JoyFeedback>() {
+                subscriber.addMessageListener(new MessageListener<JoyFeedbackArray>() {
 
                     @Override
-                    public void onNewMessage(JoyFeedback message) {
-                        if(message.getType() == JoyFeedback.TYPE_LED){
-                            float intensity = message.getIntensity();
-                            Log.d("@Subscriber: ", String.valueOf(intensity));
-                            subscriberCallback();
-                        }
+                    public void onNewMessage(JoyFeedbackArray message) {
+                        List<JoyFeedback> messageList = message.getArray();
+                        DataSet.subscriberInterface.subscriberCallback(messageList);
                     }
                 });
 
