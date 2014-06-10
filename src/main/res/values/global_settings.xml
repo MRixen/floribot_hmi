@@ -42,12 +42,12 @@
     <integer name="cameraViewHeightInPx">200</integer>
     <!-- -->
 
-    <!--Parameter for publisher initialization-->
+    <!--Parameter for connection establishment-->
     <integer name="deadTimeWakeLockWifi">20</integer> <!--unit: second-->
     <integer name="deadTimeEnableWifi">20</integer>
     <integer name="deadTimeWakeLockPower">10</integer>
     <integer name="deadTimeSurfaceValidation">20</integer>
-    <integer name="joystick_delay">200</integer>
+    <integer name="custom_event_delay">200</integer>
     <integer name="DIVIDER">1000000000</integer>
     <!-- -->
 

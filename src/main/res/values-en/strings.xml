@@ -91,12 +91,17 @@
     <!--Parameter for main activity-->
     <string name="title_main">Connection establishment</string>
     <string name="title_connect_button_main">Connect</string>
-    <string name="toast_enter_master">Enter master address!</string>
-    <string name="toast_enter_topic_publisher">Enter topic for publisher!</string>
-    <string name="toast_enter_topic_subscriber">Enter topic for subscriber!</string>
+    <string name="toast_enter_master">Please Enter master address!</string>
+    <string name="toast_enter_topic">Please Enter topic address!</string>
     <string name="error_message_init_publisher">errorMessage</string>
     <string name="state_init_publisher">state</string>
     <string name="dialog_init_publisher">Wait until connection is established.</string>
+    <string name="connection_establishment_error_uri_syntax">Invalid master ID!</string>
+    <string name="connection_establishment_error_display_wake_lock">No display wake lock established!</string>
+    <string name="connection_establishment_error_wifi_activation">No wifi activation established!</string>
+    <string name="connection_establishment_error_airplane">Airplane mode is enabled, please disable!</string>
+    <string name="connection_establishment_error_wifi_lock">No wifi wake lock established!</string>
+
 
     <!--Parameter for global preferences (load at app start)-->
     <string name="shared_pref_master">masterId</string>
@@ -110,9 +115,7 @@
     <string name="dialog_message_start_calibration">Hold your phone in start position!</string>
     <string name="dialog_negative_button">Cancel</string>
     <string name="dialog_positive_button">OK</string>
-    <string name="dialog_message_shutdown_publisher">Shutdown publisher?</string>
-    <string name="control_mode_joystick">JoystickControl</string>
-    <string name="control_mode_sensor">SensorControl</string>
+    <string name="dialog_message_close_connection">Close connection?</string>
     <string name="button_state_array">buttonData</string>
     <string name="axes_state_array">axesData</string>
     <string name="title_master_address">Master address: </string>
@@ -127,6 +130,8 @@
     <string name="glPathQuantity">pathQuantity</string>
     <string name="speed">speed</string>
     <string name="dialog_title_publisher_exit">Warning</string>
+    <string name="toast_enter_all">You need to set connection parameter!</string>
+
 
 
 </resources>

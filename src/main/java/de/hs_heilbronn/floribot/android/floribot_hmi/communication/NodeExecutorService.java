@@ -61,11 +61,16 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
 
         Log.d("@NodeExecutorService#startPublisher: ", "Start publisher");
-        DataSet.talker = new Publisher(getApplicationContext(), topicPublisher);
+        DataSet.publisher = new Publisher(getApplicationContext(), topicPublisher);
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
         nodeConfiguration.setMasterUri(uri);
+        nodeMainExecutor.execute(DataSet.publisher, nodeConfiguration);
 
-        nodeMainExecutor.execute(DataSet.talker, nodeConfiguration);
+        Log.d("@NodeExecutorService#startPublisher: ", "Start subscriber");
+        DataSet.subscriberString = new SubscriberString(getApplicationContext(), topicSubscriber);
+        nodeConfiguration = NodeConfiguration.newPublic(String.valueOf(InetAddressFactory.newNonLoopback().getHostAddress()), uri);
+        nodeConfiguration.setMasterUri(uri);
+        nodeMainExecutor.execute(DataSet.subscriberString, nodeConfiguration);
         //----------------------------------------------
 
         return START_STICKY;
@@ -86,7 +91,8 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     @Override
     public void onDestroy() {
         Log.d("@onDestroy: ", "Destroy service...");
-        shutdownNodeMain(DataSet.talker);
+        shutdownNodeMain(DataSet.publisher);
+        shutdownNodeMain(DataSet.subscriberString);
         super.onDestroy();
     }
 

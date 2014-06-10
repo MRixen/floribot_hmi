@@ -11,6 +11,7 @@ import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import sensor_msgs.Joy;
 
@@ -21,7 +22,6 @@ public class Publisher extends AbstractNodeMain {
 
     private final Context context;
     private final String topicPublisher;
-    private DataSet.DriveMode driveMode;
     public Thread t;
     private Handler loopHandler = null;
     private org.ros.node.topic.Publisher<Joy> publisher;
@@ -34,7 +34,7 @@ public class Publisher extends AbstractNodeMain {
 
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("rosjava/talker");
+        return GraphName.of("floribot/publisher");
     }
 
     @Override
@@ -59,7 +59,7 @@ public class Publisher extends AbstractNodeMain {
         try {
             loopHandler.getLooper().quit();
         }catch(Exception e){
-            Log.d("@Talker2#stopPublisherThread#StopHandlerException: ", String.valueOf(e));
+            Log.d("@Publisher#stopPublisherThread#StopHandlerException: ", String.valueOf(e));
         }
         // Stop thread
         try {
@@ -67,7 +67,7 @@ public class Publisher extends AbstractNodeMain {
             }
             t = null;
         }catch(Exception e){
-            Log.d("@Talker2#stopPublisherThread#StopThreadException: ", String.valueOf(e));
+            Log.d("@Publisher#stopPublisherThread#StopThreadException: ", String.valueOf(e));
         }
     }
 
@@ -87,8 +87,10 @@ public class Publisher extends AbstractNodeMain {
                             Bundle bundle = msg.getData();
 
                             if (bundle != null) {
-                                float[] axesData = bundle.getFloatArray("axesData");
-                                int[] buttonData = bundle.getIntArray("buttonData");
+                                float[] axesData = new float[3];
+                                int[] buttonData = new int[10];
+                                if(bundle.containsKey(context.getResources().getString(R.string.axes_state_array))) axesData = bundle.getFloatArray(context.getResources().getString(R.string.axes_state_array));
+                                if(bundle.containsKey(context.getResources().getString(R.string.button_state_array))) buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
 
                                 // Send sensor data to robot
                                 Joy joyTest = publisher.newMessage();

@@ -13,8 +13,9 @@
     <string name="shared_pref_connection_data">connectionData</string>
 
     <!--Parameter for execute activity-->
-    <string name="control_mode_joystick">JoystickControl</string>
-    <string name="control_mode_sensor">SensorControl</string>
+    <string name="control_mode_manual_joystick">ManualJoystickMode</string>
+    <string name="control_mode_manual_sensor">ManualSensorMode</string>
+    <string name="control_mode_auto">AutomaticMode</string>
     <string name="button_state_array">buttonData</string>
     <string name="axes_state_array">axesData</string>
 
@@ -23,4 +24,5 @@
     <string name="glPointArray">pointsArray</string>
     <string name="glPathQuantity">pathQuantity</string>
     <string name="speed">speed</string>
+
 </resources>

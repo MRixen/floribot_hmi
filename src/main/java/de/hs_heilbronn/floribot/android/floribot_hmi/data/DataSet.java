@@ -11,6 +11,7 @@ import java.util.Arrays;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Publisher;
+import de.hs_heilbronn.floribot.android.floribot_hmi.communication.SubscriberString;
 
 /**
  * Created by mr on 10.05.14.
@@ -22,12 +23,14 @@ public class DataSet extends Application {
     private static Context context;
 
     public static ControlDataAcquisition controlDataAcquisition;
-    public static JoystickEventExecutor.JoystickEventListener joystickEventListener = null;
+    public static CustomEventExecutor.CustomEventListener customEventListener = null;
 
     public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
-    public static Publisher talker;
+    public static Publisher publisher;
 
     public static boolean isRunning;
+    public static SubscriberString subscriberString;
+    public static SubscriberInterface subscriberInterface;
     private int arrayOffset, pxWidth, pxHeight;
     private float factorHeight, factorWidth, bottomBarWidthInPx, offsetToBottomBarExtensionInPx, bottomBarHeightInPx;
     float[] pointsArray;
@@ -43,6 +46,8 @@ public class DataSet extends Application {
         AUTOMATIC_DRIVE,
         MOVE_PAN_TILT_WITH_IMU,
         MOVE_ROBOT_WITH_IMU,
+        NOT_ASSIGNED_ONE,
+        NOT_ASSIGNED_TWO,
         TURN_LEFT_WITH_BUTTON,
         TURN_RIGHT_WITH_BUTTON,
         MOVE_FORWARD_WITH_BUTTON,
@@ -169,11 +174,11 @@ public class DataSet extends Application {
         // Create rectangle for top sensor visualization (visualization for steer amount)
         // -------------------------------------
         // Distance from left display border to left side of rectangle
-        svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx/2;
+        svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
         // Distance from top display border to top side of rectangle
         svRectArray[1] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp));
         // Distance from left display border to right side of rectangle
-        svRectArray[2] = svRectArray[0];
+        svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
         // Distance from top display border to bottom side of rectangle
         svRectArray[3] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
         // -------------------------------------
@@ -183,11 +188,11 @@ public class DataSet extends Application {
         // Distance from left display border to left side of rectangle
         svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
         // Distance from top display border to top side of rectangle
-        svRectArray[5] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx/2;
+        svRectArray[5] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
         // Distance from left display border to right side of rectangle
         svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
         // Distance from top display border to bottom side of rectangle
-        svRectArray[7] = svRectArray[5];
+        svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
         // -------------------------------------
 
         // -------------------------------------
@@ -269,5 +274,10 @@ public class DataSet extends Application {
         // Mark end of path data
         pointsArray[arrayOffset + i] = -1;
         arrayOffset += array.length+1;
+    }
+
+    // INterface for communication between subscriber and main thread
+    public interface SubscriberInterface {
+        public void subscriberCallback(String s);
     }
 }

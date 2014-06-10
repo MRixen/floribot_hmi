@@ -32,11 +32,12 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
     private SurfaceHolder holder;
     private Canvas canvas;
-    private Paint glPaint, svPaint, svPaintDebug;
+    private Paint glPaint, svPaint, svPaintDebug, svbPaint;
     private Path[] glPathArray;
 
     private int backgroundColor, foregroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
+    private float svOffsetFactorTopBeam, svOffsetFactorLeftBeam;
 
     public GlobalLayout(Context context, SurfaceHolder holder) {
         super(context);
@@ -72,23 +73,31 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
             glPathArray[j].close();
         }
 
+        // Name convention: gl = GlobalLayout, sv = SensorVisualization, svb = SensorVisualizationBackground
         glPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         glPaint.setStyle(Paint.Style.FILL);
         glPaint.setColor(foregroundColor);
         svPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         svPaint.setStyle(Paint.Style.FILL);
         svPaint.setColor(context.getResources().getColor(R.color.ModernOrange));
+        svbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        svbPaint.setStyle(Paint.Style.FILL);
+        svbPaint.setColor(context.getResources().getColor(R.color.GreyLight));
 
         // -------------------------------------
         // ONLY FOR DEBUG !!!
         // -> For camera preview
         // -------------------------------------
         svPaintDebug = new Paint(Paint.ANTI_ALIAS_FLAG);
-        svPaintDebug.setStyle(Paint.Style.FILL);
+        svPaintDebug.setStyle(Paint.Style.STROKE);
+        svPaintDebug.setStrokeWidth(5);
         svPaintDebug.setColor(context.getResources().getColor(R.color.GreyLight));
         // -------------------------------------
 
         holder.setFormat(PixelFormat.TRANSPARENT);
+
+        svOffsetFactorTopBeam = ((svRectArray[2] - svRectArray[0]) / 2);
+        svOffsetFactorLeftBeam = ((svRectArray[7] - svRectArray[5]) / 2);
     }
 
     @Override
@@ -145,10 +154,13 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         for(int i=0;i<= glPathArray.length-1;i++){
             canvas.drawPath(glPathArray[i], glPaint);
         }
+
         // Draw sensor visualization for top beam
-        canvas.drawRect(svRectArray[0] - rotation*20, svRectArray[1], svRectArray[2], svRectArray[3], svPaint);
+        canvas.drawRect(svRectArray[0], svRectArray[1], svRectArray[2], svRectArray[3], svbPaint); // For grey beam background
+        canvas.drawRect(svRectArray[0] + svOffsetFactorTopBeam - rotation*20, svRectArray[1], svRectArray[2] - svOffsetFactorTopBeam, svRectArray[3], svPaint);
         // Draw sensor visualization for left beam
-        canvas.drawRect(svRectArray[4], svRectArray[5] - translation*10, svRectArray[6], svRectArray[7], svPaint);
+        canvas.drawRect(svRectArray[4], svRectArray[5], svRectArray[6], svRectArray[7], svbPaint); // For grey beam background
+        canvas.drawRect(svRectArray[4], svRectArray[5] + svOffsetFactorLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svOffsetFactorLeftBeam, svPaint);
         // -------------------------------------
         // ONLY FOR DEBUG !!!
         // -> For camera preview
@@ -159,8 +171,9 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
 
     public void pause(){
-        loopHandler1.getLooper().quit();
+
             try {
+                loopHandler1.getLooper().quit();
                 // Blocks thread until all operations are finished
                 thread.join();
             }catch(Exception e){

@@ -145,6 +145,10 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         public void themeCallback(int current_theme);
     }
 
+    public interface subscriberInterface{
+        public void subscriberCallback();
+    }
+
     public class SpinnerAdapter extends BaseAdapter {
         private String[] objects;
 

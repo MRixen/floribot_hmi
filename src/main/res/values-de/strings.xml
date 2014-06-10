@@ -92,21 +92,27 @@
     <string name="title_main">Verbindung einrichten</string>
     <string name="title_connect_button_main">Verbinden</string>
     <string name="toast_enter_master">Bitte Master-Adresse eingeben!</string>
-    <string name="toast_enter_topic_publisher">Bitte Publisher-Adresse eingeben!</string>
-    <string name="toast_enter_topic_subscriber">Bitte Subscriber-Adresse eingeben!</string>
+    <string name="toast_enter_topic">Bitte Topic-Adresse eingeben!</string>
     <string name="dialog_init_publisher">Die Verbindung wird aufgebaut.</string>
+    <string name="toast_enter_all">Bitte setzen Sie die Verbindungsparameter!</string>
+    <string name="connection_establishment_error_uri_syntax">Fehlerhafte Master-Adresse!</string>
+    <string name="connection_establishment_error_display_wake_lock">Dauerhaftes Einschalten des Displays fehgeschlagen!</string>
+    <string name="connection_establishment_error_wifi_activation">Wifi Aktivierung fehgeschlagen!</string>
+    <string name="connection_establishment_error_airplane">Flugmodus ist aktiv, bitte ausschalten!</string>
+    <string name="connection_establishment_error_wifi_lock">Dauerhaftes Einschalten von Wlan fehgeschlagen!</string>
 
     <!--Parameter for execute activity-->
     <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in Ausgangsposition!</string>
     <string name="dialog_negative_button">Abbrechen</string>
     <string name="dialog_positive_button">OK</string>
-    <string name="dialog_message_shutdown_publisher">Verbindung beenden?</string>
+    <string name="dialog_message_close_connection">Verbindung beenden?</string>
     <string name="title_master_address">Master-Adresse: </string>
     <string name="title_topic_publisher">Publisher-Topic: </string>
     <string name="title_topic_subscriber">Subscriber-Topic: </string>
     <string name="title_execute">Steuerungsmenü</string>
     <string name="title_exit_button_execute">Beenden</string>
     <string name="dialog_title_publisher_exit">Warnung</string>
+
 
 
 </resources>

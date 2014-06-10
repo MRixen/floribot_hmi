@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -165,6 +166,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                                 overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                             } else {
                                 progressDialog.cancel();
+                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                                 Log.d("@MainActivity#handleMessage: ", "ErrorMessage: " + errorMessage);
                             }
                         }
@@ -172,9 +174,13 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     progressDialog.show();
                     initForPublisher();
                 } else {
-                    if(masterId.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
-                    if(topicPublisher.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_topic_publisher), Toast.LENGTH_SHORT).show();
-                    if(topicSubscriber.length() == 0 )Toast.makeText(this, getResources().getString(R.string.toast_enter_topic_subscriber), Toast.LENGTH_SHORT).show();
+                    if(masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0) Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
+                    else {
+                        if (masterId.length() == 0)
+                            Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
+                        if (topicPublisher.length() == 0 || topicSubscriber.length() == 0)
+                            Toast.makeText(this, getResources().getString(R.string.toast_enter_topic), Toast.LENGTH_SHORT).show();
+                    }
                 }
                 break;
         }
@@ -194,12 +200,12 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                 try {
                     new URI(masterId);
                 } catch (URISyntaxException e) {
-                    Log.d("@NodeExecutorService#onStartCommand: ", "Invalid master ID!");
                     flag = false;
-                    sendMessageToHandler("Invalid master ID!", false);
+                    sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_uri_syntax), flag);
                 }
                 //----------------------------------------------
 
+                // Enable display wake lock
                 if(flag) {
                     Log.d("@MainActivity#initForPublisher: ", "Uri syntax ok.");
 
@@ -213,32 +219,39 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                         timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
                         if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockPower)) {
                             flag = false;
-                            sendMessageToHandler("No display wake lock established!", false);
+                            sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_display_wake_lock), flag);
                             break;
                         }
                     }
                 }
                 //----------------------------------------------
 
+                // Enable wifi
                 if(flag) {
                     Log.d("@MainActivity#initForPublisher: ", "Display wake lock ok.");
+                    // Check if airplane mode is on
+                    if(Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 1) {
+                        wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
+                        if (!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true);
 
-                    // Wifi activation
-                    wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
-                    if(!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true);
-
-                    long startTime = System.nanoTime();
-                while (!wifiManager.isWifiEnabled()) {
-                    timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
-                    if (timeElapsed >= getResources().getInteger(R.integer.deadTimeEnableWifi)) {
-                        flag = false;
-                        sendMessageToHandler("No wifi activation established!", false);
-                        break;
+                        long startTime = System.nanoTime();
+                        while (!wifiManager.isWifiEnabled()) {
+                            timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
+                            if (timeElapsed >= getResources().getInteger(R.integer.deadTimeEnableWifi)) {
+                                flag = false;
+                                sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_activation), flag);
+                                break;
+                            }
+                        }
                     }
-                }
+                    else{
+                        flag = false;
+                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_airplane), flag);
+                    }
                 }
                 //----------------------------------------------
 
+                // Enable wifi lock
                 if(flag) {
                     Log.d("@MainActivity#initForPublisher: ", "Wifi on ok");
 
@@ -260,16 +273,17 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
                     if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockWifi)) {
                         flag = false;
-                        sendMessageToHandler("No wifi wake lock established", false);
+                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_lock), flag);
                         break;
                     }
                 }
                 }
                 //----------------------------------------------
 
+                //
                 if(flag) {
                     Log.d("@MainActivity#initForPublisher: ", "Wifi wake lock ok.");
-                    sendMessageToHandler("Publisher initialization successful.", true);
+                    sendMessageToHandler("Connection establishment successful.", flag);
                 }
             }
 

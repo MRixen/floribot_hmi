@@ -21,6 +21,8 @@ public class LocalLayout extends Fragment {
         this.layout = layout;
     }
 
+
+
     public interface LocalLayoutManager{
         public void localLayoutCallback();
     }

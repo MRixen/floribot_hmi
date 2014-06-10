@@ -4,10 +4,12 @@ import android.app.Dialog;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -20,7 +22,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
 
 
-public class ExecuteActivity extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener {
+public class ExecuteActivity extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, DataSet.SubscriberInterface{
 
     private ToggleButton button_manual, button_auto, button_sensor_calibration;
 
@@ -31,6 +33,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     public static NodeExecutorService nodeExecutorService;
     private int speed;
     private SeekBar seekBar_speed;
+    private ImageView led_manual,led_auto;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,10 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         button_manual = (ToggleButton) findViewById(R.id.button_manual);
         button_auto = (ToggleButton) findViewById(R.id.button_auto);
         button_sensor_calibration = (ToggleButton) findViewById(R.id.button_sensor_calibration);
+        led_manual = (ImageView) findViewById(R.id.led_manual);
+        led_auto = (ImageView) findViewById(R.id.led_auto);
+
+        DataSet.subscriberInterface = this;
     }
 
     @Override
@@ -69,107 +77,150 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
     @Override
     public void onBackPressed() {
-        shutdownDialog(getResources().getString(R.string.dialog_message_shutdown_publisher));
+        customDialog(getResources().getString(R.string.dialog_message_close_connection));
+    }
+
+    public void onButtonClicked(View v){
+        switch (v.getId()){
+            case(R.id.button_manual):
+                // Disable automatic drive mode
+                button_auto.setChecked(false);
+                DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+                if( ((ToggleButton) v).isChecked() ) {
+                    // Show joystick buttons to control with
+                    setLocalLayout(R.layout.layout_joystick_button);
+                    // Enable button for sensor drive mode
+                    button_sensor_calibration.setEnabled(true);
+                    // Start publisher thread
+                    DataSet.publisher.startPublisherThread();
+                    DataSet.subscriberString.startSubscriberThread();
+                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                }
+                else{
+                    button_sensor_calibration.setEnabled(false);
+                    button_sensor_calibration.setChecked(false);
+                    setLocalLayout(0);
+                    // Stop sensor acquisition thread if is still alive
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+
+                }
+                break;
+            case(R.id.button_auto):
+                // Disable manual drive mode and sensor drive mode, etc.
+                button_manual.setChecked(false);
+                button_sensor_calibration.setEnabled(false);
+                button_sensor_calibration.setChecked(false);
+                // Hide drive control buttons
+                if(localLayout != null) setLocalLayout(0);
+                if( ((ToggleButton) v).isChecked() ) {
+                    // Stop acquisition threads if they are still alive
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                    // Start publisher thread
+                    DataSet.publisher.startPublisherThread();
+                    DataSet.subscriberString.startSubscriberThread();
+                    // Start automatic mode thread
+                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+                }
+            else{
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+            }
+            break;
+            case(R.id.button_sensor_calibration):
+                // This mode is only available in manual mode
+                if( ((ToggleButton) v).isChecked() ) {
+                    // Load sensor drive button
+                    setLocalLayout(R.layout.layout_joystick_button);
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                    customDialog(getResources().getString(R.string.dialog_message_start_calibration));
+                }
+                else{
+                    setLocalLayout(R.layout.layout_joystick_button);
+                    // Load joystick buttons
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                }
+                break;
+            case(R.id.button_exit):
+                // Stop publisher and return to MainActivity
+                customDialog(getResources().getString(R.string.dialog_message_close_connection));
+                break;
+        }
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+
+        int cmdValue;
+
         switch (v.getId()) {
             case (R.id.button_sensor):
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    joystickButtonHandle(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), 1, -1);
+                    cmdValue = 1;
+                    sendDataToPublisher(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), cmdValue, -1);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_pressed);
 
-                    /*buttonData = new int[10];
-                    buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] = 1;
-                    sendDataToPublisherThread(buttonData, -1);*/
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
-                    joystickButtonHandle(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), 0, -1);
+                    cmdValue = 0;
+                    sendDataToPublisher(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), cmdValue, -1);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
-
-                    /*buttonData = new int[10];
-                    buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] = 0;
-                    sendDataToPublisherThread(buttonData, -1);*/
                 }
                 break;
             case(R.id.button_up):
                 if(!button_sensor_calibration.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        joystickButtonHandle(DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), 1, speed);
+                        cmdValue = 1;
+                        sendDataToPublisher(DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_up);
-
-                       /* buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] = 1;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        joystickButtonHandle(DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), 0, speed);
+                        cmdValue = 0;
+                        sendDataToPublisher(DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] = 0;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                 }
                 break;
             case(R.id.button_down):
                 if(!button_sensor_calibration.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        joystickButtonHandle(DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), 1, speed);
+                        cmdValue = 1;
+                        sendDataToPublisher(DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_down);
-
-                       /* buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] = 1;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        joystickButtonHandle(DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), 0, speed);
+                        cmdValue = 0;
+                        sendDataToPublisher(DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] = 0;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                 }
                 break;
             case(R.id.button_left):
                 if(!button_sensor_calibration.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        joystickButtonHandle(DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), 1, speed);
+                        cmdValue = 1;
+                        sendDataToPublisher(DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_left);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] = 1;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        joystickButtonHandle(DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), 0, speed);
+                        cmdValue = 0;
+                        sendDataToPublisher(DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] = 0;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                 }
                 break;
             case(R.id.button_right):
                 if(!button_sensor_calibration.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        joystickButtonHandle(DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), 1, speed);
+                        cmdValue = 1;
+                        sendDataToPublisher(DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_right);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] = 1;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
-                        joystickButtonHandle(DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), 0, speed);
+                        cmdValue = 0;
+                        sendDataToPublisher(DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), cmdValue, speed);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
-
-                        /*buttonData = new int[10];
-                        buttonData[DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] = 0;
-                        sendDataToPublisherThread(buttonData, speed);*/
                     }
                 }
                 break;
@@ -177,12 +228,30 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         return false;
     }
 
-    private void joystickButtonHandle(int cmd, int value, int speed){
+    private void sendDataToPublisher(int cmd, int cmdValue, int speed){
         int[] buttonData = new int[10];
-        buttonData[cmd] = value;
-        sendDataToPublisherThread(buttonData, speed);
-    }
+        buttonData[cmd] = cmdValue;
 
+        Bundle bundle = new Bundle();
+        Message msg = new Message();
+
+        bundle.putIntArray(getResources().getString(R.string.button_state_array), buttonData);
+        if(speed != -1) bundle.putInt(getResources().getString(R.string.speed), speed);
+
+        msg.setData(bundle);
+
+        if (DataSet.controlDataAcquisition.manualSensorModeThread != null) {
+            if (DataSet.controlDataAcquisition.manualSensorModeThread.isAlive()) {
+                DataSet.handlerForControlDataAcquisition.sendMessage(msg);
+            }
+        }
+        else if (DataSet.controlDataAcquisition.manualJoystickModeThread != null) {
+            if (DataSet.controlDataAcquisition.manualJoystickModeThread.isAlive()) {
+                DataSet.handlerForControlDataAcquisition.sendMessage(msg);
+            }
+        }
+    }
+    
     private void setBackgroundForJoystickButtons(int drawableResource) {
         relativeLayout.setBackgroundDrawable(getResources().getDrawable(drawableResource));
     }
@@ -216,101 +285,19 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         }
     }
 
-    public void onButtonClicked(View v){
 
-        int[] buttonData;
-
-        switch (v.getId()){
-            case(R.id.button_manual):
-                // Disable automatic drive mode
-                button_auto.setChecked(false);
-                if( ((ToggleButton) v).isChecked() ) {
-                    // Show joystick buttons to control with
-                    setLocalLayout(R.layout.layout_joystick_button);
-                    // Enable button for sensor drive mode
-                    button_sensor_calibration.setEnabled(true);
-                    // Start publisher thread
-                    DataSet.talker.startPublisherThread();
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_joystick));
-
-                }
-                else{
-                    button_sensor_calibration.setEnabled(false);
-                    button_sensor_calibration.setChecked(false);
-                    setLocalLayout(0);
-                    // Stop sensor acquisition thread if is still alive
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_sensor));
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_joystick));
-
-                }
-                break;
-            case(R.id.button_auto):
-                // Disable manual drive mode and sensor drive mode, etc.
-                button_manual.setChecked(false);
-                button_sensor_calibration.setEnabled(false);
-                button_sensor_calibration.setChecked(false);
-                // Hide drive control buttons
-                setLocalLayout(0);
-                // Stop sensor acquisition thread if is still alive
-                DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_sensor));
-                // Start publisher thread
-                DataSet.talker.startPublisherThread();
-                buttonData = new int[10];
-                buttonData[DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal()] = 1;
-                sendDataToPublisherThread(buttonData, -1);
-                break;
-            case(R.id.button_sensor_calibration):
-                if( ((ToggleButton) v).isChecked() ) {
-                    // Load sensor drive button
-                    setLocalLayout(R.layout.layout_joystick_button);
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_joystick));
-                    shutdownDialog(getResources().getString(R.string.dialog_message_start_calibration));
-                }
-                else{
-                    setLocalLayout(R.layout.layout_joystick_button);
-                    // Load joystick buttons
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_sensor));
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_joystick));
-                }
-                break;
-            case(R.id.button_exit):
-                // Stop publisher and return to MainActivity
-                shutdownDialog(getResources().getString(R.string.dialog_message_shutdown_publisher));
-                break;
-        }
-    }
 
     private void setLocalLayout(int local_layout_resource) {
         if (local_layout_resource != 0) {
             localLayout = new LocalLayout(local_layout_resource);
             getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, localLayout).commit();
         }
-        else getSupportFragmentManager().beginTransaction().hide(localLayout).commit();
-    }
-
-    private void sendDataToPublisherThread(int[] buttonData, int speed) {
-
-        Bundle bundle = new Bundle();
-        Message msg = new Message();
-
-        bundle.putIntArray(getResources().getString(R.string.button_state_array), buttonData);
-        if(speed != -1) bundle.putInt(getResources().getString(R.string.speed), speed);
-
-        msg.setData(bundle);
-
-        if (DataSet.controlDataAcquisition.sensorDataAcquisitionThread != null) {
-            if (DataSet.controlDataAcquisition.sensorDataAcquisitionThread.isAlive()) {
-                DataSet.handlerForControlDataAcquisition.sendMessage(msg);
-            }
-        }
-        else if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread != null) {
-            if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread.isAlive()) {
-                DataSet.handlerForControlDataAcquisition.sendMessage(msg);
-            }
+        else{
+            getSupportFragmentManager().beginTransaction().hide(localLayout).commit();
         }
     }
 
-    public void shutdownDialog(final String message) {
+    public void customDialog(final String message) {
         final Dialog dialog = new Dialog(this, R.style.dialog_style);
         dialog.setContentView(R.layout.layout_dialog_publisher_exit);
         dialog.setCancelable(false);
@@ -339,20 +326,24 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             @Override
             public void onClick(View v) {
                 // Show dialog to disconnect publisher and do some stuff
-                if (message.equals(getResources().getString(R.string.dialog_message_shutdown_publisher))) {
-                    // Stop sensor acquisition thread if is still alive
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_sensor));
+                if (message.equals(getResources().getString(R.string.dialog_message_close_connection))) {
+                    // Stop acquisition threads if they are still alive
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                     // Stop publisher thread
-                    DataSet.talker.stopPublisherThread();
+                    DataSet.publisher.stopPublisherThread();
+                    DataSet.subscriberString.stopSubscriberThread();
 
                     stopService(MainActivity.nodeExecutorService);
                     // Go back to MainActivity
+                    dialog.dismiss();
                     finish();
                     overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_sensor));
+                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
                     dialog.dismiss();
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                     seekBar_speed.setVisibility(View.INVISIBLE);
@@ -374,4 +365,25 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     public void onStopTrackingTouch(SeekBar seekBar) { }
 
 
+    @Override
+    public void subscriberCallback(String s) {
+        Log.d("@ExecuteActivity->subscriberCallback", "Switch led on...");
+        Log.d("@ExecuteActivity->messageContent", s);
+        if(s.equals("LedManualOn")){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    led_manual.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_led_on));
+                }
+            });
+        }
+        if(s.equals("LedManualOff")){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    led_manual.setBackgroundDrawable(getResources().getDrawable(R.drawable.ic_led_off));
+                }
+            });
+        }
+    }
 }

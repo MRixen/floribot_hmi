@@ -76,10 +76,29 @@
         android:background="@drawable/sensor_button_selector"
         android:onClick="onButtonClicked" />
 
+    <ImageView
+        android:id="@+id/led_manual"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:layout_toLeftOf="@id/button_manual"
+        android:background="@drawable/ic_led_off"/>
+
+    <ImageView
+        android:id="@+id/led_auto"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:layout_toLeftOf="@id/button_auto"
+        android:background="@drawable/ic_led_off"/>
+
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true" />
+
 
 </RelativeLayout>

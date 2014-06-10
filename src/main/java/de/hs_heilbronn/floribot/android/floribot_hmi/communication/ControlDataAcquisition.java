@@ -12,8 +12,8 @@ import android.os.Message;
 import android.util.Log;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.CustomEventExecutor;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.JoystickEventExecutor;
 
 /**
  * Created by mr on 17.05.14.
@@ -24,12 +24,12 @@ public class ControlDataAcquisition {
 
     private final Context context;
 
-    public Thread sensorDataAcquisitionThread, joystickDataAcquisitionThread, joystickEventExecutorThread;
+    public Thread manualSensorModeThread, manualJoystickModeThread, customEventExecutorThread, automaticModeThread;
     private Handler loopHandler;
 
     private SensorManager sensorManager;
 
-    private int[] buttonData = new int[10];
+    private int[] buttonData;
     private float[] axesData = {0,0,0};
     private float[] sensorDataRot = new float[3];
     private double alpha = 0;
@@ -42,31 +42,42 @@ public class ControlDataAcquisition {
 
     public void startControlDataAcquisitionThread(String controlMode) {
 
-        if (controlMode.equals(context.getResources().getString(R.string.control_mode_sensor))) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_sensor))) {
             firstStart = true;
+            buttonData = new int[10];
             // Start thread, if no thread is alive
-            if (sensorDataAcquisitionThread == null) {
-                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start sensor acquisition thread...");
+            if (manualSensorModeThread == null) {
+                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start manual mode sensor thread...");
                 listenToSensor = true;
-                sensorDataAcquisitionThread = new SensorDataAcquisitionThread();
-                sensorDataAcquisitionThread.start();
+                manualSensorModeThread = new ManualSensorModeThread();
+                manualSensorModeThread.start();
             }
         }
-        if (controlMode.equals(context.getResources().getString(R.string.control_mode_joystick))) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_joystick))) {
             DataSet.isRunning = true;
-
+            buttonData = new int[10];
             // Start thread, if no thread is alive
-            if (joystickDataAcquisitionThread == null) {
-                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start joystick acquisition thread...");
-                joystickDataAcquisitionThread = new JoystickDataAcquisitionThread();
-                joystickDataAcquisitionThread.start();
+            if (manualJoystickModeThread == null) {
+                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start manual mode joystick thread...");
+                manualJoystickModeThread = new ManualJoystickModeThread();
+                manualJoystickModeThread.start();
+            }
+        }
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_auto))) {
+            DataSet.isRunning = true;
+            buttonData = new int[10];
+            // Start thread, if no thread is alive
+            if (automaticModeThread == null) {
+                Log.d("@ControlDataAcquisition->startControlDataAcquisitionThread: ", "Start automatic mode thread...");
+                automaticModeThread = new AutomaticModeThread();
+                automaticModeThread.start();
             }
         }
     }
 
     public void stopControlDataAcquisitionThread(String controlMode) {
 
-        if (controlMode.equals(context.getResources().getString(R.string.control_mode_sensor))) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_sensor))) {
             // Unregister sensor listener and stop message loop inside thread
             try {
                 listenToSensor = false;
@@ -79,17 +90,17 @@ public class ControlDataAcquisition {
             }
             // Stop thread
             try {
-                while (sensorDataAcquisitionThread.isAlive()) {
+                while (manualSensorModeThread.isAlive()) {
                 }
-                sensorDataAcquisitionThread = null;
+                manualSensorModeThread = null;
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->SensorControl->StopThreadException: ", String.valueOf(e));
             }
         }
-        if (controlMode.equals(context.getResources().getString(R.string.control_mode_joystick))) {
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_joystick))) {
             try {
                 DataSet.isRunning = false;
-                joystickEventExecutorThread = null;
+                customEventExecutorThread = null;
 
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
@@ -97,17 +108,37 @@ public class ControlDataAcquisition {
             }
             // Stop thread
             try {
-                while (joystickDataAcquisitionThread.isAlive()) {
+                while (manualJoystickModeThread.isAlive()) {
                     Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl: ", " is alive...");
                 }
-                joystickDataAcquisitionThread = null;
+                manualJoystickModeThread = null;
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl->StopThreadException: ", String.valueOf(e));
             }
         }
+        if (controlMode.equals(context.getResources().getString(R.string.control_mode_auto))) {
+            try {
+                DataSet.isRunning = false;
+                customEventExecutorThread = null;
+
+                loopHandler.getLooper().quit();
+            } catch (Exception e) {
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->AutoControl->StopHandlerException: ", String.valueOf(e));
+            }
+            // Stop thread
+            try {
+                while (automaticModeThread.isAlive()) {
+                    Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->AutoControl: ", " is alive...");
+                }
+                automaticModeThread = null;
+            } catch (Exception e) {
+                Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->AutoControl->StopThreadException: ", String.valueOf(e));
+            }
+        }
+
     }
 
-    public class SensorDataAcquisitionThread extends Thread {
+    public class ManualSensorModeThread extends Thread {
 
         public SensorListener sensorListener = new SensorListener();
 
@@ -134,6 +165,8 @@ public class ControlDataAcquisition {
             }
 
             public void onSensorChanged(SensorEvent sensorEvent) {
+
+
 
                 if (listenToSensor) {
                     if (sensorEvent.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
@@ -182,8 +215,8 @@ public class ControlDataAcquisition {
 
                         msg1.setData(bundle);
                         msg2.setData(bundle);
-                        if (DataSet.controlDataAcquisition.sensorDataAcquisitionThread != null) {
-                            if (DataSet.controlDataAcquisition.sensorDataAcquisitionThread.isAlive()) {
+                        if (DataSet.controlDataAcquisition.manualSensorModeThread != null) {
+                            if (DataSet.controlDataAcquisition.manualSensorModeThread.isAlive()) {
                                 DataSet.handlerForPublishingData.sendMessage(msg1);
                                 DataSet.handlerForVisualization.sendMessage(msg2);
                             }
@@ -198,12 +231,12 @@ public class ControlDataAcquisition {
         }
     }
 
-    public class JoystickDataAcquisitionThread extends Thread {
+    public class ManualJoystickModeThread extends Thread {
 
         public void run() {
             // Start joystick executor thread
-            joystickEventExecutorThread = new JoystickEventExecutor(context);
-            joystickEventExecutorThread.start();
+            customEventExecutorThread = new CustomEventExecutor(context);
+            customEventExecutorThread.start();
 
             try {
                 Looper.prepare();
@@ -227,10 +260,10 @@ public class ControlDataAcquisition {
                         }
                     }
                 };
-                JoystickEventExecutor joystickEventExecutor = new JoystickEventExecutor(context);
-                joystickEventExecutor.setJoystickEventListener(new JoystickEventExecutor.JoystickEventListener() {
+                CustomEventExecutor customEventExecutor = new CustomEventExecutor(context);
+                customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
                     @Override
-                    public void joystickEvent() {
+                    public void customEvent() {
                         // Send sensor data to robot
                         Bundle dataBundle = new Bundle();
                         Message msg1 = new Message();
@@ -245,11 +278,48 @@ public class ControlDataAcquisition {
                         // !!!!!!!!!!!!!!!!
                         // THIS CAN BE REMOVED!!!!!!
                         // !!!!!!!!!!!!!!!!
-                        if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread != null) {
-                            if (DataSet.controlDataAcquisition.joystickDataAcquisitionThread.isAlive()) {
+                        if (DataSet.controlDataAcquisition.manualJoystickModeThread != null) {
+                            if (DataSet.controlDataAcquisition.manualJoystickModeThread.isAlive()) {
                                 DataSet.handlerForPublishingData.sendMessage(msg1);
                             }
                         }
+                    }
+                });
+
+                Looper.loop();
+            } catch (Exception e) {
+                Log.d("ControlDataAcquisition->JoystickDataAcquisitionThread->Run->LoopException: ", e.toString());
+            }
+        }
+    }
+
+    public class AutomaticModeThread extends Thread {
+
+        public void run() {
+            // Start joystick executor thread
+            customEventExecutorThread = new CustomEventExecutor(context);
+            customEventExecutorThread.start();
+
+            try {
+                Looper.prepare();
+                // Handler to cancel the message loop
+                loopHandler = new Handler();
+
+
+                CustomEventExecutor customEventExecutor = new CustomEventExecutor(context);
+                customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
+                    @Override
+                    public void customEvent() {
+                        // Send sensor data to robot
+                        Bundle dataBundle = new Bundle();
+                        Message msg1 = new Message();
+
+                        buttonData[DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal()] = 1;
+
+                        dataBundle.putIntArray(context.getResources().getString(R.string.button_state_array), buttonData);
+                        msg1.setData(dataBundle);
+                        Log.d("@customEvent", "buttonData[1] = " + buttonData[DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal()]);
+                        DataSet.handlerForPublishingData.sendMessage(msg1);
                     }
                 });
 
