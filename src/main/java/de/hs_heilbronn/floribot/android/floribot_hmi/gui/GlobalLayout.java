@@ -13,7 +13,10 @@ import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 
@@ -24,8 +27,10 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
  */
 public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
+    private View currentView;
+    private  MainActivity mainActivity;
     private SharedPreferences sharedPreferences;
-    private final Context context;
+    private  Context context;
 
     private Thread thread;
     private Handler loopHandler1;
@@ -39,11 +44,22 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
     private float svOffsetFactorTopBeam, svOffsetFactorLeftBeam;
 
+/*
     public GlobalLayout(Context context, SurfaceHolder holder) {
         super(context);
 
         this.context = context;
         this.holder = holder;
+        thread = null;
+
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+    }
+*/
+
+    public GlobalLayout(Context context) {
+        super(context);
+        this.context = context;
+
         thread = null;
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
@@ -182,7 +198,14 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         thread = null;
     }
 
-    public void resume(Bundle bundle) {
+    public void setGlobalLayout(Bundle bundle, SurfaceView surface) {
+        // Stop old thread
+        pause();
+
+        // Set holder
+        surface.setZOrderOnTop(false);
+        holder = surface.getHolder();
+
         // Load color from settings
         DataSet.ThemeColor[] themeColors = DataSet.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;

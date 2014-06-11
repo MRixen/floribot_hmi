@@ -13,6 +13,7 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -24,10 +25,14 @@ import java.net.URISyntaxException;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
 
 import static android.os.Process.myPid;
 
 public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
+
+    private GlobalLayout globalLayout;
     private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
     private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
     private Button buttonConnect;
@@ -37,13 +42,13 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     private PowerManager powerManager;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
-    //private SharedPreferences sharedPreferences;
 
-    //private DataSet dataSet;
+    private SurfaceView surface;
     private Handler handler;
     private ProgressDialog progressDialog;
 
     public static Intent nodeExecutorService;
+    private SharedPreferences sharedPreferences;
 
     private ServiceConnection mConnection = new ServiceConnection() {
         //Class for interacting with the main interface of the service.
@@ -56,7 +61,9 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
             // unexpectedly disconnected -- that is, its process crashed.
         }
     };
-    private Bundle surfaceDataBundle;
+    private DataSet dataSet;
+    private DataSet.ThemeColor[] themeColors;
+    private int currentTheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,18 +87,26 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
 
-        //sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        //dataSet = new DataSet(this);
+        surface = (SurfaceView) findViewById(R.id.surface_main);
+        globalLayout = new GlobalLayout(this);
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
+        dataSet = getDataSet();
+        themeColors = getThemeColors();
+        currentTheme = getCurrentTheme();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        sharedPreferences = getSharedPreferences();
+
         loadPreferences();
         // Set color for text
-
         editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         editTextTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
@@ -103,9 +118,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
 
         // Set surface for main activity
-        setGlobalLayout(R.id.surface_main);
-        surfaceDataBundle = dataSet.SurfaceDataMain();
-        setSurfaceView(surfaceDataBundle);
+        globalLayout.setGlobalLayout(dataSet.SurfaceDataMain(), surface);
     }
 
     @Override
@@ -310,7 +323,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         editor.putString(getResources().getString(R.string.shared_pref_master), masterId);
         editor.putString(getResources().getString(R.string.shared_pref_topic_publisher), topicPublisher);
         editor.putString(getResources().getString(R.string.shared_pref_topic_subscriber), topicSubscriber);
-        editor.putInt("theme", current_theme);
+        editor.putInt("theme", currentTheme);
         editor.commit();
     }
 
@@ -322,9 +335,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
     @Override
     public void themeCallback(int current_theme) {
-        this.current_theme = current_theme;
+        this.currentTheme = current_theme;
         savePreferences();
-        globalLayout.pause();
-        setSurfaceView(surfaceDataBundle);
+        globalLayout.setGlobalLayout(dataSet.SurfaceDataMain(), surface);
     }
 }

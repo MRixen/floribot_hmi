@@ -12,6 +12,7 @@ import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.CustomEventExecutor;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 import sensor_msgs.Joy;
 
@@ -25,6 +26,8 @@ public class Publisher extends AbstractNodeMain {
     public Thread t;
     private Handler loopHandler = null;
     private org.ros.node.topic.Publisher<Joy> publisher;
+    private CustomEventExecutor customEventExecutor;
+
 
     public Publisher(Context context, String topicPublisher) {
         this.context = context;
@@ -107,4 +110,5 @@ public class Publisher extends AbstractNodeMain {
             }
         }
     }
+
 }

@@ -12,8 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -24,7 +22,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
 
 /**
  * Created by mr on 12.05.14.
@@ -33,14 +30,13 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
  */
 public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemClickListener {
 
-    public GlobalLayout globalLayout;
-    public SharedPreferences sharedPreferences;
-    public DataSet dataSet;
-    public DataSet.ThemeColor[] themeColors;
+    private SharedPreferences sharedPreferences;
+    private DataSet dataSet;
+    private DataSet.ThemeColor[] themeColors;
     private Dialog dialog;
     private ThemeManager themeManager;
     private Window dialogWindow;
-    public int current_theme;
+    private int currentTheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,7 +57,7 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
             Log.i("@BaseClass->onCreate", "Should include interface for theme management.");
         }
 
-        current_theme = sharedPreferences.getInt("theme", 0);
+        currentTheme = sharedPreferences.getInt("theme", 0);
         // Set dialog layout and style
         dialog = new Dialog(this, R.style.dialog_style);
         dialogWindow = dialog.getWindow();
@@ -69,6 +65,18 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         setDialogTitleStyle();
 
 
+    }
+
+    public DataSet.ThemeColor[] getThemeColors(){
+        return themeColors;
+    }
+
+    public DataSet getDataSet(){
+        return dataSet;
+    }
+
+    public int getCurrentTheme(){
+        return currentTheme;
     }
 
     @Override
@@ -112,13 +120,13 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         if(layout == R.layout.layout_property){
             Spinner spinner_one = (Spinner) dialog.findViewById(R.id.spinner_one);
             spinner_one.setAdapter(new SpinnerAdapter(this, getResources().getStringArray(R.array.theme_items)));
-            spinner_one.setSelection(current_theme);
+            spinner_one.setSelection(currentTheme);
 
             spinner_one.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                    current_theme = position;
-                    themeManager.themeCallback(current_theme);
+                    currentTheme = position;
+                    themeManager.themeCallback(currentTheme);
                     setDialogTitleStyle();
                 }
 
@@ -190,16 +198,7 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         }
     }
 
-
-
-    public void setGlobalLayout(int layout) {
-        SurfaceView surface = (SurfaceView) findViewById(layout);
-        surface.setZOrderOnTop(false);
-        SurfaceHolder holder = surface.getHolder();
-        globalLayout = new GlobalLayout(this, holder);
-    }
-
-    public void setSurfaceView(Bundle bundle){
-        globalLayout.resume(bundle);
+    public SharedPreferences getSharedPreferences(){
+        return sharedPreferences;
     }
 }

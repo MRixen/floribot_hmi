@@ -1,11 +1,13 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi;
 
 import android.app.Dialog;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
@@ -21,6 +23,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAc
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
 import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
 import sensor_msgs.JoyFeedback;
 
@@ -29,7 +32,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
     private ToggleButton button_manual, button_auto, button_sensor_calibration;
 
-    //private DataSet dataSet;
+    private GlobalLayout globalLayout;
     private LocalLayout localLayout;
     private RelativeLayout relativeLayout;
 
@@ -37,35 +40,46 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     private int speed;
     private SeekBar seekBar_speed;
 
+    private SurfaceView surface;
+
+    private SharedPreferences sharedPreferences;
+    private DataSet dataSet;
+    private DataSet.ThemeColor[] themeColors;
+    private ControlDataAcquisition controlDataAcquisition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_execute);
 
-        DataSet.controlDataAcquisition = new ControlDataAcquisition(getApplicationContext());
-
-
         button_manual = (ToggleButton) findViewById(R.id.button_manual);
         button_auto = (ToggleButton) findViewById(R.id.button_auto);
         button_sensor_calibration = (ToggleButton) findViewById(R.id.button_sensor_calibration);
 
         DataSet.subscriberInterface = this;
+
+        surface = (SurfaceView) findViewById(R.id.surface_execute);
+
+        globalLayout = new GlobalLayout(this);
+        localLayout = new LocalLayout(this);
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        controlDataAcquisition = new ControlDataAcquisition(getApplicationContext());
         nodeExecutorService = new NodeExecutorService();
+        sharedPreferences = getSharedPreferences();
+        dataSet = getDataSet();
+        themeColors = getThemeColors();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         // Set surface for execute activity
-        setGlobalLayout(R.id.surface_execute);
-        Bundle surfaceDataBundle = dataSet.SurfaceDataExecute();
-        setSurfaceView(surfaceDataBundle);
+        globalLayout.setGlobalLayout(dataSet.SurfaceDataExecute(), surface);
     }
 
     @Override
@@ -84,24 +98,24 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             case(R.id.button_manual):
                 // Disable automatic drive mode
                 button_auto.setChecked(false);
-                DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+               controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                 if( ((ToggleButton) v).isChecked() ) {
                     // Show joystick buttons to control with
-                    setLocalLayout(R.layout.layout_joystick_button);
+                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button);
                     // Enable button for sensor drive mode
                     button_sensor_calibration.setEnabled(true);
                     // Start publisher thread
                     DataSet.publisher.startPublisherThread();
                     DataSet.subscriber.startSubscriberThread();
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                   controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                 }
                 else{
                     button_sensor_calibration.setEnabled(false);
                     button_sensor_calibration.setChecked(false);
-                    setLocalLayout(0);
+                    localLayout.setLocalLayout(R.id.fragment_container, 0);
                     // Stop sensor acquisition thread if is still alive
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
 
                 }
                 break;
@@ -111,34 +125,34 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 button_sensor_calibration.setEnabled(false);
                 button_sensor_calibration.setChecked(false);
                 // Hide drive control buttons
-                if(localLayout != null) setLocalLayout(0);
+                if(localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0);
                 if( ((ToggleButton) v).isChecked() ) {
                     // Stop acquisition threads if they are still alive
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                     // Start publisher thread
                     DataSet.publisher.startPublisherThread();
                     DataSet.subscriber.startSubscriberThread();
                     // Start automatic mode thread
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+                   controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                 }
             else{
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
             }
             break;
             case(R.id.button_sensor_calibration):
                 // This mode is only available in manual mode
                 if( ((ToggleButton) v).isChecked() ) {
                     // Load sensor drive button
-                    setLocalLayout(R.layout.layout_joystick_button);
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button);
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                     customDialog(getResources().getString(R.string.dialog_message_start_calibration));
                 }
                 else{
-                    setLocalLayout(R.layout.layout_joystick_button);
+                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button);
                     // Load joystick buttons
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                   controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
                 }
                 break;
             case(R.id.button_exit):
@@ -239,13 +253,13 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
         msg.setData(bundle);
 
-        if (DataSet.controlDataAcquisition.manualSensorModeThread != null) {
-            if (DataSet.controlDataAcquisition.manualSensorModeThread.isAlive()) {
+        if (controlDataAcquisition.manualSensorModeThread != null) {
+            if (controlDataAcquisition.manualSensorModeThread.isAlive()) {
                 DataSet.handlerForControlDataAcquisition.sendMessage(msg);
             }
         }
-        else if (DataSet.controlDataAcquisition.manualJoystickModeThread != null) {
-            if (DataSet.controlDataAcquisition.manualJoystickModeThread.isAlive()) {
+        else if (controlDataAcquisition.manualJoystickModeThread != null) {
+            if (controlDataAcquisition.manualJoystickModeThread.isAlive()) {
                 DataSet.handlerForControlDataAcquisition.sendMessage(msg);
             }
         }
@@ -285,17 +299,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     }
 
 
-
-    private void setLocalLayout(int local_layout_resource) {
-        if (local_layout_resource != 0) {
-            localLayout = new LocalLayout(local_layout_resource);
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, localLayout).commit();
-        }
-        else{
-            getSupportFragmentManager().beginTransaction().hide(localLayout).commit();
-        }
-    }
-
     public void customDialog(final String message) {
         final Dialog dialog = new Dialog(this, R.style.dialog_style);
         dialog.setContentView(R.layout.layout_dialog_publisher_exit);
@@ -327,9 +330,9 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 // Show dialog to disconnect publisher and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_close_connection))) {
                     // Stop acquisition threads if they are still alive
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
-                    DataSet.controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_joystick));
+                   controlDataAcquisition.stopControlDataAcquisitionThread(getResources().getString(R.string.control_mode_auto));
                     // Stop publisher thread
                     DataSet.publisher.stopPublisherThread();
                     DataSet.subscriber.stopSubscriberThread();
@@ -342,7 +345,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                    DataSet.controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+                   controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
                     dialog.dismiss();
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                     seekBar_speed.setVisibility(View.INVISIBLE);

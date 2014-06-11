@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.ControlDataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Publisher;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Subscriber;
 import sensor_msgs.JoyFeedback;
@@ -23,20 +22,15 @@ import sensor_msgs.JoyFeedback;
 public class DataSet extends Application {
 
     private static Context context;
-
-    public static ControlDataAcquisition controlDataAcquisition;
-    public static CustomEventExecutor.CustomEventListener customEventListener = null;
-
-    public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
-    public static Publisher publisher;
-
-    public static boolean isRunning;
-    public static Subscriber subscriber;
-    public static SubscriberInterface subscriberInterface;
     private int arrayOffset, pxWidth, pxHeight;
     private float factorHeight, factorWidth, bottomBarWidthInPx, offsetToBottomBarExtensionInPx, bottomBarHeightInPx;
     float[] pointsArray;
 
+
+    public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
+    public static Publisher publisher;
+    public static Subscriber subscriber;
+    public static SubscriberInterface subscriberInterface;
 
     public DataSet(Context context) {
         this.context = context;
@@ -57,6 +51,8 @@ public class DataSet extends Application {
     }
 
     public static enum ThemeColor{
+
+
         // Background color, foreground color, text color
         BlueLight(context.getResources().getColor(R.color.ModernWhite), context.getResources().getColor(R.color.ModernBlue), context.getResources().getColor(R.color.ModernWhite)),
         GreenLight(context.getResources().getColor(R.color.White), context.getResources().getColor(R.color.ModernGreen), context.getResources().getColor(R.color.White));
@@ -278,7 +274,7 @@ public class DataSet extends Application {
         arrayOffset += array.length+1;
     }
 
-    // INterface for communication between subscriber and main thread
+    // Interface for communication between subscriber and main thread
     public interface SubscriberInterface {
         public void subscriberCallback(List<JoyFeedback> message);
     }

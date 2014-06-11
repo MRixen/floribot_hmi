@@ -39,7 +39,7 @@ public class Subscriber extends AbstractNodeMain{
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        subscriber = connectedNode.newSubscriber(topicSubscriber, std_msgs.String._TYPE);
+        subscriber = connectedNode.newSubscriber(topicSubscriber, sensor_msgs.JoyFeedbackArray._TYPE);
     }
 
     public void startSubscriberThread() {

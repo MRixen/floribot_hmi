@@ -24,8 +24,10 @@ public class ControlDataAcquisition {
 
     private final Context context;
 
-    public Thread manualSensorModeThread, manualJoystickModeThread, customEventExecutorThread, automaticModeThread;
+    public Thread manualSensorModeThread, manualJoystickModeThread, automaticModeThread;
     private Handler loopHandler;
+
+    private CustomEventExecutor customEventExecutor;
 
     private SensorManager sensorManager;
 
@@ -54,7 +56,6 @@ public class ControlDataAcquisition {
             }
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_joystick))) {
-            DataSet.isRunning = true;
             buttonData = new int[10];
             // Start thread, if no thread is alive
             if (manualJoystickModeThread == null) {
@@ -64,7 +65,6 @@ public class ControlDataAcquisition {
             }
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_auto))) {
-            DataSet.isRunning = true;
             buttonData = new int[10];
             // Start thread, if no thread is alive
             if (automaticModeThread == null) {
@@ -99,9 +99,8 @@ public class ControlDataAcquisition {
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_joystick))) {
             try {
-                DataSet.isRunning = false;
-                customEventExecutorThread = null;
-
+                customEventExecutor.setFlag(false);
+                customEventExecutor = null;
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl->StopHandlerException: ", String.valueOf(e));
@@ -118,9 +117,8 @@ public class ControlDataAcquisition {
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_auto))) {
             try {
-                DataSet.isRunning = false;
-                customEventExecutorThread = null;
-
+                customEventExecutor.setFlag(false);
+                customEventExecutor = null;
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->AutoControl->StopHandlerException: ", String.valueOf(e));
@@ -215,12 +213,9 @@ public class ControlDataAcquisition {
 
                         msg1.setData(bundle);
                         msg2.setData(bundle);
-                        if (DataSet.controlDataAcquisition.manualSensorModeThread != null) {
-                            if (DataSet.controlDataAcquisition.manualSensorModeThread.isAlive()) {
-                                DataSet.handlerForPublishingData.sendMessage(msg1);
-                                DataSet.handlerForVisualization.sendMessage(msg2);
-                            }
-                        }
+
+                        DataSet.handlerForPublishingData.sendMessage(msg1);
+                        DataSet.handlerForVisualization.sendMessage(msg2);
                     }
                 } else {
                     Log.d("@ControlDataAcquisition->SensorDataAcquisitionThread->onSensorChanged: ", "Unregister sensor listener.");
@@ -235,8 +230,9 @@ public class ControlDataAcquisition {
 
         public void run() {
             // Start joystick executor thread
-            customEventExecutorThread = new CustomEventExecutor(context);
-            customEventExecutorThread.start();
+            customEventExecutor = new CustomEventExecutor(context);
+            customEventExecutor.setFlag(true);
+            customEventExecutor.start();
 
             try {
                 Looper.prepare();
@@ -260,7 +256,6 @@ public class ControlDataAcquisition {
                         }
                     }
                 };
-                CustomEventExecutor customEventExecutor = new CustomEventExecutor(context);
                 customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
                     @Override
                     public void customEvent() {
@@ -275,14 +270,10 @@ public class ControlDataAcquisition {
                         msg1.setData(dataBundle);
                         msg2.setData(dataBundle);
 
-                        // !!!!!!!!!!!!!!!!
-                        // THIS CAN BE REMOVED!!!!!!
-                        // !!!!!!!!!!!!!!!!
-                        if (DataSet.controlDataAcquisition.manualJoystickModeThread != null) {
-                            if (DataSet.controlDataAcquisition.manualJoystickModeThread.isAlive()) {
-                                DataSet.handlerForPublishingData.sendMessage(msg1);
-                            }
-                        }
+
+                        DataSet.handlerForPublishingData.sendMessage(msg1);
+
+
                     }
                 });
 
@@ -297,16 +288,14 @@ public class ControlDataAcquisition {
 
         public void run() {
             // Start joystick executor thread
-            customEventExecutorThread = new CustomEventExecutor(context);
-            customEventExecutorThread.start();
+            customEventExecutor = new CustomEventExecutor(context);
+            customEventExecutor.setFlag(true);
+            customEventExecutor.start();
 
             try {
                 Looper.prepare();
                 // Handler to cancel the message loop
                 loopHandler = new Handler();
-
-
-                CustomEventExecutor customEventExecutor = new CustomEventExecutor(context);
                 customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
                     @Override
                     public void customEvent() {

@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity;
+
 /**
  * Created by mr on 22.05.14.
  *
@@ -14,14 +16,26 @@ import android.view.ViewGroup;
  */
 public class LocalLayout extends Fragment {
 
-    private final int layout;
+    private ExecuteActivity context;
     LocalLayoutManager layoutManagerInterface;
+    private int localLayoutResource;
 
-    public LocalLayout(int layout) {
-        this.layout = layout;
+    public LocalLayout(ExecuteActivity context) {
+        this.context = context;
     }
 
+    public void setLocalLayout(int frameLayout, int localLayoutResource) {
+        this.localLayoutResource = localLayoutResource;
+        if (this.localLayoutResource != 0) {
+            context.getSupportFragmentManager().beginTransaction().replace(frameLayout, this).commit();
+            if(layoutManagerInterface != null) layoutManagerInterface.localLayoutCallback();
+        }
+        else{
+            context.getSupportFragmentManager().beginTransaction().remove(this).commit();
+            layoutManagerInterface = null;
+        }
 
+    }
 
     public interface LocalLayoutManager{
         public void localLayoutCallback();
@@ -39,7 +53,7 @@ public class LocalLayout extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        return inflater.inflate(layout, container, false);
+        return inflater.inflate(localLayoutResource, container, false);
     }
 
     @Override
