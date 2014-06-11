@@ -42,7 +42,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
     private int backgroundColor, foregroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
-    private float svOffsetFactorTopBeam, svOffsetFactorLeftBeam;
+    private float svHalfSizeTopBeam, svHalSizeLeftBeam;
 
 /*
     public GlobalLayout(Context context, SurfaceHolder holder) {
@@ -112,8 +112,8 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
         holder.setFormat(PixelFormat.TRANSPARENT);
 
-        svOffsetFactorTopBeam = ((svRectArray[2] - svRectArray[0]) / 2);
-        svOffsetFactorLeftBeam = ((svRectArray[7] - svRectArray[5]) / 2);
+        svHalfSizeTopBeam = ((svRectArray[2] - svRectArray[0]) / 2);
+        svHalSizeLeftBeam = ((svRectArray[7] - svRectArray[5]) / 2);
     }
 
     @Override
@@ -170,16 +170,17 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         for(int i=0;i<= glPathArray.length-1;i++){
             canvas.drawPath(glPathArray[i], glPaint);
         }
+        float factor = svHalfSizeTopBeam/10;
 
         // Draw sensor visualization for top beam
         canvas.drawRect(svRectArray[0], svRectArray[1], svRectArray[2], svRectArray[3], svbPaint); // For grey beam background
-        canvas.drawRect(svRectArray[0] + svOffsetFactorTopBeam - rotation*20, svRectArray[1], svRectArray[2] - svOffsetFactorTopBeam, svRectArray[3], svPaint);
+        canvas.drawRect(svRectArray[0] + svHalfSizeTopBeam - rotation*factor, svRectArray[1], svRectArray[2] - svHalfSizeTopBeam, svRectArray[3], svPaint);
         // Draw sensor visualization for left beam
         canvas.drawRect(svRectArray[4], svRectArray[5], svRectArray[6], svRectArray[7], svbPaint); // For grey beam background
-        canvas.drawRect(svRectArray[4], svRectArray[5] + svOffsetFactorLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svOffsetFactorLeftBeam, svPaint);
+        canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);
         // -------------------------------------
         // ONLY FOR DEBUG !!!
-        // -> For camera preview
+        // -> For pseudo camera preview
         // -------------------------------------
         canvas.drawRect(svRectArray[8], svRectArray[9], svRectArray[10], svRectArray[11], svPaintDebug);
         // -------------------------------------

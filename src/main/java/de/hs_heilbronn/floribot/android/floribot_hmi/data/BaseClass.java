@@ -4,7 +4,9 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.PopupMenu;
@@ -37,6 +39,9 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
     private ThemeManager themeManager;
     private Window dialogWindow;
     private int currentTheme;
+    private WifiManager.WifiLock wifiLock;
+    private PowerManager.WakeLock wakeLock;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +50,6 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         // Initialize some dta stuff (e.g. theme color object, etc.)
-
         dataSet = new DataSet(this);
         themeColors = DataSet.ThemeColor.values();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -63,8 +67,6 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         dialogWindow = dialog.getWindow();
 
         setDialogTitleStyle();
-
-
     }
 
     public DataSet.ThemeColor[] getThemeColors(){
@@ -200,5 +202,21 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
 
     public SharedPreferences getSharedPreferences(){
         return sharedPreferences;
+    }
+
+    public void setWifiLock(WifiManager.WifiLock wifiLock){
+        this.wifiLock = wifiLock;
+    }
+
+    public void setWakeLock(PowerManager.WakeLock wakeLock){
+        this.wakeLock = wakeLock;
+    }
+
+    public PowerManager.WakeLock getWakeLock(){
+        return wakeLock;
+    }
+
+    public WifiManager.WifiLock getWifiLock(){
+        return wifiLock;
     }
 }

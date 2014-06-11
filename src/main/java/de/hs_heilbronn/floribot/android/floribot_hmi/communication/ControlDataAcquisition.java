@@ -182,7 +182,7 @@ public class ControlDataAcquisition {
                         sensorDataRot[1] = 0;
                         sensorDataRot[2] = 0;
                         // Transform sensor vector with rotation matrix
-                        for (int i = 0; i < sensorData.length; i++) {
+                        for (int i = sensorData.length-1; i >= 0; i--) {
                             for (int j = 0; j < sensorData.length; j++) {
                                 sensorDataRot[i] += Rot_y[i][j] * sensorData[j];
                                 //Log.d("Rot_y[" + i + "][" + j + "] = ", String.valueOf(Rot_y[i][j]));
@@ -195,6 +195,9 @@ public class ControlDataAcquisition {
                                 Bundle bundle = msg.getData();
                                 if (bundle != null) {
                                     buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
+                                    if (buttonData != null) {
+                                        buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] = 1;
+                                    }
                                 }
                             }
                         };
@@ -245,6 +248,10 @@ public class ControlDataAcquisition {
                         Bundle bundle = msg.getData();
                         if (bundle != null) {
                             buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
+                            // Set button id for manual mode to true
+                            if (buttonData != null) {
+                                buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] = 1;
+                            }
                             float speed = (float) bundle.getInt(context.getResources().getString(R.string.speed));
                             // Check if actual speed is different from last to avoid for loop execution
                             if (speed != axesData[0]) {

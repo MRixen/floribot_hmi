@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--PARAMETER FOR LAYOUT ON MAIN ACTIVITY-->
+    <!--Parameter for middle bar-->
+    <dimen name="textViewMarginLeft">25dp</dimen>
+    <dimen name="editTextWidth">270dp</dimen>
+    <dimen name="textSize">14sp</dimen>
+    <dimen name="beamMarginTop">65dp</dimen>
+    <dimen name="beamWidth">450dp</dimen>
+    <dimen name="beamHeight">40dp</dimen>
+    <dimen name="beamOffset">20dp</dimen>
+    <!--Parameter for buttons in bottom bar-->
+    <dimen name="connectButtonWidth">90dp</dimen>
+    <!--Parameter for connection establishment-->
+    <integer name="deadTimeWakeLockWifi">20</integer> <!--unit: second-->
+    <integer name="deadTimeEnableWifi">20</integer>
+    <integer name="deadTimeWakeLockPower">10</integer>
+    <integer name="deadTimeSurfaceValidation">20</integer>
+    <integer name="custom_event_delay">200</integer>
+    <integer name="DIVIDER">1000000000</integer>
+    <!-- -->
+
+    <!--PARAMETER FOR LAYOUT ON EXECUTE ACTIVITY-->
+    <!--Parameter for sensor visualization-->
+    <integer name="svBorderMarginInDp">20</integer>
+    <integer name="svBeamWidthInDp">30</integer>
+    <integer name="svOffsetInDp">20</integer>
+    <!--Parameter for bottom bar extension-->
+    <integer name="offsetToBottomBarExtensionInDp">2</integer>
+    <integer name="bottomBarExtensionWidthInDp">400</integer>
+    <!-- For pseudo camera preview -->
+    <integer name="cameraViewWidthInPx">500</integer>
+    <integer name="cameraViewHeightInPx">300</integer>
+    <!-- -->
+
+    <!--PARAMETER FOR GLOBAL LAYOUT-->
+    <integer name="topBarHeightInDp">30</integer>
+    <integer name="bottomBarHeightInDp">55</integer>
+    <integer name="bottomBarWidthInDp">105</integer>
+    <!--Parameter for dialog box-->
+    <dimen name="dialogTitleTextSize">20sp</dimen>
+    <color name="dialogTextColor">#000000</color>
+    <!--Parameter for spinner-->
+    <dimen name="dropDownWidth">200dp</dimen>
+
+    <!--PARAMETER FOR LOCAL LAYOUT-->
+    <dimen name="seekBarMarginTop">60dp</dimen>
+    <!-- -->
+
+</resources>

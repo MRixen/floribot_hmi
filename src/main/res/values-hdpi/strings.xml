@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Parameter for main activity-->
+    <string name="error_message_init_publisher">errorMessage</string>
+    <string name="state_init_publisher">state</string>
+
+    <!--Parameter for global preferences (load at app start)-->
+    <string name="shared_pref_master">masterId</string>
+    <string name="shared_pref_topic_publisher">topicPublisher</string>
+    <string name="shared_pref_topic_subscriber">topicSubscriber</string>
+
+    <!--Parameter for shared preferences (between activities)-->
+    <string name="shared_pref_connection_data">connectionData</string>
+
+    <!--Parameter for execute activity-->
+    <string name="control_mode_manual_joystick">ManualJoystickMode</string>
+    <string name="control_mode_manual_sensor">ManualSensorMode</string>
+    <string name="control_mode_auto">AutomaticMode</string>
+    <string name="button_state_array">buttonData</string>
+    <string name="axes_state_array">axesData</string>
+
+    <!--Parameter for layout management-->
+    <string name="svArray">svRectArray</string>
+    <string name="glPointArray">pointsArray</string>
+    <string name="glPathQuantity">pathQuantity</string>
+    <string name="speed">speed</string>
+
+</resources>

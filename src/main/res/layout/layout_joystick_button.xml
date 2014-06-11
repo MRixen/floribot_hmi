@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:progress="0"
         android:max="10"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="@dimen/seekBarMarginTop"
         android:secondaryProgress="0"
         android:progressDrawable="@drawable/seekbar_progress"
         android:thumb="@drawable/seekbar_thumb"

@@ -3,8 +3,10 @@ package de.hs_heilbronn.floribot.android.floribot_hmi;
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -366,6 +368,25 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) { }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Release wifi lock and display wake lock
+        PowerManager.WakeLock wakeLock = getWakeLock();
+        if(wakeLock != null) {
+            // Turn off power management
+            if (wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        }
+        WifiManager.WifiLock wifiLock = getWifiLock();
+        if(wifiLock != null) {
+            // Turn off wifi management
+            if (wifiLock.isHeld()) {
+                wifiLock.release();
+            }
+        }
+    }
 
     @Override
     public void subscriberCallback(List<JoyFeedback> messageList) {

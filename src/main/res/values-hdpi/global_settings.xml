@@ -4,10 +4,10 @@
     <!--PARAMETER FOR LAYOUT ON MAIN ACTIVITY-->
     <!--Parameter for middle bar-->
     <dimen name="textViewMarginLeft">20dp</dimen>
-    <dimen name="editTextWidth">210dp</dimen>
+    <dimen name="editTextWidth">230dp</dimen>
     <dimen name="textSize">14sp</dimen>
     <dimen name="beamMarginTop">65dp</dimen>
-    <dimen name="beamWidth">360dp</dimen>
+    <dimen name="beamWidth">400dp</dimen>
     <dimen name="beamHeight">40dp</dimen>
     <dimen name="beamOffset">15dp</dimen>
     <dimen name="connectButtonWidth">70dp</dimen>

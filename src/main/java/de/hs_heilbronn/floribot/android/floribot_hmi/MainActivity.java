@@ -132,18 +132,6 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     @Override
     protected void onStop() {
         super.onStop();
-        if(wakeLock != null) {
-            // Turn off power management
-            if (wakeLock.isHeld()) {
-                wakeLock.release();
-            }
-        }
-        if(wifiLock != null) {
-            // Turn off wifi management
-            if (wifiLock.isHeld()) {
-                wifiLock.release();
-            }
-        }
     }
 
     @Override
@@ -226,6 +214,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     powerManager = (PowerManager) getSystemService(POWER_SERVICE);
                     wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
                     wakeLock.acquire();
+                    setWakeLock(wakeLock);
 
                     long startTime = System.nanoTime();
                     while (!wakeLock.isHeld()) {
@@ -280,6 +269,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
                     wifiLock = wifiManager.createWifiLock(wifiLockType, TAG);
                     wifiLock.acquire();
+                    // Set wifiLock that other classes can release
+                    setWifiLock(wifiLock);
 
                 long startTime = System.nanoTime();
                 while (!wifiLock.isHeld()) {
