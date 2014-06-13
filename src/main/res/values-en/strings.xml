@@ -93,7 +93,6 @@
     <string name="title_connect_button_main">Connect</string>
     <string name="toast_enter_master">Please Enter master address!</string>
     <string name="toast_enter_topic">Please Enter topic address!</string>
-    <string name="error_message_init_publisher">errorMessage</string>
     <string name="state_init_publisher">state</string>
     <string name="dialog_init_publisher">Wait until connection is established.</string>
     <string name="connection_establishment_error_uri_syntax">Invalid master ID!</string>
@@ -104,9 +103,9 @@
 
 
     <!--Parameter for global preferences (load at app start)-->
-    <string name="shared_pref_master">masterId</string>
-    <string name="shared_pref_topic_publisher">topicPublisher</string>
-    <string name="shared_pref_topic_subscriber">topicSubscriber</string>
+    <string name="masterId">masterId</string>
+    <string name="topicPublisher">topicPublisher</string>
+    <string name="topicSubscriber">topicSubscriber</string>
 
     <!--Parameter for shared preferences (between activities)-->
     <string name="shared_pref_connection_data">connectionData</string>

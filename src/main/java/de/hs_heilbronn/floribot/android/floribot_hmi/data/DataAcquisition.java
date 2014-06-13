@@ -157,15 +157,20 @@ public class DataAcquisition extends Thread implements SensorEventListener {
             // Rotation matrix around y axes
             double[][] Rot_y = {{Math.cos(alpha), 0, Math.sin(alpha)}, {0, 1, 0}, {-Math.sin(alpha), 0, Math.cos(alpha)}};
 
-            float[] axesData = new float[3];
-
             // Transform sensor vector with rotation matrix
-            for (int i = sensorData.length - 1; i >= 0; i--) {
+            float[] axesData = new float[3];
+            int counter = axesData.length;
+
+            for (int i = 0; i < sensorData.length; i++) {
                 for (int j = 0; j < sensorData.length; j++) {
-                    axesData[i] += Rot_y[i][j] * sensorData[j];
-                    //Log.d("Rot_y[" + i + "][" + j + "] = ", String.valueOf(Rot_y[i][j]));
+                    // Calculate second and third value only
+                    if(i > 0) axesData[counter] += Rot_y[i][j] * sensorData[j];
                 }
+                counter--;
+                Log.d("for", String.valueOf(counter));
             }
+
+
 
             // Send sensor data to robot
             synchronized (object) {

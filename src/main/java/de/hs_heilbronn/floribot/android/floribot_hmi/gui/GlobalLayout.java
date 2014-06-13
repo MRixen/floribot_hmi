@@ -155,7 +155,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         Looper.loop();
     }
 
-    public void drawLayout(float rotation, float translation){
+    public void drawLayout(float translation, float rotation){
         canvas.drawColor(backgroundColor);
         // draw all paths
         for(int i=0;i<= glPathArray.length-1;i++){

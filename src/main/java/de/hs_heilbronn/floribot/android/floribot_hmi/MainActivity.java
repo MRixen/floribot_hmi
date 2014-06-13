@@ -155,30 +155,30 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     handler = new Handler() {
                         public void handleMessage(Message msg) {
                             Bundle stateBundle = msg.getData();
-                            String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_init_publisher));
+                            String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_node_init));
                             Boolean state = stateBundle.getBoolean(getResources().getString(R.string.state_init_publisher));
                             if (state) {
                                 progressDialog.cancel();
                                 Bundle connectionData = new Bundle();
-                                connectionData.putString(getResources().getString(R.string.shared_pref_master), masterId);
-                                connectionData.putString(getResources().getString(R.string.shared_pref_topic_publisher), topicPublisher);
-                                connectionData.putString(getResources().getString(R.string.shared_pref_topic_subscriber), topicSubscriber);
+                                connectionData.putString(getResources().getString(R.string.masterId), masterId);
+                                connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
+                                connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
                                 nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
                                 // Start service
                                 startService(nodeExecutorService);
-                                Log.d("@MainActivity#handleMessage: ", "Start service.");
+                                Log.d("@MainActivity->handleMessage: ", "Start service.");
                                 Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
                                 startActivity(executeActivity);
                                 overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                             } else {
                                 progressDialog.cancel();
                                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
-                                Log.d("@MainActivity#handleMessage: ", "ErrorMessage: " + errorMessage);
+                                Log.d("@MainActivity->handleMessage: ", "ErrorMessage: " + errorMessage);
                             }
                         }
                     };
                     progressDialog.show();
-                    initForPublisher();
+                    nodeInitialization();
                 } else {
                     if(masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0) Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
                     else {
@@ -192,12 +192,12 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         }
     }
 
-    public void initForPublisher() {
+    public void nodeInitialization() {
 
         Thread t = new Thread(){
             @Override
             public void run(){
-                boolean flag = true;
+                boolean resultCode = true;
                 long timeElapsed;
 
                 String TAG = "wakeLockTag";
@@ -206,14 +206,14 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                 try {
                     new URI(masterId);
                 } catch (URISyntaxException e) {
-                    flag = false;
-                    sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_uri_syntax), flag);
+                    resultCode = false;
+                    sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_uri_syntax), resultCode);
                 }
                 //----------------------------------------------
 
                 // Enable display wake lock
-                if(flag) {
-                    Log.d("@MainActivity#initForPublisher: ", "Uri syntax ok.");
+                if(resultCode) {
+                    Log.d("@MainActivity->nodeInitialization: ", "Uri syntax ok.");
 
                     // Control power management
                     powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -225,8 +225,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     while (!wakeLock.isHeld()) {
                         timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
                         if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockPower)) {
-                            flag = false;
-                            sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_display_wake_lock), flag);
+                            resultCode = false;
+                            sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_display_wake_lock), resultCode);
                             break;
                         }
                     }
@@ -234,8 +234,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                 //----------------------------------------------
 
                 // Enable wifi
-                if(flag) {
-                    Log.d("@MainActivity#initForPublisher: ", "Display wake lock ok.");
+                if(resultCode) {
+                    Log.d("@MainActivity->nodeInitialization: ", "Display wake lock ok.");
                     // Check if airplane mode is on
                     if(Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 1) {
                         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -245,22 +245,22 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                         while (!wifiManager.isWifiEnabled()) {
                             timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
                             if (timeElapsed >= getResources().getInteger(R.integer.deadTimeEnableWifi)) {
-                                flag = false;
-                                sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_activation), flag);
+                                resultCode = false;
+                                sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_activation), resultCode);
                                 break;
                             }
                         }
                     }
                     else{
-                        flag = false;
-                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_airplane), flag);
+                        resultCode = false;
+                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_airplane), resultCode);
                     }
                 }
                 //----------------------------------------------
 
                 // Enable wifi lock
-                if(flag) {
-                    Log.d("@MainActivity#initForPublisher: ", "Wifi on ok");
+                if(resultCode) {
+                    Log.d("@MainActivity->nodeInitialization: ", "Wifi on ok");
 
                     // Wifi wake lock
                     int wifiLockType = WifiManager.WIFI_MODE_FULL;
@@ -281,8 +281,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                 while (!wifiLock.isHeld()) {
                     timeElapsed = (System.nanoTime() - startTime) / getResources().getInteger(R.integer.DIVIDER);
                     if (timeElapsed >= getResources().getInteger(R.integer.deadTimeWakeLockWifi)) {
-                        flag = false;
-                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_lock), flag);
+                        resultCode = false;
+                        sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_wifi_lock), resultCode);
                         break;
                     }
                 }
@@ -290,16 +290,16 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                 //----------------------------------------------
 
                 //
-                if(flag) {
-                    Log.d("@MainActivity#initForPublisher: ", "Wifi wake lock ok.");
-                    sendMessageToHandler("Connection establishment successful.", flag);
+                if(resultCode) {
+                    Log.d("@MainActivity->nodeInitialization: ", "Wifi wake lock ok.");
+                    sendMessageToHandler("Connection establishment successful.", resultCode);
                 }
             }
 
             private void sendMessageToHandler(String errorMessage, Boolean state){
                 Bundle bundle = new Bundle();
                 Message msg = new Message();
-                bundle.putString(getResources().getString(R.string.error_message_init_publisher), errorMessage);
+                bundle.putString(getResources().getString(R.string.error_message_node_init), errorMessage);
                 bundle.putBoolean(getResources().getString(R.string.state_init_publisher), state);
                 msg.setData(bundle);
                 handler.sendMessage(msg);
@@ -316,17 +316,17 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
     private void savePreferences() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString(getResources().getString(R.string.shared_pref_master), masterId);
-        editor.putString(getResources().getString(R.string.shared_pref_topic_publisher), topicPublisher);
-        editor.putString(getResources().getString(R.string.shared_pref_topic_subscriber), topicSubscriber);
+        editor.putString(getResources().getString(R.string.masterId), masterId);
+        editor.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
+        editor.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
         editor.putInt("theme", currentTheme);
         editor.commit();
     }
 
     private void loadPreferences(){
-        editTextMasterId.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_master), ""));
-        editTextTopicPublisher.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_topic_publisher), ""));
-        editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.shared_pref_topic_subscriber), ""));
+        editTextMasterId.setText(sharedPreferences.getString(getResources().getString(R.string.masterId), ""));
+        editTextTopicPublisher.setText(sharedPreferences.getString(getResources().getString(R.string.topicPublisher), ""));
+        editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.topicSubscriber), ""));
     }
 
     @Override

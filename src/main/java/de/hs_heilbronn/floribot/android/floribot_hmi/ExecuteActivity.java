@@ -3,10 +3,8 @@ package de.hs_heilbronn.floribot.android.floribot_hmi;
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Message;
-import android.os.PowerManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
@@ -340,9 +338,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                    //controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
                     dialog.dismiss();
                     sendDataToDataAcquisition(-1, 0, 0, -1, true);
-                    //startEvent(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal());
-                    //setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
-                    //seekBar_speed.setVisibility(View.INVISIBLE);
+
                 }
             }
         });
@@ -363,21 +359,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Release wifi lock and display wake lock
-        PowerManager.WakeLock wakeLock = getWakeLock();
-        if(wakeLock != null) {
-            // Turn off power management
-            if (wakeLock.isHeld()) {
-                wakeLock.release();
-            }
-        }
-        WifiManager.WifiLock wifiLock = getWifiLock();
-        if(wifiLock != null) {
-            // Turn off wifi management
-            if (wifiLock.isHeld()) {
-                wifiLock.release();
-            }
-        }
     }
 
     @Override
@@ -393,6 +374,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     if(object.getIntensity() > 0 && !(manualIntensity > 0)){
                         manualIntensity = object.getIntensity();
                         setFeedbackLed(led_manual,true);
+                        Log.d("@subscriberCallback", "led feedback");
                     }
                     else{
                         manualIntensity = object.getIntensity();
@@ -423,14 +405,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 Log.d("@setFeedbackLed->run", "is checked");
             }
         });
-    }
-
-
-    public void startEvent(int mode){
-        MyCustomEvent.MyCustomEventListener myCustomEventListener = myCustomEvent.getMyCustomEventListener();
-        if(myCustomEventListener != null) {
-            myCustomEventListener.myCustomEvent(mode);
-        }
     }
 
     @Override

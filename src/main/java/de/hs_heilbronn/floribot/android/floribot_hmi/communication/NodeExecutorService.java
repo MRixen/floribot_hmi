@@ -68,21 +68,6 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         nodeConfiguration.setMasterUri(uri);
         nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
 
-
-
-        /*Log.d("@NodeExecutorService#startPublisher: ", "Start publisher");
-        DataSet.publisher = new Publisher(getApplicationContext(), topicPublisher);
-        NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
-        nodeConfiguration.setMasterUri(uri);
-        nodeMainExecutor.execute(DataSet.publisher, nodeConfiguration);
-
-        Log.d("@NodeExecutorService#startPublisher: ", "Start subscriber");
-        DataSet.subscriber = new Subscriber(getApplicationContext(), topicSubscriber);
-        nodeConfiguration = NodeConfiguration.newPublic(String.valueOf(InetAddressFactory.newNonLoopback().getHostAddress()), uri);
-        nodeConfiguration.setMasterUri(uri);
-        nodeMainExecutor.execute(DataSet.subscriber, nodeConfiguration);*/
-        //----------------------------------------------
-
         return START_STICKY;
     }
 
