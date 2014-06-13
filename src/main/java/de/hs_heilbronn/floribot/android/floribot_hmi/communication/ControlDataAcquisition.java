@@ -1,3 +1,4 @@
+/*
 package de.hs_heilbronn.floribot.android.floribot_hmi.communication;
 
 import android.content.Context;
@@ -12,14 +13,11 @@ import android.os.Message;
 import android.util.Log;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.CustomEventExecutor;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.AccEvent;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
 
-/**
- * Created by mr on 17.05.14.
- *
- * Within this class there are the thread for collecting sensor data and the joystick event data
- */
+
+
 public class ControlDataAcquisition {
 
     private final Context context;
@@ -27,7 +25,7 @@ public class ControlDataAcquisition {
     public Thread manualSensorModeThread, manualJoystickModeThread, automaticModeThread;
     private Handler loopHandler;
 
-    private CustomEventExecutor customEventExecutor;
+    private AccEvent accEvent;
 
     private SensorManager sensorManager;
 
@@ -99,8 +97,8 @@ public class ControlDataAcquisition {
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_manual_joystick))) {
             try {
-                customEventExecutor.setFlag(false);
-                customEventExecutor = null;
+                accEvent.setFlag(false);
+                accEvent = null;
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->JoystickControl->StopHandlerException: ", String.valueOf(e));
@@ -117,8 +115,8 @@ public class ControlDataAcquisition {
         }
         if (controlMode.equals(context.getResources().getString(R.string.control_mode_auto))) {
             try {
-                customEventExecutor.setFlag(false);
-                customEventExecutor = null;
+                accEvent.setFlag(false);
+                accEvent = null;
                 loopHandler.getLooper().quit();
             } catch (Exception e) {
                 Log.d("@ControlDataAcquisition->stopControlDataAcquisitionThread->AutoControl->StopHandlerException: ", String.valueOf(e));
@@ -230,9 +228,9 @@ public class ControlDataAcquisition {
 
         public void run() {
             // Start joystick executor thread
-            customEventExecutor = new CustomEventExecutor(context);
-            customEventExecutor.setFlag(true);
-            customEventExecutor.start();
+            accEvent = new AccEvent(context);
+            accEvent.setFlag(true);
+            accEvent.start();
 
             try {
                 Looper.prepare();
@@ -256,7 +254,7 @@ public class ControlDataAcquisition {
                         }
                     }
                 };
-                customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
+                accEvent.setCustomEventListener(new AccEvent.AccEventListener() {
                     @Override
                     public void customEvent() {
                         // Send sensor data to robot
@@ -288,15 +286,15 @@ public class ControlDataAcquisition {
 
         public void run() {
             // Start joystick executor thread
-            customEventExecutor = new CustomEventExecutor(context);
-            customEventExecutor.setFlag(true);
-            customEventExecutor.start();
+            accEvent = new AccEvent(context);
+            accEvent.setFlag(true);
+            accEvent.start();
 
             try {
                 Looper.prepare();
                 // Handler to cancel the message loop
                 loopHandler = new Handler();
-                customEventExecutor.setCustomEventListener(new CustomEventExecutor.CustomEventListener() {
+                accEvent.setCustomEventListener(new AccEvent.AccEventListener() {
                     @Override
                     public void customEvent() {
                         // Send sensor data to robot
@@ -324,3 +322,4 @@ public class ControlDataAcquisition {
 
 
 
+*/

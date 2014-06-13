@@ -122,15 +122,17 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     led_sensor.setChecked(false);
                     localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                 }
-                // Send data to data acquisition thread
-                startEvent(DataSet.DriveMode.MANUAL_DRIVE.ordinal());
+                // Send data to publisher
+                sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_auto):
                 led_sensor.setChecked(false);
                 button_sensor_calibration.setEnabled(false);
+                // Hide control buttons
+                if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
                 // Send data to data acquisition thread
-                startEvent(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal());
-                sendDataToDataAcquisition(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1);
+                //startEvent(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal());
+                sendDataToDataAcquisition(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_sensor_calibration):
                 // This mode is only available in manual mode
@@ -155,13 +157,13 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             case (R.id.button_sensor):
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     driveCmd = 1;
-                    sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1);
+                    sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_pressed);
 
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP) {
                     driveCmd = 0;
-                    sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1);
+                    sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                 }
                 break;
@@ -169,12 +171,12 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_up);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -183,12 +185,12 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_down);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -197,12 +199,12 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_left);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -211,12 +213,12 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_right);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -225,16 +227,28 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         return false;
     }
 
-    private void sendDataToDataAcquisition(int mode, int driveCmd, int cmdValue, int speed){
+    private void sendDataToDataAcquisition(int mode, int driveCmd, int cmdValue, int speed, boolean calibration){
         int[] buttonData = new int[10];
-        buttonData[driveCmd] = cmdValue;
-        buttonData[mode] = 1;
-
+        int[] axesData = new int[3];
         Bundle bundle = new Bundle();
         Message msg = new Message();
 
+        buttonData[driveCmd] = cmdValue;
+        if(mode != -1) buttonData[mode] = 1;
+
         bundle.putIntArray(getResources().getString(R.string.button_state_array), buttonData);
-        if(speed != -1) bundle.putInt(getResources().getString(R.string.speed), speed);
+
+        if(calibration) bundle.putBoolean(getResources().getString(R.string.start_sensor_calibration), calibration);
+
+        if(speed != -1){
+            // Check if actual speed is different from last to avoid for loop execution
+            if (speed != axesData[0]) {
+                for (int i = 0; i <= axesData.length - 1; i++) {
+                    axesData[i] = speed;
+                }
+            }
+            bundle.putInt(getResources().getString(R.string.speed), speed);
+        }
 
         msg.setData(bundle);
         DataSet.handlerForControlDataAcquisition.sendMessage(msg);
@@ -325,7 +339,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
                    //controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
                     dialog.dismiss();
-                    startEvent(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal());
+                    sendDataToDataAcquisition(-1, 0, 0, -1, true);
+                    //startEvent(DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal());
                     //setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                     //seekBar_speed.setVisibility(View.INVISIBLE);
                 }
@@ -429,9 +444,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 break;
             case(R.id.led_auto):
                 if(isChecked) {
-                    // Hide control buttons
-                    if (localLayout != null)
-                        localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
+
                 }
                 break;
         }

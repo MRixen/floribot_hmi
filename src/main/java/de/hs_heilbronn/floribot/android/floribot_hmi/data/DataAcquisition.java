@@ -22,13 +22,17 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
     private final Context context;
     private final MyCustomEvent myCustomEvent;
+    private final Object object = new Object();
     private Handler loopHandler;
     private SensorManager sensorManager;
-
-    private float[] sensorDataRot = new float[3];
+    private AccEvent accEvent;
     private double alpha = 0;
     private boolean calibrateSensor;
-    private int[] buttonArray = new int[10];
+    private Bundle stateBundle;
+    private int[] buttonData = new int[10];
+    private float[] axesData = new float[3];
+    private boolean startCalibration;
+    private Thread thread;
 
     public DataAcquisition(Context context, MyCustomEvent myCustomEvent) {
         this.context = context;
@@ -36,51 +40,101 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     }
 
     public void run() {
+        //Log.d("@DataAcquisition->run", Thread.currentThread().getName());
         // Get sensor object and acc sensor
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         final Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        // Start acc event executor
+        accEvent = new AccEvent(context);
+        accEvent.start();
+
         Looper.prepare();
         // Handler to cancel the message loop
         loopHandler = new Handler();
-        // Set event listener (listen to events on mode buttons)
-        myCustomEvent.setMyCustomEventListener(new MyCustomEvent.MyCustomEventListener() {
-            @Override
-            public void myCustomEvent(int mode) {
-                // Differentiate between control mode
-                switch (mode) {
-                    case (0):
-                        // Manual mode with joystick buttons
-                        Log.d("@DataAcquisition->run", "Manual mode with joystick buttons");
+
+        // Handler to receive button states from executeActivity in main thread
+        DataSet.handlerForControlDataAcquisition = new Handler() {
+            public void handleMessage(Message msg) {
+
+                stateBundle = msg.getData();
+
+                // Get button state array from main thread
+                if (stateBundle != null) {
+                    if (stateBundle.containsKey(context.getResources().getString(R.string.button_state_array))) {
+                        synchronized (object) {
+                            Log.d("@DataAcquisition->run", "Get button data");
+                            buttonData = stateBundle.getIntArray(context.getResources().getString(R.string.button_state_array));
+                        }
+                    }
+                    // Get axes data from main thread (only in manual drive mode with joystick buttons)
+                    if (stateBundle.containsKey(context.getResources().getString(R.string.speed))) {
+                        Log.d("@DataAcquisition->run", "Get speed data");
+                        float speed = (float) stateBundle.getInt(context.getResources().getString(R.string.speed));
+                        // Check if actual speed is different from last to avoid for loop execution
+                        synchronized (object) {
+                            if (speed != axesData[0]) {
+                                for (int i = 0; i <= axesData.length - 1; i++) {
+                                    axesData[i] = speed;
+                                }
+                            }
+                        }
+                    }
+                    // Check if the user want to calibrate sensor
+                    if (stateBundle.containsKey(context.getResources().getString(R.string.start_sensor_calibration))) {
+                        startCalibration = stateBundle.getBoolean(context.getResources().getString(R.string.start_sensor_calibration));
+                        // Unregister sensor listener to provide new calibration by pressing the sensor mode button
                         unregisterSensorListener();
-                        break;
-                    case (1):
-                        // Automatic mode
-                        Log.d("@DataAcquisition->run", "Auto mode");
-                        unregisterSensorListener();
-                        int[] buttonData = getButtonArray();
-                        // Send sensor data to robot
-                        float[] axesData = new float[3];
-                        sendDataToPublisher(buttonData, axesData);
-                        break;
-                    case (3):
-                        // Manual mode with sensor
-                        unregisterSensorListener();
+                        // Register sensor listener
                         sensorManager.registerListener(DataAcquisition.this, accSensor, SensorManager.SENSOR_DELAY_NORMAL, loopHandler);
-                        Log.d("@DataAcquisition->run", "Manual mode with sensor button");
-                        break;
+                        Log.d("@DataAcquisition->registerAccEventListener", "start sensor calibration");
+                    }
+                    // Send response for automatic drive mode
+                    if(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal() == 1){
+                        synchronized (object) {
+                            sendDataToNode(buttonData, null);
+                        }
+                    }
+                    // Send response for manual drive mode
+                    else if(buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
+                        synchronized (object) {
+                            sendDataToNode(buttonData, null);
+                        }
+                    }
                 }
             }
+        };
 
+        // Registering acceleration event listener (for manual drive mode with joystick buttons)
+        accEvent.registerAccEventListener(new AccEvent.AccEventListener() {
+            @Override
+            public void customEvent() {
+                synchronized (object) {
+                    // Send only data if one of the joystick button is pressed
+                    if(buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1 &&
+                            ( buttonData[DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] == 1)){
+                        Log.d("@DataAcquisition->run", "send data to publisher");
+                        sendDataToNode(buttonData, axesData);
+                    }
 
+                }
+            }
         });
         Looper.loop();
     }
 
     public void startThread() {
-        this.start();
+        if(thread == null){
+            thread = new Thread(this);
+            thread.start();
+        }
     }
 
-    public void stopThread(){
+    public void stopThread() {
+        unregisterSensorListener();
+        if(accEvent.getEventListener() != null) accEvent.unregisterAccEventListener(null);
         loopHandler.getLooper().quit();
     }
 
@@ -103,55 +157,42 @@ public class DataAcquisition extends Thread implements SensorEventListener {
             // Rotation matrix around y axes
             double[][] Rot_y = {{Math.cos(alpha), 0, Math.sin(alpha)}, {0, 1, 0}, {-Math.sin(alpha), 0, Math.cos(alpha)}};
 
-            for(int i=0;i<sensorDataRot.length;i++) sensorDataRot[i] = 0;
+            float[] axesData = new float[3];
 
             // Transform sensor vector with rotation matrix
             for (int i = sensorData.length - 1; i >= 0; i--) {
                 for (int j = 0; j < sensorData.length; j++) {
-                    sensorDataRot[i] += Rot_y[i][j] * sensorData[j];
+                    axesData[i] += Rot_y[i][j] * sensorData[j];
                     //Log.d("Rot_y[" + i + "][" + j + "] = ", String.valueOf(Rot_y[i][j]));
                 }
             }
 
-            int[] buttonData = getButtonArray();
-
             // Send sensor data to robot
-            sendDataToPublisher(buttonData, sensorDataRot);
+            synchronized (object) {
+                // Send only if the sensor joystick button is pressed
+                if(buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
+                    sendDataToNode(buttonData, axesData);
+                }
+            }
+
         }
     }
 
-    public int[] getButtonArray(){
-        // Handler to receive button states from executeActivity in main thread
-        DataSet.handlerForControlDataAcquisition = new Handler() {
-            public void handleMessage(Message msg) {
-                Bundle bundle = msg.getData();
-                if (bundle != null) {
-                    buttonArray = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
-                }
-            }
-        };
-        return buttonArray;
-    }
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    private void sendDataToPublisher(int[] buttonData, float[] sensorDataRot) {
+    private void sendDataToNode(int[] buttonData, float[] axesData) {
         Bundle bundle = new Bundle();
         Message msg1 = new Message();
         Message msg2 = new Message();
 
-        bundle.putFloatArray(context.getResources().getString(R.string.axes_state_array), sensorDataRot);
-        bundle.putIntArray(context.getResources().getString(R.string.button_state_array), buttonData);
+        if(axesData != null) bundle.putFloatArray(context.getResources().getString(R.string.axes_state_array), axesData);
+        if(buttonData != null) bundle.putIntArray(context.getResources().getString(R.string.button_state_array), buttonData);
 
         msg1.setData(bundle);
         msg2.setData(bundle);
 
-        DataSet.handlerForPublishingData.sendMessage(msg1);
-        DataSet.handlerForVisualization.sendMessage(msg2);
+        if(DataSet.handlerForPublishingData != null) DataSet.handlerForPublishingData.sendMessage(msg1);
+        if(DataSet.handlerForVisualization != null) DataSet.handlerForVisualization.sendMessage(msg2);
     }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-
-    }
-
 }

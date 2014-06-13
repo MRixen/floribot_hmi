@@ -101,6 +101,7 @@ public class Node extends AbstractNodeMain {
                     if (bundle != null) {
                         float[] axesData = new float[3];
                         int[] buttonData = new int[10];
+
                         if (bundle.containsKey(context.getResources().getString(R.string.axes_state_array)))
                             axesData = bundle.getFloatArray(context.getResources().getString(R.string.axes_state_array));
                         if (bundle.containsKey(context.getResources().getString(R.string.button_state_array)))

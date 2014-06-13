@@ -133,17 +133,20 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
 
-                if (bundle != null) {
-                    float[] axesData = bundle.getFloatArray(context.getResources().getString(R.string.axes_state_array));
+                float[] axesData;
 
-                    if (axesData != null) {
-                        try {
-                            canvas = holder.lockCanvas();
-                            drawLayout(axesData[1], axesData[2]);
-                            holder.unlockCanvasAndPost(canvas);
-                        }
-                        catch(Exception e){
-                            Log.e("@GlobalLayout#handleMessage: ", "Exception: " + e);
+                if (bundle != null) {
+                    if(bundle.containsKey(context.getResources().getString(R.string.axes_state_array))) {
+                        axesData = bundle.getFloatArray(context.getResources().getString(R.string.axes_state_array));
+
+                        if (axesData != null) {
+                            try {
+                                canvas = holder.lockCanvas();
+                                drawLayout(axesData[1], axesData[2]);
+                                holder.unlockCanvasAndPost(canvas);
+                            } catch (Exception e) {
+                                Log.e("@GlobalLayout#handleMessage: ", "Exception: " + e);
+                            }
                         }
                     }
                 }

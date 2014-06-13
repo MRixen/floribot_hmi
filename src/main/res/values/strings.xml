@@ -24,5 +24,6 @@
     <string name="glPointArray">pointsArray</string>
     <string name="glPathQuantity">pathQuantity</string>
     <string name="speed">speed</string>
+    <string name="start_sensor_calibration">startSensorCalibration</string>
 
 </resources>
