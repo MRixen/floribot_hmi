@@ -64,6 +64,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     private DataSet dataSet;
     private DataSet.ThemeColor[] themeColors;
     private int currentTheme;
+    private Bundle surfaceData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,13 +90,16 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
         surface = (SurfaceView) findViewById(R.id.surface_main);
         globalLayout = new GlobalLayout(this);
+        // Generate surface layout
+        dataSet = getDataSet();
+        surfaceData = dataSet.SurfaceDataMain();
+
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
-        dataSet = getDataSet();
         themeColors = getThemeColors();
         currentTheme = getCurrentTheme();
     }
@@ -118,7 +122,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
 
         // Set surface for main activity
-        globalLayout.setGlobalLayout(dataSet.SurfaceDataMain(), surface);
+        if(surfaceData != null) globalLayout.setGlobalLayout(surfaceData, surface);
+
     }
 
     @Override
@@ -328,6 +333,6 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     public void themeCallback(int current_theme) {
         this.currentTheme = current_theme;
         savePreferences();
-        globalLayout.setGlobalLayout(dataSet.SurfaceDataMain(), surface);
+        globalLayout.setGlobalLayout(surfaceData, surface);
     }
 }

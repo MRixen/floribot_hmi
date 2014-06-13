@@ -35,7 +35,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true" />
 
-    <ToggleButton
+    <Button
         android:id="@+id/button_manual"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -44,11 +44,9 @@
         android:layout_marginBottom="5dp"
         android:layout_toLeftOf="@id/button_exit"
         android:onClick="onButtonClicked"
-        android:textOff=""
-        android:textOn=""
         android:background="@drawable/control_mode_manual_selector" />
 
-    <ToggleButton
+    <Button
         android:id="@+id/button_auto"
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -57,48 +55,65 @@
         android:layout_marginBottom="5dp"
         android:layout_toLeftOf="@id/button_manual"
         android:onClick="onButtonClicked"
-        android:textOn=""
-        android:textOff=""
         android:background="@drawable/control_mode_auto_selector" />
 
-    <ToggleButton
+    <Button
         android:id="@+id/button_sensor_calibration"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
         android:layout_marginRight="40dp"
         android:layout_marginBottom="5dp"
+        android:enabled="false"
         android:layout_toLeftOf="@id/button_auto"
+        android:background="@drawable/sensor_button_selector"
+        android:onClick="onButtonClicked" />
+
+    <ToggleButton
+        android:id="@+id/led_manual"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
         android:textOn=""
         android:textOff=""
         android:checked="false"
         android:enabled="false"
-        android:background="@drawable/sensor_button_selector"
-        android:onClick="onButtonClicked" />
-
-    <ImageView
-        android:id="@+id/led_manual"
-        android:layout_width="15dp"
-        android:layout_height="15dp"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="40dp"
         android:layout_toLeftOf="@id/button_manual"
-        android:background="@drawable/ic_led_off"/>
+        android:background="@drawable/feedback_led_selector"/>
 
-    <ImageView
+    <ToggleButton
         android:id="@+id/led_auto"
         android:layout_width="15dp"
         android:layout_height="15dp"
+        android:textOn=""
+        android:textOff=""
+        android:checked="false"
+        android:enabled="false"
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="40dp"
         android:layout_toLeftOf="@id/button_auto"
-        android:background="@drawable/ic_led_off"/>
+        android:background="@drawable/feedback_led_selector"/>
+
+    <ToggleButton
+        android:id="@+id/led_sensor"
+        android:layout_width="15dp"
+        android:layout_height="15dp"
+        android:textOn=""
+        android:textOff=""
+        android:checked="false"
+        android:enabled="false"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="40dp"
+        android:layout_toLeftOf="@id/button_sensor_calibration"
+        android:background="@drawable/feedback_led_selector"/>
 
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true" />
+
 
 
 </RelativeLayout>

@@ -5,13 +5,17 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Publisher;
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Subscriber;
+import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Node;
 import sensor_msgs.JoyFeedback;
 
 /**
@@ -26,10 +30,8 @@ public class DataSet extends Application {
     private float factorHeight, factorWidth, bottomBarWidthInPx, offsetToBottomBarExtensionInPx, bottomBarHeightInPx;
     float[] pointsArray;
 
-
+    public static Node node;
     public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
-    public static Publisher publisher;
-    public static Subscriber subscriber;
     public static SubscriberInterface subscriberInterface;
 
     public DataSet(Context context) {
@@ -51,8 +53,6 @@ public class DataSet extends Application {
     }
 
     public static enum ThemeColor{
-
-
         // Background color, foreground color, text color
         BlueLight(context.getResources().getColor(R.color.ModernWhite), context.getResources().getColor(R.color.ModernBlue), context.getResources().getColor(R.color.ModernWhite)),
         GreenLight(context.getResources().getColor(R.color.White), context.getResources().getColor(R.color.ModernGreen), context.getResources().getColor(R.color.White));
@@ -69,6 +69,8 @@ public class DataSet extends Application {
     public void SurfaceInit(){
         // Calculate display size
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+        Log.d("@SurfaceInit", Thread.currentThread().getName());
 
         pxWidth = displayMetrics.widthPixels;
         pxHeight = displayMetrics.heightPixels;
@@ -87,135 +89,160 @@ public class DataSet extends Application {
     }
 
     public Bundle SurfaceDataMain(){
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
+            @Override
+            public Bundle call() throws Exception {
+                // Initialize surface data
+                Log.d("@SurfaceDataMain", Thread.currentThread().getName());
+                SurfaceInit();
 
-        // Initialize surface data
-        SurfaceInit();
-
-        float beamMarginTop = context.getResources().getDimensionPixelSize(R.dimen.beamMarginTop);
-        float beamWidth = context.getResources().getDimensionPixelSize(R.dimen.beamWidth);
-        float beamHeight = context.getResources().getDimensionPixelSize(R.dimen.beamHeight);
-        float beamOffset = context.getResources().getDimensionPixelSize(R.dimen.beamOffset);
+                float beamMarginTop = context.getResources().getDimensionPixelSize(R.dimen.beamMarginTop);
+                float beamWidth = context.getResources().getDimensionPixelSize(R.dimen.beamWidth);
+                float beamHeight = context.getResources().getDimensionPixelSize(R.dimen.beamHeight);
+                float beamOffset = context.getResources().getDimensionPixelSize(R.dimen.beamOffset);
 
 
-        float[] middleBarPoints = new float[8];
-        int pathQuantity = 2;
+                float[] middleBarPoints = new float[8];
+                int pathQuantity = 2;
 
+                // Get draw data for top bar
+                GenerateStandardLayout();
 
-        // Get draw data for top bar
-        GenerateStandardLayout();
+                for(int i=0;i<=2;i++){
+                    // Point top left
+                    middleBarPoints[0] = beamOffset;
+                    middleBarPoints[1] = beamMarginTop + beamHeight * i + beamOffset * i;
+                    // Point top right
+                    middleBarPoints[2] = beamWidth;
+                    middleBarPoints[3] = beamMarginTop + beamHeight * i + beamOffset * i;
+                    // Point bottom right
+                    middleBarPoints[4] = beamWidth;
+                    middleBarPoints[5] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
+                    // Point bottom left
+                    middleBarPoints[6] = beamOffset;
+                    middleBarPoints[7] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
 
-        for(int i=0;i<=2;i++){
-            // Point top left
-            middleBarPoints[0] = beamOffset;
-            middleBarPoints[1] = beamMarginTop + beamHeight * i + beamOffset * i;
-            // Point top right
-            middleBarPoints[2] = beamWidth;
-            middleBarPoints[3] = beamMarginTop + beamHeight * i + beamOffset * i;
-            // Point bottom right
-            middleBarPoints[4] = beamWidth;
-            middleBarPoints[5] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
-            // Point bottom left
-            middleBarPoints[6] = beamOffset;
-            middleBarPoints[7] = beamMarginTop + beamHeight * i + beamHeight + beamOffset * i;
+                    pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + middleBarPoints.length + 1);
+                    setPointArray(middleBarPoints);
+                    pathQuantity++;
+                }
 
-            pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + middleBarPoints.length + 1);
-            setPointArray(middleBarPoints);
-            pathQuantity++;
+                // Return surface data
+                Bundle surfaceData = new Bundle();
+                surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
+                surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
+
+                return surfaceData;
+            }
+        });
+
+        try {
+            return result.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-
-        // Return surface data
-        Bundle surfaceData = new Bundle();
-        surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
-        surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
-
-        return surfaceData;
     }
 
     public Bundle SurfaceDataExecute() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
+            @Override
+            public Bundle call() throws Exception {
+                Log.d("@SurfaceDataMain", Thread.currentThread().getName());
+                // Initialize surface data
+                SurfaceInit();
 
-        // Initialize surface data
-        SurfaceInit();
+                float[] bottomBarPoints = new float[8];
+                float[] svRectArray = new float[12];
 
-        float[] bottomBarPoints = new float[8];
-        float[] svRectArray = new float[12];
+                float bottomBarExtensionWidthInPx = factorWidth * getRes(R.integer.bottomBarExtensionWidthInDp);
+                int pathQuantity = 2; // Number of paths to draw
 
-        float bottomBarExtensionWidthInPx = factorWidth * getRes(R.integer.bottomBarExtensionWidthInDp);
-        int pathQuantity = 2; // Number of paths to draw
+                // Get draw data for top bar
+                GenerateStandardLayout();
 
-        // Get draw data for top bar
-        GenerateStandardLayout();
+                // ----- Create path for bottom bar extension -----
+                // Point top left
+                bottomBarPoints[0] = pxWidth - bottomBarExtensionWidthInPx;
+                bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
+                // Point top right
+                bottomBarPoints[2] = pxWidth - bottomBarWidthInPx - offsetToBottomBarExtensionInPx;
+                bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
+                // Point bottom right
+                bottomBarPoints[4] = (float) (pxWidth - bottomBarWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6) - offsetToBottomBarExtensionInPx );
+                bottomBarPoints[5] = pxHeight;
+                // Point bottom left
+                bottomBarPoints[6] = (float) (pxWidth - bottomBarExtensionWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6));
+                bottomBarPoints[7] = pxHeight;
 
-        // ----- Create path for bottom bar extension -----
-        // Point top left
-        bottomBarPoints[0] = pxWidth - bottomBarExtensionWidthInPx;
-        bottomBarPoints[1] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
-        // Point top right
-        bottomBarPoints[2] = pxWidth - bottomBarWidthInPx - offsetToBottomBarExtensionInPx;
-        bottomBarPoints[3] = pxHeight - bottomBarHeightInPx - factorHeight * getRes(R.integer.topBarHeightInDp);
-        // Point bottom right
-        bottomBarPoints[4] = (float) (pxWidth - bottomBarWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6) - offsetToBottomBarExtensionInPx );
-        bottomBarPoints[5] = pxHeight;
-        // Point bottom left
-        bottomBarPoints[6] = (float) (pxWidth - bottomBarExtensionWidthInPx - bottomBarHeightInPx * Math.tan(Math.PI/6));
-        bottomBarPoints[7] = pxHeight;
+                pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + bottomBarPoints.length+1);
+                setPointArray(bottomBarPoints);
+                pathQuantity++;
+                // -------------------------------------
 
-        pointsArray = Arrays.copyOf(pointsArray, pointsArray.length + bottomBarPoints.length+1);
-        setPointArray(bottomBarPoints);
-        pathQuantity++;
-        // -------------------------------------
+                // Create data for sensor visualization (This data is excluded from normal surface data)
+                // Note: Camera width need to be the full length of sensor visualization beam
+                float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
+                float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
 
-        // Create data for sensor visualization (This data is excluded from normal surface data)               
-        // Note: Camera width need to be the full length of sensor visualization beam
-        float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
-        float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
+                // Create rectangle for top sensor visualization (visualization for steer amount)
+                // -------------------------------------
+                // Distance from left display border to left side of rectangle
+                svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from top display border to top side of rectangle
+                svRectArray[1] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp));
+                // Distance from left display border to right side of rectangle
+                svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
+                // Distance from top display border to bottom side of rectangle
+                svRectArray[3] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
+                // -------------------------------------
 
-        // Create rectangle for top sensor visualization (visualization for steer amount)
-        // -------------------------------------
-        // Distance from left display border to left side of rectangle
-        svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-        // Distance from top display border to top side of rectangle
-        svRectArray[1] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp));
-        // Distance from left display border to right side of rectangle
-        svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
-        // Distance from top display border to bottom side of rectangle
-        svRectArray[3] = factorHeight * (getRes(R.integer.topBarHeightInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
-        // -------------------------------------
+                // Create rectangle for left sensor visualization (visualization for drive amount)
+                // -------------------------------------
+                // Distance from left display border to left side of rectangle
+                svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
+                // Distance from top display border to top side of rectangle
+                svRectArray[5] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from left display border to right side of rectangle
+                svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
+                // Distance from top display border to bottom side of rectangle
+                svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
+                // -------------------------------------
 
-        // Create rectangle for left sensor visualization (visualization for drive amount)
-        // -------------------------------------
-        // Distance from left display border to left side of rectangle
-        svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
-        // Distance from top display border to top side of rectangle
-        svRectArray[5] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-        // Distance from left display border to right side of rectangle
-        svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
-        // Distance from top display border to bottom side of rectangle
-        svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
-        // -------------------------------------
-
-        // -------------------------------------
-        // ONLY FOR DEBUG !!!
-        // -------------------------------------
-        // Create rectangle for pseudo camera preview
-        // -------------------------------------
-        // Distance from left display border to left side of rectangle
-        svRectArray[8] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-        // Distance from top display border to top side of rectangle
-        svRectArray[9] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-        // Distance from left display border to right side of rectangle
-        svRectArray[10] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx;
-        // Distance from top display border to bottom side of rectangle
-        svRectArray[11] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx;
-        // -------------------------------------
+                // -------------------------------------
+                // ONLY FOR DEBUG !!!
+                // -------------------------------------
+                // Create rectangle for pseudo camera preview
+                // -------------------------------------
+                // Distance from left display border to left side of rectangle
+                svRectArray[8] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from top display border to top side of rectangle
+                svRectArray[9] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from left display border to right side of rectangle
+                svRectArray[10] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx;
+                // Distance from top display border to bottom side of rectangle
+                svRectArray[11] = factorHeight * (getRes(R.integer.topBarHeightInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx;
+                // -------------------------------------
 
 
-        // Return surface data
-        Bundle surfaceData = new Bundle();
-        surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
-        surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
-        surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
+                // Return surface data
+                Bundle surfaceData = new Bundle();
+                surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
+                surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
+                surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
 
-        return surfaceData;
+                return surfaceData;
+            }
+        });
+
+        try {
+            return result.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
     
     private int getRes(int res){
@@ -223,6 +250,8 @@ public class DataSet extends Application {
     }
 
     private void GenerateStandardLayout() {
+
+        Log.d("@GenerateStandardLayout", Thread.currentThread().getName());
 
         float[] topBarPoints = new float[8];
         float[] bottomBarPoints = new float[8];

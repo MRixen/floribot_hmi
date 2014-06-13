@@ -17,7 +17,7 @@
     <integer name="deadTimeEnableWifi">20</integer>
     <integer name="deadTimeWakeLockPower">10</integer>
     <integer name="deadTimeSurfaceValidation">20</integer>
-    <integer name="custom_event_delay">200</integer>
+    <integer name="custom_event_delay">100</integer>
     <integer name="DIVIDER">1000000000</integer>
     <!-- -->
 

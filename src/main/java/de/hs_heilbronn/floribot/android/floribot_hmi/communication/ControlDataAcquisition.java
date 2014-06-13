@@ -195,9 +195,6 @@ public class ControlDataAcquisition {
                                 Bundle bundle = msg.getData();
                                 if (bundle != null) {
                                     buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
-                                    if (buttonData != null) {
-                                        buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] = 1;
-                                    }
                                 }
                             }
                         };
@@ -248,10 +245,6 @@ public class ControlDataAcquisition {
                         Bundle bundle = msg.getData();
                         if (bundle != null) {
                             buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
-                            // Set button id for manual mode to true
-                            if (buttonData != null) {
-                                buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] = 1;
-                            }
                             float speed = (float) bundle.getInt(context.getResources().getString(R.string.speed));
                             // Check if actual speed is different from last to avoid for loop execution
                             if (speed != axesData[0]) {

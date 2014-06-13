@@ -50,4 +50,5 @@ public class CustomEventExecutor extends Thread {
         this.isRunning = flag;
         Log.d("@CustomEventExecutor->setFlag", String.valueOf(flag));
     }
+
 }

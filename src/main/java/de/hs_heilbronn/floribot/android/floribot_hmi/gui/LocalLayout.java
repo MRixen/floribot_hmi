@@ -19,16 +19,18 @@ public class LocalLayout extends Fragment {
     private ExecuteActivity context;
     LocalLayoutManager layoutManagerInterface;
     private int localLayoutResource;
+    private int drawable;
 
     public LocalLayout(ExecuteActivity context) {
         this.context = context;
     }
 
-    public void setLocalLayout(int frameLayout, int localLayoutResource) {
+    public void setLocalLayout(int frameLayout, int localLayoutResource, int drawable) {
         this.localLayoutResource = localLayoutResource;
+        this.drawable = drawable;
         if (this.localLayoutResource != 0) {
             context.getSupportFragmentManager().beginTransaction().replace(frameLayout, this).commit();
-            if(layoutManagerInterface != null) layoutManagerInterface.localLayoutCallback();
+            if(layoutManagerInterface != null) layoutManagerInterface.localLayoutCallback(drawable);
         }
         else{
             context.getSupportFragmentManager().beginTransaction().remove(this).commit();
@@ -38,7 +40,7 @@ public class LocalLayout extends Fragment {
     }
 
     public interface LocalLayoutManager{
-        public void localLayoutCallback();
+        public void localLayoutCallback(int drawable);
     }
 
     @Override
@@ -59,6 +61,6 @@ public class LocalLayout extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        layoutManagerInterface.localLayoutCallback();
+        layoutManagerInterface.localLayoutCallback(drawable);
     }
 }

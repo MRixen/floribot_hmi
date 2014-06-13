@@ -44,18 +44,6 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
     private float svHalfSizeTopBeam, svHalSizeLeftBeam;
 
-/*
-    public GlobalLayout(Context context, SurfaceHolder holder) {
-        super(context);
-
-        this.context = context;
-        this.holder = holder;
-        thread = null;
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-    }
-*/
-
     public GlobalLayout(Context context) {
         super(context);
         this.context = context;
@@ -201,7 +189,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
     public void setGlobalLayout(Bundle bundle, SurfaceView surface) {
         // Stop old thread
-        pause();
+        //pause();
 
         // Set holder
         surface.setZOrderOnTop(false);

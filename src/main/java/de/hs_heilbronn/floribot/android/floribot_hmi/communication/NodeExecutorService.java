@@ -53,6 +53,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
 
         URI uri = URI.create(masterId);
 
+        // Bring service in foreground and provide access from notification bar
         Log.d("@NodeExecutorService#onCreate: ", "Start foreground");
         Notification notification = new Notification(R.drawable.ic_launcher, getString(R.string.ticker_message), System.currentTimeMillis());
         Intent notificationIntent = new Intent(this, ExecuteActivity.class);
@@ -60,7 +61,16 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         notification.setLatestEventInfo(this, getString(R.string.notification_title), getString(R.string.notification_text), pendingIntent);
         startForeground(ONGOING_NOTIFICATION_ID, notification);
 
-        Log.d("@NodeExecutorService#startPublisher: ", "Start publisher");
+        // Start ExecutorNode (publisher, subscriber)
+        Log.d("@NodeExecutorService#startExecutorNode: ", "Start node...");
+        DataSet.node = new Node(getApplicationContext(), topicSubscriber, topicPublisher);
+        NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
+        nodeConfiguration.setMasterUri(uri);
+        nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
+
+
+
+        /*Log.d("@NodeExecutorService#startPublisher: ", "Start publisher");
         DataSet.publisher = new Publisher(getApplicationContext(), topicPublisher);
         NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
         nodeConfiguration.setMasterUri(uri);
@@ -70,7 +80,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         DataSet.subscriber = new Subscriber(getApplicationContext(), topicSubscriber);
         nodeConfiguration = NodeConfiguration.newPublic(String.valueOf(InetAddressFactory.newNonLoopback().getHostAddress()), uri);
         nodeConfiguration.setMasterUri(uri);
-        nodeMainExecutor.execute(DataSet.subscriber, nodeConfiguration);
+        nodeMainExecutor.execute(DataSet.subscriber, nodeConfiguration);*/
         //----------------------------------------------
 
         return START_STICKY;
@@ -91,8 +101,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     @Override
     public void onDestroy() {
         Log.d("@onDestroy: ", "Destroy service...");
-        shutdownNodeMain(DataSet.publisher);
-        shutdownNodeMain(DataSet.subscriber);
+        shutdownNodeMain(DataSet.node);
         super.onDestroy();
     }
 
