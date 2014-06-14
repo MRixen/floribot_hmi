@@ -93,6 +93,7 @@
     <string name="title_connect_button_main">Verbinden</string>
     <string name="toast_enter_master">Bitte Master-Adresse eingeben!</string>
     <string name="toast_enter_topic">Bitte Topic-Adresse eingeben!</string>
+    <string name="toast_enter_node_graph_name">Bitte Node Namen eingeben (Einstellungen)!</string>
     <string name="dialog_init_publisher">Die Verbindung wird aufgebaut.</string>
     <string name="toast_enter_all">Bitte setzen Sie die Verbindungsparameter!</string>
     <string name="connection_establishment_error_uri_syntax">Fehlerhafte Master-Adresse!</string>
@@ -112,7 +113,7 @@
     <string name="title_execute">Steuerungsmenü</string>
     <string name="title_exit_button_execute">Beenden</string>
     <string name="dialog_title_publisher_exit">Warnung</string>
-
+    <string name="node_graph_name_header">Node name</string>
 
 
 </resources>

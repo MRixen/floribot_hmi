@@ -10,6 +10,8 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.PopupMenu;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -20,6 +22,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -41,6 +44,8 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
     private int currentTheme;
     private WifiManager.WifiLock wifiLock;
     private PowerManager.WakeLock wakeLock;
+    private EditText editTextNodeGraphName;
+
 
 
     @Override
@@ -120,6 +125,30 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
     public void overflowDialog(String title, int layout){
         dialog.setContentView(layout);
         if(layout == R.layout.layout_property){
+            // Get and set edit text field for node graph name
+            editTextNodeGraphName = (EditText) dialog.findViewById(R.id.editText_node_graph_name);
+            editTextNodeGraphName.setText(sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
+            editTextNodeGraphName.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+                }
+
+                @Override
+                public void afterTextChanged(Editable s) {
+                    // Save node graph name from edit text field
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    editor.putString(getResources().getString(R.string.nodeGraphName), editTextNodeGraphName.getText().toString());
+                    editor.commit();
+                }
+            });
+
+            // Set spinner for theme color
             Spinner spinner_one = (Spinner) dialog.findViewById(R.id.spinner_one);
             spinner_one.setAdapter(new SpinnerAdapter(this, getResources().getStringArray(R.array.theme_items)));
             spinner_one.setSelection(currentTheme);
@@ -210,13 +239,5 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
 
     public void setWakeLock(PowerManager.WakeLock wakeLock){
         this.wakeLock = wakeLock;
-    }
-
-    public PowerManager.WakeLock getWakeLock(){
-        return wakeLock;
-    }
-
-    public WifiManager.WifiLock getWifiLock(){
-        return wifiLock;
     }
 }

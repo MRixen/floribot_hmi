@@ -29,19 +29,19 @@ public class Node extends AbstractNodeMain {
     private org.ros.node.topic.Publisher<Joy> publisher;
     public Thread t;
     private Handler loopHandler = null;
-    private final String topicSubscriber;
-    private final String topicPublisher;
+    private final String topicSubscriber, topicPublisher, nodeGraphName;
     private final Context context;
 
-    public Node(Context context, String topicSubscriber, String topicPublisher) {
+    public Node(Context context, String topicSubscriber, String topicPublisher, String nodeGraphName) {
         this.context = context;
         this.topicSubscriber = topicSubscriber;
         this.topicPublisher = topicPublisher;
+        this.nodeGraphName = nodeGraphName;
     }
 
     @Override
     public GraphName getDefaultNodeName() {
-        return GraphName.of("FloriBot_hmi/executorNode");
+        return GraphName.of(nodeGraphName);
     }
 
     @Override

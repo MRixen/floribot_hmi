@@ -183,7 +183,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_down);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -197,7 +197,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
-                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_left);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
@@ -314,6 +314,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     led_sensor.setChecked(false);
                 }
                 dialog.dismiss();
+                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
             }
         });
         positiveButton.setOnClickListener(new View.OnClickListener() {
@@ -335,7 +336,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                   //controlDataAcquisition.startControlDataAcquisitionThread(getResources().getString(R.string.control_mode_manual_sensor));
+
                     dialog.dismiss();
                     sendDataToDataAcquisition(-1, 0, 0, -1, true);
 
@@ -368,7 +369,34 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
        int mSize = messageList.size();
         for(int i=0;i<mSize;i++){
             JoyFeedback object = messageList.get(i);
+            // LOGIC IS NOT SET CORRECTLY
+            // ---------------------------------
+            // THIS CONFIGURATION IS FOR THE EVENT ONLY
+            // ---------------------------------
             switch(object.getId()){
+                case(0):
+                    // Set led for manual mode
+                    if(object.getIntensity() > 0 && !(manualIntensity > 0)){
+                        manualIntensity = object.getIntensity();
+                        setFeedbackLed(led_manual,true);
+                        setFeedbackLed(led_auto, false);
+                        Log.d("@subscriberCallback", "led manual on");
+                    }
+                    // Set led for automatic mode
+                    if(object.getIntensity() < 1 && !(manualIntensity < 1)){
+                        manualIntensity = object.getIntensity();
+                        setFeedbackLed(led_manual, false);
+                        setFeedbackLed(led_auto, true);
+                    }
+                    break;
+            }
+            // ---------------------------------
+            // --------------END----------------
+
+            // ---------------------------------
+            // THIS CODE IS FOR THE CORRECT LOGIC!!!
+            // ---------------------------------
+            /*switch(object.getId()){
                 case(0):
                     // Set led for manual mode
                     if(object.getIntensity() > 0 && !(manualIntensity > 0)){
@@ -392,7 +420,9 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                         setFeedbackLed(led_auto, false);
                     }
                     break;
-            }
+            }*/
+            // ---------------------------------
+            // --------------END----------------
         }
     }
 
@@ -402,7 +432,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             @Override
             public void run() {
                 ledType.setChecked(led);
-                Log.d("@setFeedbackLed->run", "is checked");
+
             }
         });
     }

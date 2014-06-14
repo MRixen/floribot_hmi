@@ -8,8 +8,10 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.ros.address.InetAddressFactory;
+import org.ros.exception.RosRuntimeException;
 import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeListener;
@@ -46,10 +48,11 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         // Get parameter for connection establishment
-        Bundle connectionData= intent.getBundleExtra("connectionData");
-        String masterId = connectionData.getString("masterId");
-        String topicPublisher = connectionData.getString("topicPublisher");
-        String topicSubscriber = connectionData.getString("topicSubscriber");
+        Bundle connectionData= intent.getBundleExtra(getResources().getString(R.string.shared_pref_connection_data));
+        String masterId = connectionData.getString(getResources().getString(R.string.masterId));
+        String topicPublisher = connectionData.getString(getResources().getString(R.string.topicPublisher));
+        String topicSubscriber = connectionData.getString(getResources().getString(R.string.topicSubscriber));
+        String nodeGraphName = connectionData.getString(getResources().getString(R.string.nodeGraphName));
 
         URI uri = URI.create(masterId);
 
@@ -62,11 +65,17 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         startForeground(ONGOING_NOTIFICATION_ID, notification);
 
         // Start ExecutorNode (publisher, subscriber)
-        Log.d("@NodeExecutorService#startExecutorNode: ", "Start node...");
-        DataSet.node = new Node(getApplicationContext(), topicSubscriber, topicPublisher);
-        NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
-        nodeConfiguration.setMasterUri(uri);
-        nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
+        try {
+            Log.d("@NodeExecutorService#startExecutorNode: ", "Start node...");
+            DataSet.node = new Node(getApplicationContext(), topicSubscriber, topicPublisher, nodeGraphName);
+            NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
+            nodeConfiguration.setMasterUri(uri);
+            nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
+        }catch(RosRuntimeException e){
+            Toast.makeText(this, (CharSequence) e, Toast.LENGTH_SHORT).show();
+            Log.d("@NodeExecutorService#startExecutorNode: ", "RosRuntimeException->Stop service");
+            stopSelf();
+        }
 
         return START_STICKY;
     }

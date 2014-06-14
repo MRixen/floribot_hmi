@@ -169,6 +169,12 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 counter--;
                 Log.d("for", String.valueOf(counter));
             }
+            // The axis are interchanged
+            // Correct configuration should be [roll, pitch, yaw]
+            // Actual configuration is [yaw, pitch, roll]
+            // Therefor the axis need to be rearrange --> CHECK PLAUSIBILITY!!!
+            axesData[0] = axesData[2];
+            axesData[2] = 0;
 
 
 

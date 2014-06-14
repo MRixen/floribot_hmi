@@ -9,7 +9,7 @@
         android:id="@+id/header_one"
         android:textStyle="bold"
         android:text="@string/theme_header"
-        android:textSize="16sp"
+        android:textSize="@dimen/headerTextSize"
         android:textColor="#000000"
         android:background="#ffffff"
         android:paddingLeft="10dp"
@@ -23,5 +23,27 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/header_one"
         android:background="@drawable/spinner_drop_down_view_state"/>
+    <TextView
+        android:id="@+id/header_two"
+        android:textStyle="bold"
+        android:text="@string/node_graph_name_header"
+        android:textSize="@dimen/headerTextSize"
+        android:textColor="#000000"
+        android:background="#ffffff"
+        android:paddingLeft="10dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/spinner_one"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"/>
+    <EditText
+        android:id="@+id/editText_node_graph_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/header_two"
+        android:textSize="@dimen/textSize"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:background="@drawable/spinner_default_holo_light_am"/>
 
 </RelativeLayout>

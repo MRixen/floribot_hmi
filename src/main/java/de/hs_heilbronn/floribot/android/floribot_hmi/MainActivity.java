@@ -36,7 +36,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
     private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
     private Button buttonConnect;
-    private String masterId, topicPublisher, topicSubscriber;
+    private String masterId, topicPublisher, topicSubscriber, nodeGraphName;
 
     private WifiManager wifiManager;
     private PowerManager powerManager;
@@ -75,6 +75,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
+
 
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
@@ -151,7 +152,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
                 getEditTextFieldEntries();
 
-                if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0) {
+                if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
                     handler = new Handler() {
                         public void handleMessage(Message msg) {
                             Bundle stateBundle = msg.getData();
@@ -163,6 +164,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                                 connectionData.putString(getResources().getString(R.string.masterId), masterId);
                                 connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
                                 connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
+                                connectionData.putString(getResources().getString(R.string.nodeGraphName), sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
+                                Log.d("@MainActivity->onButtonClicked", "node graph name = " + nodeGraphName);
                                 nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
                                 // Start service
                                 startService(nodeExecutorService);
@@ -186,6 +189,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
                         if (topicPublisher.length() == 0 || topicSubscriber.length() == 0)
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_topic), Toast.LENGTH_SHORT).show();
+                        if(nodeGraphName.length() == 0)
+                            Toast.makeText(this, getResources().getString(R.string.toast_enter_node_graph_name), Toast.LENGTH_SHORT).show();
                     }
                 }
                 break;
@@ -312,6 +317,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         masterId = editTextMasterId.getText().toString();
         topicPublisher = editTextTopicPublisher.getText().toString();
         topicSubscriber = editTextTopicSubscriber.getText().toString();
+        nodeGraphName = sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), "");
+
     }
 
     private void savePreferences() {

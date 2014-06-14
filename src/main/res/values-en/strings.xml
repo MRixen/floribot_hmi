@@ -93,6 +93,7 @@
     <string name="title_connect_button_main">Connect</string>
     <string name="toast_enter_master">Please Enter master address!</string>
     <string name="toast_enter_topic">Please Enter topic address!</string>
+    <string name="toast_enter_node_graph_name">Please enter node graph name (Settings)!</string>
     <string name="state_init_publisher">state</string>
     <string name="dialog_init_publisher">Wait until connection is established.</string>
     <string name="connection_establishment_error_uri_syntax">Invalid master ID!</string>
@@ -130,7 +131,7 @@
     <string name="speed">speed</string>
     <string name="dialog_title_publisher_exit">Warning</string>
     <string name="toast_enter_all">You need to set connection parameter!</string>
-
+    <string name="node_graph_name_header">Node name</string>
 
 
 </resources>

@@ -142,7 +142,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
                         if (axesData != null) {
                             try {
                                 canvas = holder.lockCanvas();
-                                drawLayout(axesData[1], axesData[2]);
+                                drawLayout(axesData[1], axesData[0]);
                                 holder.unlockCanvasAndPost(canvas);
                             } catch (Exception e) {
                                 Log.e("@GlobalLayout#handleMessage: ", "Exception: " + e);
@@ -191,8 +191,8 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     }
 
     public void setGlobalLayout(Bundle bundle, SurfaceView surface) {
-        // Stop old thread
-        //pause();
+        // Stop old thread to provide new theme settings by chang
+        pause();
 
         // Set holder
         surface.setZOrderOnTop(false);
