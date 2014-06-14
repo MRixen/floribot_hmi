@@ -182,6 +182,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
             try {
                 loopHandler1.getLooper().quit();
+                loopHandler1 = null;
                 // Blocks thread until all operations are finished
                 thread.join();
             }catch(Exception e){

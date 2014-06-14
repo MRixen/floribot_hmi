@@ -124,6 +124,7 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
 
     public void overflowDialog(String title, int layout){
         dialog.setContentView(layout);
+
         if(layout == R.layout.layout_property){
             // Get and set edit text field for node graph name
             editTextNodeGraphName = (EditText) dialog.findViewById(R.id.editText_node_graph_name);
