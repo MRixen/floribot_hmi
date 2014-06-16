@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Message;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -52,6 +51,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     private DataAcquisition dataAcquisition;
     private ToggleButton led_sensor, led_manual, led_auto;
     private float manualIntensity, autoIntensity;
+    private Dialog dialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +79,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
         myCustomEvent = new MyCustomEvent(this);
         dataAcquisition = new DataAcquisition(this, myCustomEvent);
-
+        dialog = new Dialog(this, R.style.dialog_style);
     }
 
     @Override
@@ -109,6 +110,11 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
     public void onBackPressed() {
         customDialog(getResources().getString(R.string.dialog_message_close_connection));
     }
@@ -116,6 +122,9 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     public void onButtonClicked(View v){
         switch (v.getId()) {
             case (R.id.button_manual):
+                led_manual.setChecked(true);
+                led_auto.setChecked(false);
+                button_sensor_calibration.setEnabled(true);
                 if(led_sensor.isChecked()){
                     led_sensor.setChecked(false);
                     localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
@@ -125,9 +134,11 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 break;
             case (R.id.button_auto):
                 led_sensor.setChecked(false);
+                led_manual.setChecked(false);
+                led_auto.setChecked(true);
                 button_sensor_calibration.setEnabled(false);
                 // Hide control buttons
-                if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
+                //if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
                 // Send data to data acquisition thread
                 //startEvent(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal());
                 sendDataToDataAcquisition(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
@@ -188,7 +199,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -202,7 +213,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
+                        sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -292,7 +303,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
 
     public void customDialog(final String message) {
-        final Dialog dialog = new Dialog(this, R.style.dialog_style);
+
         dialog.setContentView(R.layout.layout_dialog_publisher_exit);
         dialog.setCancelable(false);
         dialog.setTitle(getString(R.string.dialog_title_publisher_exit));
@@ -323,15 +334,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 // Show dialog to disconnect publisher and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_close_connection))) {
                     // Stop acquisition threads if they are still alive
-                    dataAcquisition.stopThread();
-                    dataAcquisition = null;
-                    // Stop executor node
-                    DataSet.node.stopNodeThread();
-
-                    stopService(MainActivity.nodeExecutorService);
-                    // Go back to MainActivity
-                    dialog.dismiss();
-                    finish();
+                    onExit();
                     overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
@@ -344,6 +347,17 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             }
         });
         dialog.show();
+    }
+
+    private void onExit(){
+        dataAcquisition.stopThread();
+        dataAcquisition = null;
+        // Stop executor node
+        DataSet.node.stopNodeThread();
+        stopService(MainActivity.nodeExecutorService);
+        // Go back to MainActivity
+        dialog.dismiss();
+        finish();
     }
 
     @Override
@@ -364,38 +378,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
     @Override
     public void subscriberCallback(List<JoyFeedback> messageList) {
-        Log.d("@ExecuteActivity->subscriberCallback", "Change led state");
-
-       int mSize = messageList.size();
-        for(int i=0;i<mSize;i++){
-            JoyFeedback object = messageList.get(i);
-            // LOGIC IS NOT SET CORRECTLY
-            // ---------------------------------
-            // THIS CONFIGURATION IS FOR THE EVENT ONLY
-            // ---------------------------------
-            switch(object.getId()){
-                case(0):
-                    // Set led for manual mode
-                    if(object.getIntensity() > 0 && !(manualIntensity > 0)){
-                        manualIntensity = object.getIntensity();
-                        setFeedbackLed(led_manual,true);
-                        setFeedbackLed(led_auto, false);
-                        Log.d("@subscriberCallback", "led manual on");
-                    }
-                    // Set led for automatic mode
-                    if(object.getIntensity() < 1 && !(manualIntensity < 1)){
-                        manualIntensity = object.getIntensity();
-                        setFeedbackLed(led_manual, false);
-                        setFeedbackLed(led_auto, true);
-                    }
-                    break;
-            }
-            // ---------------------------------
-            // --------------END----------------
-
-            // ---------------------------------
-            // THIS CODE IS FOR THE CORRECT LOGIC!!!
-            // ---------------------------------
             /*switch(object.getId()){
                 case(0):
                     // Set led for manual mode
@@ -420,10 +402,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                         setFeedbackLed(led_auto, false);
                     }
                     break;
-            }*/
-            // ---------------------------------
-            // --------------END----------------
-        }
+            }
+        }*/
     }
 
     private void setFeedbackLed(final ToggleButton ledType, final boolean led) {
@@ -448,9 +428,15 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 break;
             case(R.id.led_auto):
                 if(isChecked) {
-
+                    if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
+                }
+                break;
+            case(R.id.led_sensor):
+                if(isChecked) {
+                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
                 }
                 break;
         }
     }
+
 }

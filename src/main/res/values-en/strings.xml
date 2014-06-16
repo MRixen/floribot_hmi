@@ -99,7 +99,7 @@
     <string name="connection_establishment_error_uri_syntax">Invalid master ID!</string>
     <string name="connection_establishment_error_display_wake_lock">No display wake lock established!</string>
     <string name="connection_establishment_error_wifi_activation">No wifi activation established!</string>
-    <string name="connection_establishment_error_airplane">Airplane mode is enabled, please disable!</string>
+    <string name="connection_establishment_error_airplane">Airplane mode is disabled, please enable!</string>
     <string name="connection_establishment_error_wifi_lock">No wifi wake lock established!</string>
 
 
@@ -132,6 +132,7 @@
     <string name="dialog_title_publisher_exit">Warning</string>
     <string name="toast_enter_all">You need to set connection parameter!</string>
     <string name="node_graph_name_header">Node name</string>
+    <string name="serviceStopped">Cannot start service.</string>
 
 
 </resources>

@@ -46,8 +46,8 @@ public class DataSet extends Application {
         MOVE_ROBOT_WITH_IMU,
         NOT_ASSIGNED_ONE,
         NOT_ASSIGNED_TWO,
-        TURN_LEFT_WITH_BUTTON,
         TURN_RIGHT_WITH_BUTTON,
+        TURN_LEFT_WITH_BUTTON,
         MOVE_FORWARD_WITH_BUTTON,
         MOVE_BACKWARD_WITH_BUTTON
     }
@@ -93,6 +93,8 @@ public class DataSet extends Application {
         Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
             @Override
             public Bundle call() throws Exception {
+
+                Log.d("@DataSet->SurfaceDataMain", Thread.currentThread().getName());
                 // Initialize surface data
                 Log.d("@SurfaceDataMain", Thread.currentThread().getName());
                 SurfaceInit();
@@ -150,7 +152,7 @@ public class DataSet extends Application {
         Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
             @Override
             public Bundle call() throws Exception {
-                Log.d("@SurfaceDataMain", Thread.currentThread().getName());
+                Log.d("@DataSet->SurfaceDataExecute", Thread.currentThread().getName());
                 // Initialize surface data
                 SurfaceInit();
 

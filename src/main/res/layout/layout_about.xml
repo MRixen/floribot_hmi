@@ -31,13 +31,13 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginBottom="5dp"
                 android:layout_below="@id/textView_about_app_description_part_one"
-                android:src="@drawable/example_image" />
+                android:src="@drawable/floribot_coordinate_system" />
 
             <TextView
                 android:id="@+id/textView_about_app_description_two"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="5dp"
                 android:layout_below="@id/imageView_about_app_description"
                 android:text="@string/about_app_description_part_two" />
 
@@ -45,7 +45,7 @@
                 android:id="@+id/textView_about_app_functions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="5dp"
                 android:layout_below="@id/textView_about_app_description_two"
                 android:text="@string/about_app_functions" />
 
@@ -53,7 +53,7 @@
                 android:id="@+id/textView_app_author"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="5dp"
                 android:layout_below="@id/textView_about_app_functions"
                 android:text="@string/app_author" />
 

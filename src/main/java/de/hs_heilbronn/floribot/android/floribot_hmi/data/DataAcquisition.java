@@ -167,16 +167,13 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     if(i > 0) axesData[counter] += Rot_y[i][j] * sensorData[j];
                 }
                 counter--;
-                Log.d("for", String.valueOf(counter));
             }
             // The axis are interchanged
             // Correct configuration should be [roll, pitch, yaw]
             // Actual configuration is [yaw, pitch, roll]
             // Therefor the axis need to be rearrange --> CHECK PLAUSIBILITY!!!
-            axesData[0] = axesData[2];
+            axesData[0] = -axesData[2];
             axesData[2] = 0;
-
-
 
             // Send sensor data to robot
             synchronized (object) {

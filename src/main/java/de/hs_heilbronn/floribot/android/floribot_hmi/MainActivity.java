@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
+import android.os.ResultReceiver;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.SurfaceView;
@@ -50,10 +51,15 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     public static Intent nodeExecutorService;
     private SharedPreferences sharedPreferences;
 
+    private DataSet dataSet;
+    private DataSet.ThemeColor[] themeColors;
+    private int currentTheme;
+    private Bundle surfaceData;
+    private ServiceResultReceiver serviceResultReceiver;
+
     private ServiceConnection mConnection = new ServiceConnection() {
         //Class for interacting with the main interface of the service.
         public void onServiceConnected(ComponentName className, IBinder service) {
-            NodeExecutorService mService = ((NodeExecutorService.LocalBinder) service).getService();
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -61,46 +67,43 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
             // unexpectedly disconnected -- that is, its process crashed.
         }
     };
-    private DataSet dataSet;
-    private DataSet.ThemeColor[] themeColors;
-    private int currentTheme;
-    private Bundle surfaceData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_main);
-
+        // Get edit text and text view fields objects for masterID, etc.
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
-
-
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
 
         buttonConnect = (Button) findViewById(R.id.connectButton);
 
+        // Get objects for progressbar (adjustment for amount of acceleration)
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage(getResources().getString(R.string.dialog_init_publisher));
         progressDialog.setIndeterminate(true);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
 
-        surface = (SurfaceView) findViewById(R.id.surface_main);
-        globalLayout = new GlobalLayout(this);
-        // Generate surface layout
+        // Get object to draw layout on screen
         dataSet = getDataSet();
+        surface = (SurfaceView) findViewById(R.id.surface_main);
         surfaceData = dataSet.SurfaceDataMain();
+        globalLayout = new GlobalLayout(this);
 
     }
 
     @Override
     protected void onStart() {
         super.onStart();
+        // Get object of service
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
+        // Get object for theme colors to text color, etc.
         themeColors = getThemeColors();
         currentTheme = getCurrentTheme();
     }
@@ -124,6 +127,21 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
         // Set surface for main activity
         if(surfaceData != null) globalLayout.setGlobalLayout(surfaceData, surface);
+
+        serviceResultReceiver = new ServiceResultReceiver(null);
+
+        // Turn off power management
+        if(wakeLock != null) {
+            if (wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        }
+        // Turn off wifi management
+        if(wifiLock != null) {
+            if (wifiLock.isHeld()) {
+                wifiLock.release();
+            }
+        }
 
     }
 
@@ -165,14 +183,10 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                                 connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
                                 connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
                                 connectionData.putString(getResources().getString(R.string.nodeGraphName), sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
-                                Log.d("@MainActivity->onButtonClicked", "node graph name = " + nodeGraphName);
+                                connectionData.putParcelable(getResources().getString(R.string.serviceResultReceiver), serviceResultReceiver);
                                 nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
                                 // Start service
                                 startService(nodeExecutorService);
-                                Log.d("@MainActivity->handleMessage: ", "Start service.");
-                                Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
-                                startActivity(executeActivity);
-                                overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                             } else {
                                 progressDialog.cancel();
                                 Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
@@ -224,7 +238,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                     powerManager = (PowerManager) getSystemService(POWER_SERVICE);
                     wakeLock = powerManager.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, TAG);
                     wakeLock.acquire();
-                    setWakeLock(wakeLock);
+
 
                     long startTime = System.nanoTime();
                     while (!wakeLock.isHeld()) {
@@ -236,13 +250,16 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                         }
                     }
                 }
+
+                // Check network state
+
                 //----------------------------------------------
 
                 // Enable wifi
                 if(resultCode) {
                     Log.d("@MainActivity->nodeInitialization: ", "Display wake lock ok.");
-                    // Check if airplane mode is on
-                    if(Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 1) {
+                    // Check if airplane mode is on (need to be on to prevent call events)
+                    if(Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 0) {
                         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
                         if (!wifiManager.isWifiEnabled()) wifiManager.setWifiEnabled(true);
 
@@ -279,8 +296,8 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
                     wifiLock = wifiManager.createWifiLock(wifiLockType, TAG);
                     wifiLock.acquire();
-                    // Set wifiLock that other classes can release
-                    setWifiLock(wifiLock);
+
+
 
                 long startTime = System.nanoTime();
                 while (!wifiLock.isHeld()) {
@@ -341,5 +358,36 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         this.currentTheme = current_theme;
         savePreferences();
         globalLayout.setGlobalLayout(surfaceData, surface);
+    }
+
+    class ServiceResultReceiver extends ResultReceiver
+    {
+        public ServiceResultReceiver(Handler handler) {
+            super(handler);
+        }
+
+        @Override
+        protected void onReceiveResult(int resultCode, Bundle resultData) {
+            switch(resultCode){
+                case(0):
+                    Log.d("@MainActivity->handleMessage: ", "Start service.");
+                    Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
+                    startActivity(executeActivity);
+                    overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
+                    break;
+                case(1):
+                    Log.d("@MainActivity->handleMessage: ", "Service stopped.");
+                    Toast.makeText(MainActivity.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_SHORT).show();
+                    // Turn off power management
+                    if (wakeLock.isHeld()) {
+                        wakeLock.release();
+                    }
+                    // Turn off wifi management
+                    if (wifiLock.isHeld()) {
+                        wifiLock.release();
+                    }
+                    break;
+            }
+        }
     }
 }

@@ -156,6 +156,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     }
 
     public void drawLayout(float translation, float rotation){
+        Log.d("@GlobalLayout->drawLayout", Thread.currentThread().getName());
         canvas.drawColor(backgroundColor);
         // draw all paths
         for(int i=0;i<= glPathArray.length-1;i++){
@@ -165,7 +166,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
         // Draw sensor visualization for top beam
         canvas.drawRect(svRectArray[0], svRectArray[1], svRectArray[2], svRectArray[3], svbPaint); // For grey beam background
-        canvas.drawRect(svRectArray[0] + svHalfSizeTopBeam - rotation*factor, svRectArray[1], svRectArray[2] - svHalfSizeTopBeam, svRectArray[3], svPaint);
+        canvas.drawRect(svRectArray[0] + svHalfSizeTopBeam + rotation*factor, svRectArray[1], svRectArray[2] - svHalfSizeTopBeam, svRectArray[3], svPaint);
         // Draw sensor visualization for left beam
         canvas.drawRect(svRectArray[4], svRectArray[5], svRectArray[6], svRectArray[7], svbPaint); // For grey beam background
         canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);

@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--Parameter for about activity-->
+    <!--PARAMETER FOR ABOUT DIALOG-->
     <string name="about_app_description_part_one">
         <large><b>Beschreibung der App:</b></large>
-        <small>
-        \nDie App FloriBot HMI wurde, im Rahmen einer Abschlussarbeit, an der Hochschule Heilbronn entwickelt.
+        \n\n<small>Die App FloriBot HMI wurde, im Rahmen einer Abschlussarbeit, an der Hochschule Heilbronn entwickelt.
         Mit dieser App ist es möglich einen Roboter mit Differenzialantrieb (FloriBot - Roboter der Hochschule Heilbronn) in zwei Achsen zu steuern,
         d.h. Translation in x-Richtung und Rotation um die z-Achse.
         </small>
     </string>
 
      <string name="about_app_description_part_two">
-        <small>
-        \nDas Betriebssystem des Roboters ist das Robot Operating System (ROS).
+        \n\n<small>Das Betriebssystem des Roboters ist das Robot Operating System (ROS).
         Die Funktionen der App sind im Allgemeinen das Versenden und Empfangen von Daten auf vorhandenen Topics.
         Dabei wird, zum Steuern des Roboters, ein Publisher erzeugt, welcher (abhängig vom Betriebsmodus) Beschleunigungswerte auf einem Topic bereitstellt.
         Mit Hilfe des Subscribers werden die, vom Roboter gesendeten, Bestätigungsdaten empfangen.
@@ -22,8 +20,8 @@
 
     <string name="about_app_functions">
         <large><b>Funktionen der App:</b></large>
-         <small>
-        \nZur Steuerung des Roboters stehen zwei Betriebsmodi zur Verfügung. Der manuelle, sowie der automatische Betriebsmodus.
+        \n\n<small>
+        Zur Steuerung des Roboters stehen zwei Betriebsmodi zur Verfügung. Der manuelle, sowie der automatische Betriebsmodus.
         Im manuellen Betriebsmodus kann der Roboter wahlweise mit dem Beschleunigungssensor (sofern vorhanden) oder mit Tasten gesteuert werden.
         Wird der manuelle Betriebsmodus mit Tasten verwendet, so kann der Beschleunigungswert durch einen Schieberegler reguliert werden.
         \nZur Visualisierung der Beschleunigungsgröße (Translation und Rotation) stehen zwei Progressbalken zur Verfügung.
@@ -33,45 +31,51 @@
 
     <string name="app_author">
         <large><b>Author:</b></large>
-        \n<small>Manuel-Leonhard Rixen</small>
+        \n\n<small>Manuel-Leonhard Rixen</small>
     </string>
 
     <string name="app_version">
         <large><b>Version:</b></large>
-        \n<small>1.0</small>
+        \n\n<small>1.0</small>
     </string>
 
-    <!--Parameter for help activity-->
+    <!--PARAMETER FOR HELP DIALOG-->
     <string name="help_connection_parameter_text">
-        <large><b>Verbindung einstellen:</b></large>\n
-        <small>1. Eingabe der ROS-Master-Adresse in Feld eins.</small>
-        \n<small>2. Eingabe des Topic-Namens zum Senden von Daten.</small>
-        \n<small>3. Eingabe des Topic-Names zum Empfangen von Daten.</small>
+        <large><b>Verbindung einstellen:</b></large>
+        \n\n<small>1. Eingabe der ROS-Master-Adresse in Feld eins.</small>
+        \n<small>2. Eingabe des Topic-Namens zum Senden von Daten in Feld zwei.</small>
+        \n<small>3. Eingabe des Topic-Names zum Empfangen von Daten in Feld drei.</small>
     </string>
 
     <string name="help_sensor_control_text">
-        <large><b>Steuerung mit Beschleunigungssensor:</b></large>\n
-        <small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
-        \n<small>2. Drücken der Taste für das Aktivieren des Beschleunigungssensors.</small>
-        \n<small>3. Bestätigen der Ausgangsposition des Gerätes.</small>
-        \n<small>4. Steuerung durch die Bewegung des Gerätes mit gleichzeitig gedrückter Totmanntaste.</small>
+        <large><b>Steuerung mit Beschleunigungssensor:</b></large>
+        \n\n<small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
+        \n<small>2. Warten bis Joystick Bedienfeld erscheint.</small>
+        \n<small>3. Drücken der Taste für das Aktivieren des Beschleunigungssensors.</small>
+        \n<small>4. Bestätigen der Ausgangsposition des Gerätes.</small>
+        \n<small>5. Steuerung durch die Bewegung des Gerätes mit gleichzeitig gedrückter Totmanntaste.</small>
     </string>
 
     <string name="help_joystick_control_text">
-        <large><b>Steuerung mit Tasten:</b></large>\n
-        <small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
-        \n<small>2. Beschleunigung per Schieberegler einstellen.</small>
+        <large><b>Steuerung mit Tasten:</b></large>
+        \n\n<small>1. Drücken der Taste für manuellen Betriebsmodus.</small>
+        \n<small>2. Beschleunigungswert per Schieberegler einstellen.</small>
         \n<small>3. Gewünschte Taste gedrückt halten.</small>
     </string>
 
     <string name="help_auto_control_text">
-        <large><b>Automatische Steuerung:</b></large>\n
-        <small>1. Drücken der Taste für automatischer Betriebsmodus.</small>
+        <large><b>Automatische Steuerung:</b></large>
+        \n\n<small>1. Drücken der Taste für automatischen Betriebsmodus.</small>
     </string>
 
     <string name="help_exit_connection_text">
-        <large><b>Verbindung beenden:</b></large>\n
-        <small>1. Drücken der Taste zum Beenden.</small>
+        <large><b>Verbindung beenden:</b></large>
+        \n\n<small>1. Drücken der Taste zum Beenden.</small>
+    </string>
+
+     <string name="tip_text">
+        <large><b>Tipp:</b></large>
+        \n\n<small>Der aktive Steuerungsmodus wird als gelbe Led angezeigt oberhalb der Steuerungstatsen angezeigt.</small>
     </string>
 
     <!--General Parameter-->
@@ -81,6 +85,7 @@
     <string name="ticker_message">Starte service...</string>
     <string name="notification_text">Klicken für zurück.</string>
     <string name="notification_title">FloriBot</string>
+    <string name="serviceStopped">Service kann nicht gestartet werden.</string>
 
     <!--Overflow parameter-->
     <string name="title_help">Hilfe</string>
@@ -99,8 +104,9 @@
     <string name="connection_establishment_error_uri_syntax">Fehlerhafte Master-Adresse!</string>
     <string name="connection_establishment_error_display_wake_lock">Dauerhaftes Einschalten des Displays fehgeschlagen!</string>
     <string name="connection_establishment_error_wifi_activation">Wifi Aktivierung fehgeschlagen!</string>
-    <string name="connection_establishment_error_airplane">Flugmodus ist aktiv, bitte ausschalten!</string>
+    <string name="connection_establishment_error_airplane">Flugmodus ist nicht aktiv, bitte einschalten!</string>
     <string name="connection_establishment_error_wifi_lock">Dauerhaftes Einschalten von Wlan fehgeschlagen!</string>
+
 
     <!--Parameter for execute activity-->
     <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in Ausgangsposition!</string>
@@ -114,6 +120,7 @@
     <string name="title_exit_button_execute">Beenden</string>
     <string name="dialog_title_publisher_exit">Warnung</string>
     <string name="node_graph_name_header">Node name</string>
+
 
 
 </resources>

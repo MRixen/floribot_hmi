@@ -7,8 +7,8 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.ResultReceiver;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.exception.RosRuntimeException;
@@ -37,11 +37,12 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     private static final int ONGOING_NOTIFICATION_ID = 1;
     private final NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
     private final IBinder binder = new LocalBinder();
-
+    private ResultReceiver resultReceiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
+
     }
 
     @Override
@@ -53,6 +54,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         String topicPublisher = connectionData.getString(getResources().getString(R.string.topicPublisher));
         String topicSubscriber = connectionData.getString(getResources().getString(R.string.topicSubscriber));
         String nodeGraphName = connectionData.getString(getResources().getString(R.string.nodeGraphName));
+        resultReceiver = connectionData.getParcelable(getResources().getString(R.string.serviceResultReceiver));
 
         URI uri = URI.create(masterId);
 
@@ -71,13 +73,20 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
             NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
             nodeConfiguration.setMasterUri(uri);
             nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
+            sendResult(0);
         }catch(RosRuntimeException e){
-            Toast.makeText(this, (CharSequence) e, Toast.LENGTH_SHORT).show();
             Log.d("@NodeExecutorService#startExecutorNode: ", "RosRuntimeException->Stop service");
+            sendResult(1);
             stopSelf();
         }
 
         return START_STICKY;
+    }
+
+    public void sendResult(int resultCode){
+        Bundle bundle = new Bundle();
+        bundle.putInt(getResources().getString(R.string.resultCode), resultCode);
+        resultReceiver.send(resultCode, bundle);
     }
 
     @Override

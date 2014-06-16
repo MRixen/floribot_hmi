@@ -234,11 +234,4 @@ public class BaseClass extends FragmentActivity implements PopupMenu.OnMenuItemC
         return sharedPreferences;
     }
 
-    public void setWifiLock(WifiManager.WifiLock wifiLock){
-        this.wifiLock = wifiLock;
-    }
-
-    public void setWakeLock(PowerManager.WakeLock wakeLock){
-        this.wakeLock = wakeLock;
-    }
 }
