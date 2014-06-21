@@ -37,7 +37,6 @@
     <!--Parameter for spinner-->
     <dimen name="dropDownWidth">200dp</dimen>
     <dimen name="seekBarMarginTop">40dp</dimen>
-
     <!-- -->
 
     <!--ONLY FOR DEBUG
@@ -54,6 +53,5 @@
     <integer name="custom_event_delay">100</integer>
     <integer name="DIVIDER">1000000000</integer>
     <!-- -->
-
 
 </resources>

@@ -107,7 +107,6 @@
     <string name="connection_establishment_error_airplane">Flugmodus ist nicht aktiv, bitte einschalten!</string>
     <string name="connection_establishment_error_wifi_lock">Dauerhaftes Einschalten von Wlan fehgeschlagen!</string>
 
-
     <!--Parameter for execute activity-->
     <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in Ausgangsposition!</string>
     <string name="dialog_negative_button">Abbrechen</string>
@@ -120,7 +119,5 @@
     <string name="title_exit_button_execute">Beenden</string>
     <string name="dialog_title_publisher_exit">Warnung</string>
     <string name="node_graph_name_header">Node name</string>
-
-
 
 </resources>

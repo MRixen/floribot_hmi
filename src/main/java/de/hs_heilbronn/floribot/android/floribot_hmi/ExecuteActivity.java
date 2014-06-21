@@ -10,7 +10,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -28,7 +27,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
 import sensor_msgs.JoyFeedback;
 
 
-public class ExecuteActivity extends BaseClass implements View.OnTouchListener, CompoundButton.OnCheckedChangeListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, DataSet.SubscriberInterface{
+public class ExecuteActivity extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, DataSet.SubscriberInterface {
 
     private Button button_sensor_calibration;
 
@@ -45,12 +44,11 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     private SharedPreferences sharedPreferences;
     private DataSet dataSet;
     private DataSet.ThemeColor[] themeColors;
-    //private ControlDataAcquisition controlDataAcquisition;
+
     private Bundle surfaceData;
     private MyCustomEvent myCustomEvent;
     private DataAcquisition dataAcquisition;
     private ToggleButton led_sensor, led_manual, led_auto;
-    private float manualIntensity, autoIntensity;
     private Dialog dialog;
 
 
@@ -61,11 +59,13 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         setContentView(R.layout.layout_execute);
 
         button_sensor_calibration = (Button) findViewById(R.id.button_sensor_calibration);
+
         led_auto = (ToggleButton) findViewById(R.id.led_auto);
-        led_auto.setOnCheckedChangeListener(this);
+
         led_sensor = (ToggleButton) findViewById(R.id.led_sensor);
+
         led_manual = (ToggleButton) findViewById(R.id.led_manual);
-        led_manual.setOnCheckedChangeListener(this);
+
 
         DataSet.subscriberInterface = this;
 
@@ -85,13 +85,9 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     @Override
     protected void onStart() {
         super.onStart();
-        //controlDataAcquisition = new ControlDataAcquisition(getApplicationContext());
         nodeExecutorService = new NodeExecutorService();
         sharedPreferences = getSharedPreferences();
         themeColors = getThemeColors();
-        // Start executor node
-        //DataSet.node.startNodeThread();
-
         // Start data acquisition thread
         dataAcquisition.startThread();
     }
@@ -122,32 +118,23 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     public void onButtonClicked(View v){
         switch (v.getId()) {
             case (R.id.button_manual):
+                // Show joystick buttons to control with and disable sensor led
                 led_manual.setChecked(true);
                 led_auto.setChecked(false);
-                button_sensor_calibration.setEnabled(true);
-                if(led_sensor.isChecked()){
-                    led_sensor.setChecked(false);
-                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
-                }
+                led_sensor.setChecked(false);
+                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                 // Send data to publisher
                 sendDataToDataAcquisition(DataSet.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_auto):
+                speed = 0;
                 led_sensor.setChecked(false);
                 led_manual.setChecked(false);
                 led_auto.setChecked(true);
-                button_sensor_calibration.setEnabled(false);
-                // Hide control buttons
-                //if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
-                // Send data to data acquisition thread
-                //startEvent(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal());
+                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                 sendDataToDataAcquisition(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_sensor_calibration):
-                // This mode is only available in manual mode
-                // Set sensor mode is enabled led
-                led_sensor.setChecked(true);
-                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
                 customDialog(getResources().getString(R.string.dialog_message_start_calibration));
                 break;
             case (R.id.button_exit):
@@ -164,20 +151,19 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
         switch (v.getId()) {
             case (R.id.button_sensor):
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN && led_sensor.isChecked()) {
                     driveCmd = 1;
                     sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_pressed);
-
                 }
-                if (event.getAction() == MotionEvent.ACTION_UP) {
+                if (event.getAction() == MotionEvent.ACTION_UP && led_sensor.isChecked()) {
                     driveCmd = 0;
                     sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                 }
                 break;
             case(R.id.button_up):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
@@ -191,7 +177,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 break;
             case(R.id.button_down):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendDataToDataAcquisition(-1, DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
@@ -205,7 +191,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 break;
             case(R.id.button_left):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
@@ -219,7 +205,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 break;
             case(R.id.button_right):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendDataToDataAcquisition(-1, DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
@@ -280,7 +266,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             sensor.setOnTouchListener(this);
             setBackgroundForJoystickButtons(drawable);
         }
-        if(led_manual.isChecked() && !led_sensor.isChecked()){
+        if(led_manual.isChecked() && !led_sensor.isChecked() || led_auto.isChecked()){
             Button button_up = (Button) findViewById(R.id.button_up);
             Button button_down = (Button) findViewById(R.id.button_down);
             Button button_left = (Button) findViewById(R.id.button_left);
@@ -292,12 +278,19 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             button_left.setOnTouchListener(this);
             button_right.setOnTouchListener(this);
             // Show seek bar (is set to invisible by pressing sensor button)
-            seekBar_speed.setVisibility(View.VISIBLE);
-            seekBar_speed.setOnSeekBarChangeListener(this);
+            if(led_manual.isChecked()) {
+                seekBar_speed.setVisibility(View.VISIBLE);
+                seekBar_speed.setOnSeekBarChangeListener(this);
+                // Enable button for sensor drive mode
+                button_sensor_calibration.setEnabled(true);
+            }
+            else{
+                seekBar_speed.setVisibility(View.INVISIBLE);
+                button_sensor_calibration.setEnabled(false);
+            }
             // Set background for joystick buttons
             setBackgroundForJoystickButtons(drawable);
-            // Enable button for sensor drive mode
-            button_sensor_calibration.setEnabled(true);
+
         }
     }
 
@@ -339,10 +332,10 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-
                     dialog.dismiss();
+                    led_sensor.setChecked(true);
+                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
                     sendDataToDataAcquisition(-1, 0, 0, -1, true);
-
                 }
             }
         });
@@ -415,28 +408,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
             }
         });
-    }
-
-    @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        switch(buttonView.getId()){
-            case(R.id.led_manual):
-                if(isChecked) {
-                    // Show joystick buttons to control with and disable sensor led
-                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
-                }
-                break;
-            case(R.id.led_auto):
-                if(isChecked) {
-                    if (localLayout != null) localLayout.setLocalLayout(R.id.fragment_container, 0, 0);
-                }
-                break;
-            case(R.id.led_sensor):
-                if(isChecked) {
-                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
-                }
-                break;
-        }
     }
 
 }

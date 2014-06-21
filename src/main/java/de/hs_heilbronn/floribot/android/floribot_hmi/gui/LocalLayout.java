@@ -21,6 +21,7 @@ public class LocalLayout extends Fragment {
     private int localLayoutResource;
     private int drawable;
 
+
     public LocalLayout(ExecuteActivity context) {
         this.context = context;
     }

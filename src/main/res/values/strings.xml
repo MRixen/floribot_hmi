@@ -28,4 +28,118 @@
     <string name="nodeGraphName">nodeGraphName</string>
     <string name="resultCode">resultCode</string>
 
+    <!--Parameter for about activity-->
+    <string name="about_app_description_part_one">
+        <large><b>Description of the app:</b></large>
+        \n\n<small>The App FloriBot HMI was build at Heilbronn University within a Bachelor thesis.
+        With this app you can control a robot in two axes, like the robot FloriBot of Heilbronn University with a differential drive.
+        If you tilt the phone then the robot will drive in x - direction (translation). If you turn the phone (like a steering wheel)
+        then you can turn the robot around z - axis.
+        </small>
+    </string>
+
+     <string name="about_app_description_part_two">
+         \n\n<small>The operation system of the robot is the <i>Robot Operating System</i> (ROS).
+         In general you can send and receive data on existing topics.
+         To do so, the app creates a publisher to provide control data on a specific topic.
+         With the created subscriber the verification data (send from the robot) were received.
+        </small>
+    </string>
+
+    <string name="about_app_functions">
+        <large><b>Possibilities of the app:</b></large>
+        \n\n<small>You can control the robot in two operation modes. The manual and the automatic mode.
+        In the manual mode you can decide between control with the acceleration sensor and simple joystick buttons.
+        If you want to control the robot with joystick buttons you can adjust the current acceleration value with a slider bar.
+        To visualize the acceleration quantity there are two progress bars. One for the translation in x - axis and the other
+        for the steering around the z - axis.
+        \nThese visualization is only present in manual mode with sensor control.
+        </small>
+    </string>
+
+    <string name="app_author">
+        <large><b>Author:</b></large>
+        \n\n<small>Manuel-Leonhard Rixen</small>
+    </string>
+
+    <string name="app_version">
+        <large><b>Version:</b></large>
+        \n\n<small>1.0</small>
+    </string>
+
+    <!--PARAMETER FOR HELP DIALOG-->
+    <string name="help_connection_parameter_text">
+        <large><b>Connection establishment:</b></large>
+        \n\n<small>1. Enter ROS - Master - Address in the first field.</small>\n
+        <small>2. Enter topic name of the publisher (send data to robot). </small>\n
+        <small>3. Enter topic name of the subscriber (receive data from robot).</small>
+    </string>
+    <string name="help_sensor_control_text">
+        <large><b>Control with acceleration sensor:</b></large>
+        \n<small>1. Press the button for manual control mode.</small>
+        \n<small>2. Wait until the joystick buttons are visible.</small>
+        \n<small>3. Press the button to enable the acceleration sensor.</small>\n
+        <small>4. Confirm the initial position of your phone.</small>\n
+        <small>5. Move your phone and press the dead man\'s push button to control the robot.</small>
+    </string>
+    <string name="help_joystick_control_text">
+        <large><b>Control with joystick buttons:</b></large>
+        \n\n<small>1. Press the button for manual control mode.</small>
+        \n<small>2. Adjust the acceleration amount with the slider bar.</small>
+        \n<small>3. Press the specific joystick button.</small>
+    </string>
+    <string name="help_auto_control_text">
+        <large><b>Automatic mode:</b></large>
+        \n\n<small>1. Press the button for automatic control mode.</small>
+    </string>
+    <string name="help_exit_connection_text">
+        <large><b>Close connection:</b></large>\n
+        <small>1. Press the exit button to close the connection. You will redirect to the main screen.</small>
+    </string>
+
+    <!--General Parameter-->
+    <string name="app_name">FloriBot HMI</string>
+
+    <!--Parameter for service-->
+    <string name="ticker_message">Start service...</string>
+    <string name="notification_text">Tab to get back.</string>
+    <string name="notification_title">FloriBot</string>
+
+    <!--Overflow parameter-->
+    <string name="title_help">Help</string>
+    <string name="title_about">About</string>
+    <string name="title_property">Properties</string>
+    <string name="theme_header">Theme</string>
+
+    <!--Parameter for main activity-->
+    <string name="title_main">Connection establishment</string>
+    <string name="title_connect_button_main">Connect</string>
+    <string name="toast_enter_master">Please Enter master address!</string>
+    <string name="toast_enter_topic">Please Enter topic address!</string>
+    <string name="toast_enter_node_graph_name">Please enter node graph name (Settings)!</string>
+    <string name="state_init_publisher">state</string>
+    <string name="dialog_init_publisher">Wait until connection is established.</string>
+    <string name="connection_establishment_error_uri_syntax">Invalid master ID!</string>
+    <string name="connection_establishment_error_display_wake_lock">No display wake lock established!</string>
+    <string name="connection_establishment_error_wifi_activation">No wifi activation established!</string>
+    <string name="connection_establishment_error_airplane">Airplane mode is disabled, please enable!</string>
+    <string name="connection_establishment_error_wifi_lock">No wifi wake lock established!</string>
+
+    <!--Parameter for execute activity-->
+    <string name="dialog_message_start_calibration">Hold your phone in start position!</string>
+    <string name="dialog_negative_button">Cancel</string>
+    <string name="dialog_positive_button">OK</string>
+    <string name="dialog_message_close_connection">Close connection?</string>
+    <string name="title_master_address">Master address: </string>
+    <string name="title_topic_publisher">Publisher topic: </string>
+    <string name="title_topic_subscriber">Subscriber topic: </string>
+    <string name="title_execute">Control menu</string>
+    <string name="title_exit_button_execute">Exit</string>
+
+    <!--Parameter for layout management-->
+    <string name="dialog_title_publisher_exit">Warning</string>
+    <string name="toast_enter_all">You need to set connection parameter!</string>
+    <string name="node_graph_name_header">Node name</string>
+    <string name="serviceStopped">Cannot start service.</string>
+
 </resources>
