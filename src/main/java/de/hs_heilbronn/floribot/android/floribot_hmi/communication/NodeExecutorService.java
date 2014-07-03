@@ -24,7 +24,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
 /**
  * Created by mr on 13.05.14.
@@ -69,10 +69,10 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         // Start ExecutorNode (publisher, subscriber)
         try {
             Log.d("@NodeExecutorService#startExecutorNode: ", "Start node...");
-            DataSet.node = new Node(getApplicationContext(), topicSubscriber, topicPublisher, nodeGraphName);
+            BaseClass.node = new Node(getApplicationContext(), topicSubscriber, topicPublisher, nodeGraphName);
             NodeConfiguration nodeConfiguration = NodeConfiguration.newPublic(InetAddressFactory.newNonLoopback().getHostAddress(), uri);
             nodeConfiguration.setMasterUri(uri);
-            nodeMainExecutor.execute(DataSet.node, nodeConfiguration);
+            nodeMainExecutor.execute(BaseClass.node, nodeConfiguration);
             sendResult(0);
         }catch(RosRuntimeException e){
             Log.d("@NodeExecutorService#startExecutorNode: ", "RosRuntimeException->Stop service");
@@ -104,7 +104,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     @Override
     public void onDestroy() {
         Log.d("@onDestroy: ", "Destroy service...");
-        shutdownNodeMain(DataSet.node);
+        shutdownNodeMain(BaseClass.node);
         super.onDestroy();
     }
 

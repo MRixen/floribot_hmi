@@ -53,7 +53,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         loopHandler = new Handler();
 
         // Handler to receive button states from executeActivity in main thread
-        DataSet.handlerForControlDataAcquisition = new Handler() {
+        BaseClass.handlerForControlDataAcquisition = new Handler() {
             public void handleMessage(Message msg) {
 
                 stateBundle = msg.getData();
@@ -89,13 +89,13 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         Log.d("@DataAcquisition->registerAccEventListener", "start sensor calibration");
                     }
                     // Send response for automatic drive mode
-                    if(DataSet.DriveMode.AUTOMATIC_DRIVE.ordinal() == 1){
+                    if(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal() == 1){
                         synchronized (object) {
                             sendDataToNode(buttonData, null);
                         }
                     }
                     // Send response for manual drive mode
-                    else if(buttonData[DataSet.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
+                    else if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
                         synchronized (object) {
                             sendDataToNode(buttonData, null);
                         }
@@ -110,11 +110,11 @@ public class DataAcquisition extends Thread implements SensorEventListener {
             public void customEvent() {
                 synchronized (object) {
                     // Send only data if one of the joystick button is pressed
-                    if(buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1 &&
-                            ( buttonData[DataSet.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[DataSet.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[DataSet.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[DataSet.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] == 1)){
+                    if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1 &&
+                            ( buttonData[BaseClass.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[BaseClass.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] == 1 ||
+                                    buttonData[BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] == 1)){
                         Log.d("@DataAcquisition->run", "send data to publisher");
                         sendDataToNode(buttonData, axesData);
                     }
@@ -178,7 +178,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
             // Send sensor data to robot
             synchronized (object) {
                 // Send only if the sensor joystick button is pressed
-                if(buttonData[DataSet.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
+                if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
                     sendDataToNode(buttonData, axesData);
                 }
             }
@@ -200,7 +200,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         msg1.setData(bundle);
         msg2.setData(bundle);
 
-        if(DataSet.handlerForPublishingData != null) DataSet.handlerForPublishingData.sendMessage(msg1);
-        if(DataSet.handlerForVisualization != null) DataSet.handlerForVisualization.sendMessage(msg2);
+        if(BaseClass.handlerForPublishingData != null) BaseClass.handlerForPublishingData.sendMessage(msg1);
+        if(BaseClass.handlerForVisualization != null) BaseClass.handlerForVisualization.sendMessage(msg2);
     }
 }

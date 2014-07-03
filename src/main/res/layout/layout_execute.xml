@@ -1,7 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity">
 
     <SurfaceView
@@ -9,31 +9,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <include layout="@layout/layout_top_bar" />
-
-    <TextView
-        android:id="@+id/header_main"
-        android:text="@string/title_execute"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="5dp"
-        android:layout_alignParentTop="true"
-        android:textColor="#ffffff"
-        android:layout_marginTop="5dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
     <Button
         android:id="@+id/button_exit"
-        android:text="@string/title_exit_button_execute"
+        android:layout_width="130dp"
+        android:layout_height="60dp"
         android:textColor="#FFFFFF"
-        android:layout_width="70dp"
-        android:layout_height="50dp"
+        android:textSize="18sp"
+        android:text="@string/title_exit_button_execute"
         android:background="@drawable/button_selector"
         android:onClick="onButtonClicked"
-        android:layout_marginRight="15dp"
-        android:layout_marginBottom="5dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true" />
+
+    <ImageView
+        android:id="@+id/button_extension"
+        android:layout_width="350dp"
+        android:layout_height="60dp"
+        android:background="@drawable/button_extension_modern_blue"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="115dp"
+        android:layout_alignParentBottom="true"/>
 
     <Button
         android:id="@+id/button_manual"

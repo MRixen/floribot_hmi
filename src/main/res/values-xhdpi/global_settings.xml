@@ -3,11 +3,12 @@
 
     <!--PARAMETER FOR LAYOUT ON MAIN ACTIVITY-->
     <!--Parameter for middle bar-->
+    <dimen name="textViewWidth">130dp</dimen>
+    <dimen name="editTextWidth">210dp</dimen>
+    <dimen name="editTextMarginTop">30dp</dimen>
+
     <dimen name="textViewMarginLeft">25dp</dimen>
-    <dimen name="editTextWidth">270dp</dimen>
     <dimen name="textSize">14sp</dimen>
-    <dimen name="beamMarginTop">65dp</dimen>
-    <dimen name="beamWidth">450dp</dimen>
     <dimen name="beamHeight">40dp</dimen>
     <dimen name="beamOffset">20dp</dimen>
     <!--Parameter for buttons in bottom bar-->
@@ -35,7 +36,7 @@
     <!-- -->
 
     <!--PARAMETER FOR GLOBAL LAYOUT-->
-    <integer name="topBarHeightInDp">30</integer>
+    <integer name="svMarginTopInDp">15</integer>
     <integer name="bottomBarHeightInDp">55</integer>
     <integer name="bottomBarWidthInDp">105</integer>
     <!--Parameter for dialog box-->
@@ -45,7 +46,7 @@
     <dimen name="dropDownWidth">200dp</dimen>
 
     <!--PARAMETER FOR LOCAL LAYOUT-->
-    <dimen name="seekBarMarginTop">60dp</dimen>
+    <dimen name="seekBarMarginTop">15dp</dimen>
     <!-- -->
 
 </resources>

@@ -5,6 +5,9 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,7 +17,6 @@ import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,14 +28,12 @@ import java.net.URISyntaxException;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
 
 import static android.os.Process.myPid;
 
-public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
+public class MainActivity extends BaseClass {
 
-    private GlobalLayout globalLayout;
+
     private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
     private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
     private Button buttonConnect;
@@ -44,18 +44,16 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
 
-    private SurfaceView surface;
+
     private Handler handler;
     private ProgressDialog progressDialog;
 
     public static Intent nodeExecutorService;
     private SharedPreferences sharedPreferences;
 
-
-    private DataSet dataSet;
-    private DataSet.ThemeColor[] themeColors;
+    private BaseClass.ThemeColor[] themeColors;
     private int currentTheme;
-    private Bundle surfaceData;
+
     private ServiceResultReceiver serviceResultReceiver;
 
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -69,20 +67,23 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         }
     };
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_main);
+
         // Get edit text and text view fields objects for masterID, etc.
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
+
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
 
-        buttonConnect = (Button) findViewById(R.id.connectButton);
+        buttonConnect = (Button) findViewById(R.id.connect_button);
 
         // Get objects for progressbar (adjustment for amount of acceleration)
         progressDialog = new ProgressDialog(this);
@@ -90,12 +91,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         progressDialog.setIndeterminate(true);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.setCancelable(false);
-
-        // Get object to draw layout on screen
-        dataSet = getDataSet();
-        surface = (SurfaceView) findViewById(R.id.surface_main);
-        surfaceData = dataSet.SurfaceDataMain();
-        globalLayout = new GlobalLayout(this);
+        sharedPreferences = getSharedPreferences();
 
     }
 
@@ -106,28 +102,18 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
         // Get object for theme colors to text color, etc.
         themeColors = getThemeColors();
-        currentTheme = getCurrentTheme();
+        currentTheme = sharedPreferences.getInt("theme", 0);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        sharedPreferences = getSharedPreferences();
 
         loadPreferences();
-        // Set color for text
-        editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-        editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-        editTextTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        setTheme();
+       // initActionBar();
 
-        textViewMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-        textViewTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-        textViewTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
 
-        buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-
-        // Set surface for main activity
-        if(surfaceData != null) globalLayout.setGlobalLayout(surfaceData, surface);
 
         serviceResultReceiver = new ServiceResultReceiver(null);
 
@@ -146,12 +132,60 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
     }
 
+    private void setTheme() {
+
+        // Change text color of connect button
+        buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        // Change text color of text fields
+        editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        editTextTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        textViewMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        textViewTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        textViewTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+        textViewMasterId.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewTopicPublisher.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewTopicSubscriber.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+
+        // Change background color of text fields
+        // Get shape id's from layer list of editText fields
+        int[] shapes = new int[3];
+        shapes[0] = R.id.shape_one;
+        shapes[1] = R.id.shape_two;
+        shapes[2] = R.id.shape_three;
+        // Get stroke width for layer list components
+        int[] strokes = new int[3];
+        strokes[0] = getResources().getDimensionPixelSize(R.dimen.strokeWidthOne);
+        strokes[1] = getResources().getDimensionPixelSize(R.dimen.strokeWidthTwo);
+        strokes[2] = getResources().getDimensionPixelSize(R.dimen.strokeWidthThree);
+        // Get background (layer list) of editText fields
+        LayerDrawable[] bgTextFields = new LayerDrawable[3];
+        bgTextFields[0] = (LayerDrawable) editTextMasterId.getBackground();
+        bgTextFields[1] = (LayerDrawable) editTextTopicPublisher.getBackground();
+        bgTextFields[2] = (LayerDrawable) editTextTopicSubscriber.getBackground();
+        // Change shapes background color of the layer lists from editText fields
+        for(int i=0;i<bgTextFields.length;i++){
+            for(int j=0;j<shapes.length;j++) {
+                GradientDrawable layerTextFields = (GradientDrawable) bgTextFields[i].findDrawableByLayerId(shapes[j]);
+                layerTextFields.setStroke(strokes[j], themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+                if(j != 1) layerTextFields.setColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+            }
+        }
+        // Change button color to theme color
+        StateListDrawable stateListDrawable = new StateListDrawable();
+        stateListDrawable.addState(new int[] {android.R.attr.state_pressed}, getResources().getDrawable(R.drawable.button_background_pressed));
+        stateListDrawable.addState(new int[] {-android.R.attr.state_pressed}, themeColors[sharedPreferences.getInt("theme", 0)].drawable[0]);
+        buttonConnect.setBackgroundDrawable(stateListDrawable);
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
         getEditTextFieldEntries();
         savePreferences();
-        globalLayout.pause();
     }
 
     @Override
@@ -167,7 +201,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
 
     public void onButtonClicked(View v) {
         switch (v.getId()) {
-            case (R.id.connectButton):
+            case (R.id.connect_button):
 
                 getEditTextFieldEntries();
 
@@ -183,6 +217,7 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
                                 connectionData.putString(getResources().getString(R.string.masterId), masterId);
                                 connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
                                 connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
+
                                 connectionData.putString(getResources().getString(R.string.nodeGraphName), sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
                                 connectionData.putParcelable(getResources().getString(R.string.serviceResultReceiver), serviceResultReceiver);
                                 nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
@@ -344,7 +379,6 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         editor.putString(getResources().getString(R.string.masterId), masterId);
         editor.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
         editor.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
-        editor.putInt("theme", currentTheme);
         editor.commit();
     }
 
@@ -352,13 +386,6 @@ public class MainActivity extends BaseClass implements BaseClass.ThemeManager {
         editTextMasterId.setText(sharedPreferences.getString(getResources().getString(R.string.masterId), ""));
         editTextTopicPublisher.setText(sharedPreferences.getString(getResources().getString(R.string.topicPublisher), ""));
         editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.topicSubscriber), ""));
-    }
-
-    @Override
-    public void themeCallback(int current_theme) {
-        this.currentTheme = current_theme;
-        savePreferences();
-        globalLayout.setGlobalLayout(surfaceData, surface);
     }
 
     class ServiceResultReceiver extends ResultReceiver

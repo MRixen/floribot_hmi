@@ -1,111 +1,120 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:background="#000000"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
 
-    <SurfaceView
-        android:id="@+id/surface_main"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
-    <include layout="@layout/layout_top_bar" />
-
-    <TextView
-        android:id="@+id/header_main"
-        android:text="@string/title_main"
-        android:layout_alignParentLeft="true"
-        android:layout_marginLeft="5dp"
-        android:layout_alignParentTop="true"
-        android:textColor="#ffffff"
-        android:layout_marginTop="5dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
-
     <Button
-        android:id="@+id/connectButton"
-        android:text="@string/title_connect_button_main"
-        android:textColor="#FFFFFF"
-        android:layout_width="@dimen/connectButtonWidth"
-        android:layout_height="50dp"
-        android:background="@drawable/button_selector"
-        android:onClick="onButtonClicked"
-        android:layout_marginRight="15dp"
-        android:layout_marginBottom="5dp"
+        android:id="@+id/connect_button"
+        android:layout_width="130dp"
+        android:layout_height="60dp"
+        android:textColor="#ffffff"
+        android:textSize="18sp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true" />
+        android:layout_alignParentRight="true"
+        android:text="@string/title_connect_button_main"
+        android:background="@drawable/button_selector"
+        android:onClick="onButtonClicked"/>
 
+    <!--BEGIN FIRST BEAM-->
     <TextView
         android:id="@+id/textView_master_destination"
-        android:text="@string/title_master_address"
-        android:layout_marginBottom="@dimen/beamOffset"
-        android:layout_marginTop="@dimen/beamMarginTop"
+        android:layout_width="@dimen/textViewWidth"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="@dimen/textViewMarginLeft"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/beamHeight"
+        android:layout_marginTop="@dimen/editTextMarginTop"
         android:textSize="@dimen/textSize"
-        android:textColor="#ffffff"
-        android:gravity="center_vertical"
-        android:layout_marginRight="15dp" />
-
-    <TextView
-        android:id="@+id/textView_topic_publisher"
-        android:text="@string/title_topic_publisher"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/beamHeight"
-        android:layout_marginBottom="@dimen/beamOffset"
-        android:textSize="@dimen/textSize"
-        android:textColor="#ffffff"
-        android:gravity="center_vertical"
-        android:layout_alignLeft="@id/textView_master_destination"
-        android:layout_below="@id/textView_master_destination" />
-
-    <TextView
-        android:id="@+id/textView_topic_subscriber"
-        android:text="@string/title_topic_subscriber"
-        android:layout_width="wrap_content"
-        android:layout_height="@dimen/beamHeight"
-        android:textSize="@dimen/textSize"
-        android:textColor="#ffffff"
-        android:gravity="center_vertical"
-        android:layout_alignLeft="@id/textView_topic_publisher"
-        android:layout_below="@id/textView_topic_publisher" />
+        android:text="@string/title_master_address"
+        android:background="@color/ModernBlue"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"/>
 
     <EditText
         android:id="@+id/editText_master_destination"
         android:layout_width="@dimen/editTextWidth"
-        android:layout_height="@dimen/beamHeight"
-        android:inputType="textUri"
-        android:textColor="#ffffff"
-        android:textSize="@dimen/textSize"
-        android:gravity="center_vertical"
         android:layout_alignTop="@id/textView_master_destination"
-        android:layout_toRightOf="@id/textView_master_destination"
-        android:background="@drawable/layout_edit_text" />
+        android:layout_height="wrap_content"
+        android:textColorHint="#FFFFFF"
+        android:background="@drawable/layout_edit_text"
+        android:textSize="@dimen/textSize"
+        android:inputType="textUri"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:layout_toRightOf="@id/textView_master_destination"/>
+    <!--END FIRST BEAM-->
+
+    <!--BEGIN SECOND BEAM-->
+    <TextView
+        android:id="@+id/textView_topic_publisher"
+        android:layout_width="@dimen/textViewWidth"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/textViewMarginLeft"
+        android:layout_marginTop="15dp"
+        android:textSize="@dimen/textSize"
+        android:text="@string/title_topic_publisher"
+        android:background="@color/ModernBlue"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:layout_below="@id/textView_master_destination"/>
 
     <EditText
         android:id="@+id/editText_topic_publisher"
         android:layout_width="@dimen/editTextWidth"
-        android:layout_height="@dimen/beamHeight"
+        android:layout_height="wrap_content"
+        android:textColorHint="#FFFFFF"
+        android:background="@drawable/layout_edit_text"
         android:inputType="text"
+        android:textColor="#FFFFFF"
         android:textSize="@dimen/textSize"
-        android:textColor="#ffffff"
-        android:gravity="center_vertical"
-        android:layout_alignLeft="@id/editText_master_destination"
         android:layout_alignTop="@id/textView_topic_publisher"
-        android:background="@drawable/layout_edit_text" />
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:layout_toRightOf="@id/textView_topic_publisher"/>
+    <!--END SECOND BEAM-->
+
+    <!--BEGIN THIRD BEAM-->
+    <TextView
+        android:id="@+id/textView_topic_subscriber"
+        android:layout_width="@dimen/textViewWidth"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/textViewMarginLeft"
+        android:layout_marginTop="15dp"
+        android:textSize="@dimen/textSize"
+        android:text="@string/title_topic_publisher"
+        android:background="@color/ModernBlue"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:layout_below="@id/textView_topic_publisher"/>
 
     <EditText
         android:id="@+id/editText_topic_subscriber"
         android:layout_width="@dimen/editTextWidth"
-        android:layout_height="@dimen/beamHeight"
-        android:gravity="center_vertical"
+        android:layout_height="wrap_content"
+        android:textColorHint="#FFFFFF"
+        android:background="@drawable/layout_edit_text"
         android:inputType="text"
+        android:textColor="#FFFFFF"
         android:textSize="@dimen/textSize"
-        android:textColor="#ffffff"
-        android:layout_alignLeft="@id/editText_master_destination"
         android:layout_alignTop="@id/textView_topic_subscriber"
-        android:background="@drawable/layout_edit_text" />
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:paddingLeft="5dp"
+        android:paddingRight="10dp"
+        android:layout_toRightOf="@id/textView_topic_publisher"/>
+    <!--END SECOND BEAM-->
 
 </RelativeLayout>

@@ -16,7 +16,7 @@ import org.ros.node.topic.Publisher;
 import java.util.List;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import sensor_msgs.Joy;
 import sensor_msgs.JoyFeedback;
 import sensor_msgs.JoyFeedbackArray;
@@ -37,6 +37,7 @@ public class Node extends AbstractNodeMain {
         this.topicSubscriber = topicSubscriber;
         this.topicPublisher = topicPublisher;
         this.nodeGraphName = nodeGraphName;
+
     }
 
     @Override
@@ -93,7 +94,7 @@ public class Node extends AbstractNodeMain {
             loopHandler = new Handler();
 
             // Handler to receive data and publish
-            DataSet.handlerForPublishingData = new Handler() {
+            BaseClass.handlerForPublishingData = new Handler() {
                 public void handleMessage(Message msg) {
 
                     Bundle bundle = msg.getData();
@@ -122,7 +123,7 @@ public class Node extends AbstractNodeMain {
                 @Override
                 public void onNewMessage(JoyFeedbackArray message) {
                     List<JoyFeedback> messageList = message.getArray();
-                    DataSet.subscriberInterface.subscriberCallback(messageList);
+                    BaseClass.subscriberInterface.subscriberCallback(messageList);
                     Log.d("@Subscriber->addMessageListener", "addMessageListener...");
                 }
             });

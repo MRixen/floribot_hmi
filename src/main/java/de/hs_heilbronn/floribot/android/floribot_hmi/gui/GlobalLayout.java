@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,11 +13,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
 /**
  * Created by mr on 20.05.14.
@@ -27,8 +24,6 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataSet;
  */
 public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
-    private View currentView;
-    private  MainActivity mainActivity;
     private SharedPreferences sharedPreferences;
     private  Context context;
 
@@ -37,8 +32,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
     private SurfaceHolder holder;
     private Canvas canvas;
-    private Paint glPaint, svPaint, svPaintDebug, svbPaint;
-    private Path[] glPathArray;
+    private Paint svPaint, svPaintDebug, svbPaint;
 
     private int backgroundColor, foregroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
@@ -57,30 +51,6 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         // Load draw array for sensor visualization
         if (bundle.containsKey(context.getResources().getString(R.string.svArray))) svRectArray = bundle.getFloatArray(context.getResources().getString(R.string.svArray));
 
-        // Create paths for global layout
-        float[] glPointArray = bundle.getFloatArray(context.getResources().getString(R.string.glPointArray));
-        int count = bundle.getInt(context.getResources().getString(R.string.glPathQuantity));
-
-        glPathArray = new Path[count];
-        int i = 0;
-
-        for (int j = 0; j <= count - 1; j++) {
-            glPathArray[j] = new Path();
-            glPathArray[j].setFillType(Path.FillType.EVEN_ODD);
-            glPathArray[j].moveTo(glPointArray[i], glPointArray[i + 1]);
-
-            while (glPointArray[i] != -1) {
-                glPathArray[j].lineTo(glPointArray[i], glPointArray[i + 1]);
-                i += 2;
-            }
-            i++;
-            glPathArray[j].close();
-        }
-
-        // Name convention: gl = GlobalLayout, sv = SensorVisualization, svb = SensorVisualizationBackground
-        glPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        glPaint.setStyle(Paint.Style.FILL);
-        glPaint.setColor(foregroundColor);
         svPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         svPaint.setStyle(Paint.Style.FILL);
         svPaint.setColor(context.getResources().getColor(R.color.ModernOrange));
@@ -129,7 +99,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         }
 
         // Handler to receive and visualize sensor data
-        DataSet.handlerForVisualization = new Handler() {
+        BaseClass.handlerForVisualization = new Handler() {
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
 
@@ -158,10 +128,6 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     public void drawLayout(float translation, float rotation){
         Log.d("@GlobalLayout->drawLayout", Thread.currentThread().getName());
         canvas.drawColor(backgroundColor);
-        // draw all paths
-        for(int i=0;i<= glPathArray.length-1;i++){
-            canvas.drawPath(glPathArray[i], glPaint);
-        }
         float factor = svHalfSizeTopBeam/10;
 
         // Draw sensor visualization for top beam
@@ -201,7 +167,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         holder = surface.getHolder();
 
         // Load color from settings
-        DataSet.ThemeColor[] themeColors = DataSet.ThemeColor.values();
+        BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;
         this.foregroundColor = themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor;
 
