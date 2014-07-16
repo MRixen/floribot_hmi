@@ -168,6 +168,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 }
                 counter--;
             }
+            Log.d("sensorData", axesData[0] + " / " + axesData[1] + " / " + axesData[2]);
             // The axis are interchanged
             // Correct configuration should be [roll, pitch, yaw]
             // Actual configuration is [yaw, pitch, roll]

@@ -27,6 +27,7 @@ import sensor_msgs.JoyFeedbackArray;
 public class Node extends AbstractNodeMain {
     private org.ros.node.topic.Subscriber<JoyFeedbackArray> subscriber;
     private org.ros.node.topic.Publisher<Joy> publisher;
+
     public Thread t;
     private Handler loopHandler = null;
     private final String topicSubscriber, topicPublisher, nodeGraphName;
@@ -48,7 +49,8 @@ public class Node extends AbstractNodeMain {
     @Override
     public void onStart(ConnectedNode connectedNode) {
         // Create publisher
-        publisher = connectedNode.newPublisher(topicPublisher, sensor_msgs.Joy._TYPE);
+        //publisher = connectedNode.newPublisher(topicPublisher, sensor_msgs.Joy._TYPE);
+        publisher = connectedNode.newPublisher(topicPublisher, Joy._TYPE);
         // Create subscriber
         subscriber = connectedNode.newSubscriber(topicSubscriber, sensor_msgs.JoyFeedbackArray._TYPE);
 
@@ -112,6 +114,7 @@ public class Node extends AbstractNodeMain {
                         joyTest.setAxes(axesData);
                         joyTest.setButtons(buttonData);
                         publisher.publish(joyTest);
+
 
                     }
                 }
