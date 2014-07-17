@@ -120,5 +120,6 @@
     <string name="dialog_title_publisher_exit">Warnung</string>
     <string name="node_graph_name_header">Node name</string>
     <string name="theme_prompt">Theme wählen</string>
+    <string name="phone_calibration_area">Gerät ist nicht in Kalibrierungsbereich!</string>
 
 </resources>

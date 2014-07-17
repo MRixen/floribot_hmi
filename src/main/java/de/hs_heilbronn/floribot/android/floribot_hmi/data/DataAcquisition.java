@@ -1,5 +1,6 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
+import android.app.Activity;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -10,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
+import android.widget.Toast;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.MyCustomEvent;
@@ -33,10 +35,13 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     private float[] axesData = new float[3];
     private boolean startCalibration;
     private Thread thread;
+    private boolean stopSending, phoneInArea;
+    private Activity activity;
 
     public DataAcquisition(Context context, MyCustomEvent myCustomEvent) {
         this.context = context;
         this.myCustomEvent = myCustomEvent;
+        activity = new Activity();
     }
 
     public void run() {
@@ -141,6 +146,8 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     private void unregisterSensorListener() {
         sensorManager.unregisterListener(DataAcquisition.this);
         calibrateSensor = false;
+        stopSending = false;
+        phoneInArea = false;
     }
 
     @Override
@@ -150,37 +157,71 @@ public class DataAcquisition extends Thread implements SensorEventListener {
             float[] sensorData = event.values;
             if (!calibrateSensor) {
                 // If we want display in landscape (not in reverse landscape -> by default) then we need the positive of alpha!
-                alpha = -(((Math.PI / 2) / 9.81) * sensorData[2]);
+                //alpha = -(((Math.PI / 2) / 9.81) * sensorData[2]);
+                double gz = sensorData[2];
+                double g = 9.81;
+                alpha = -(Math.PI/2)+Math.acos(gz / g);
                 calibrateSensor = true;
             }
 
             // Rotation matrix around y axes
-            double[][] Rot_y = {{Math.cos(alpha), 0, Math.sin(alpha)}, {0, 1, 0}, {-Math.sin(alpha), 0, Math.cos(alpha)}};
+            //double[][] Rot_y = {{Math.cos(alpha), 0, Math.sin(alpha)}, {0, 1, 0}, {-Math.sin(alpha), 0, Math.cos(alpha)}};
+           /* // Transform sensor vector with rotation matrix
+            float[] axesData = new float[3];*/
+            //int counter = axesData.length-1;
 
-            // Transform sensor vector with rotation matrix
-            float[] axesData = new float[3];
-            int counter = axesData.length;
-
-            for (int i = 0; i < sensorData.length; i++) {
+            /*for (int i = 0; i < sensorData.length; i++) {
                 for (int j = 0; j < sensorData.length; j++) {
                     // Calculate second and third value only
                     if(i > 0) axesData[counter] += Rot_y[i][j] * sensorData[j];
                 }
                 counter--;
-            }
-            Log.d("sensorData", axesData[0] + " / " + axesData[1] + " / " + axesData[2]);
-            // The axis are interchanged
-            // Correct configuration should be [roll, pitch, yaw]
-            // Actual configuration is [yaw, pitch, roll]
-            // Therefor the axis need to be rearrange --> CHECK PLAUSIBILITY!!!
-            axesData[0] = -axesData[2];
-            axesData[2] = 0;
+            }*/
 
-            // Send sensor data to robot
-            synchronized (object) {
-                // Send only if the sensor joystick button is pressed
-                if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
-                    sendDataToNode(buttonData, axesData);
+
+            double[] Ry = {-Math.sin(alpha), 0, Math.cos(alpha)};
+            float[] axesData = new float[3];
+
+            // WII CONTROLLER
+            // Rotation around x stands for robot translation
+            // Rotation around y stands for robot rotation
+
+            // PHONE
+            // Rotation around y stands for robot translation
+            // Rotation around -x stands for robot rotation
+            for (int i = 0; i < sensorData.length; i++) {
+                    // Calculate z value only
+                    axesData[1] += Ry[i] * sensorData[i];
+            }
+
+            axesData[0] = -sensorData[1];
+            /*axesData[0] = -axesData[2];
+            axesData[2] = 0;*/
+
+            //
+            // CHECK PLAUSIBILITY
+            // Check if phone is in calibration area
+            // Phone is in calibration area when the first sensor value is smaller than 1
+            if(!phoneInArea && !stopSending) {
+                if (Math.abs(axesData[1]) >= 1) {
+                    stopSending = true;
+                    activity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(context,context.getResources().getString(R.string.phone_calibration_area),Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else phoneInArea = true;
+            }
+
+            // Send sensor data to robot if calibration is successfully
+            if(!stopSending) {
+                Log.d("sensorData", axesData[0] + " / " + axesData[1] + " / " + axesData[2]);
+                synchronized (object) {
+                    // Send only if the sensor joystick button is pressed
+                    if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
+                        sendDataToNode(buttonData, axesData);
+                    }
                 }
             }
 

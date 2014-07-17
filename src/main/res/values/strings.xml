@@ -144,5 +144,6 @@
 
 
     <string name="theme_prompt">Select theme</string>
+    <string name="phone_calibration_area">Phone is not in calibration area!</string>
 
 </resources>
