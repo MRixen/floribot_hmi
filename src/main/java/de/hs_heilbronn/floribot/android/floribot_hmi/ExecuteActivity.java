@@ -81,6 +81,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         myCustomEvent = new MyCustomEvent(this);
         dataAcquisition = new DataAcquisition(this, myCustomEvent);
         dialog = new Dialog(this, R.style.dialog_style);
+
+        setActionBarTitle(getResources().getString(R.string.title_activity_execute));
     }
 
     @Override

@@ -38,6 +38,7 @@ import sensor_msgs.JoyFeedback;
 public class BaseClass extends ActionBarActivity {
 
     private static Context context;
+    private String titleName;
     private int pxWidth, pxHeight;
     private float factorHeight, factorWidth;
     float[] pointsArray;
@@ -84,9 +85,6 @@ public class BaseClass extends ActionBarActivity {
         dialogWindow = dialog.getWindow();
 
         context = this;
-
-
-
     }
 
     @Override
@@ -239,6 +237,13 @@ public class BaseClass extends ActionBarActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Remove item that starts the settings menu to prevent changes during robot control
+        if(titleName.equals(getResources().getString(R.string.title_activity_execute))) menu.removeItem(R.id.popup_properties);
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -277,7 +282,12 @@ public class BaseClass extends ActionBarActivity {
         // Prevent that actionBar show grey color
         bar.setDisplayShowTitleEnabled(false);
         bar.setDisplayShowTitleEnabled(true);
+        bar.setTitle(titleName);
 
+    }
+
+    public void setActionBarTitle(String titleRes){
+        this.titleName = titleRes;
     }
 
     public BaseClass.ThemeColor[] getThemeColors(){

@@ -67,7 +67,6 @@ public class MainActivity extends BaseClass {
         }
     };
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -93,6 +92,7 @@ public class MainActivity extends BaseClass {
         progressDialog.setCancelable(false);
         sharedPreferences = getSharedPreferences();
 
+        setActionBarTitle(getResources().getString(R.string.title_activity_main));
     }
 
     @Override
