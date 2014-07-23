@@ -22,7 +22,6 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 public class DataAcquisition extends Thread implements SensorEventListener {
 
     private final Context context;
-    //private final MyCustomEvent myCustomEvent;
     private final Object object = new Object();
     private Handler threadHandler;
     private SensorManager sensorManager;
@@ -39,12 +38,10 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
     public DataAcquisition(Context context) {
         this.context = context;
-        //this.myCustomEvent = myCustomEvent;
         activity = new Activity();
     }
 
     public void run() {
-        //Log.d("@DataAcquisition->run", Thread.currentThread().getName());
         // Get sensor object and acc sensor
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         final Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -59,9 +56,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         // Handler to receive button states from executeActivity in main dataAcquisitionThread
         BaseClass.handlerForControlDataAcquisition = new Handler() {
             public void handleMessage(Message msg) {
-
                 stateBundle = msg.getData();
-
                 // Get button state array from main dataAcquisitionThread
                 if (stateBundle != null) {
                     if (stateBundle.containsKey(context.getResources().getString(R.string.button_state_array))) {
@@ -122,7 +117,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         Log.d("@DataAcquisition->run", "send data to publisher");
                         sendDataToNode(buttonData, axesData);
                     }
-
                 }
             }
         });
@@ -155,50 +149,20 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
             float[] sensorData = event.values;
             if (!calibrateSensor) {
-
-                //alpha = -(((Math.PI / 2) / 9.81) * sensorData[2]);
                 double gz = sensorData[2];
                 double g = 9.81;
                 alpha = -(Math.PI/2)+Math.acos(gz / g);
                 calibrateSensor = true;
             }
 
-            // Rotation matrix around y axes
-            //double[][] Rot_y = {{Math.cos(alpha), 0, Math.sin(alpha)}, {0, 1, 0}, {-Math.sin(alpha), 0, Math.cos(alpha)}};
-           /* // Transform sensor vector with rotation matrix
-            float[] axesData = new float[3];*/
-            //int counter = axesData.length-1;
-
-            /*for (int i = 0; i < sensorData.length; i++) {
-                for (int j = 0; j < sensorData.length; j++) {
-                    // Calculate second and third value only
-                    if(i > 0) axesData[counter] += Rot_y[i][j] * sensorData[j];
-                }
-                counter--;
-            }*/
-
-
             double[] Ry = {-Math.sin(alpha), 0, Math.cos(alpha)};
             float[] axesData = new float[3];
 
-            // WII CONTROLLER
-            // Rotation around x stands for robot translation
-            // Rotation around y stands for robot rotation
-
-            // PHONE
-            // Rotation around y stands for robot translation
-            // Rotation around -x stands for robot rotation
             for (int i = 0; i < sensorData.length; i++) {
                     // Calculate z value only
                     axesData[1] += Ry[i] * sensorData[i];
             }
-
             axesData[0] = -sensorData[1];
-            /*axesData[0] = -axesData[2];
-            axesData[2] = 0;*/
-
-            //
-            // CHECK PLAUSIBILITY
             // Check if phone is in calibration area
             // Phone is in calibration area when the first sensor value is smaller than 1
             if(!phoneInArea && !stopSending) {
@@ -212,7 +176,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     });
                 } else phoneInArea = true;
             }
-
             // Send sensor data to robot if calibration is successfully
             if(!stopSending) {
                 Log.d("sensorData", axesData[0] + " / " + axesData[1] + " / " + axesData[2]);
@@ -223,7 +186,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     }
                 }
             }
-
         }
     }
 

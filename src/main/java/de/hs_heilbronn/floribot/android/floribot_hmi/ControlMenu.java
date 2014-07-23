@@ -44,7 +44,6 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     private BaseClass.ThemeColor[] themeColors;
 
     private Bundle surfaceData;
-    //private MyCustomEvent myCustomEvent;
     private DataAcquisition dataAcquisition;
     private ToggleButton led_sensor, led_manual, led_auto;
     private Dialog dialog;
@@ -73,9 +72,6 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         localLayout = new LocalLayout(this);
         // Generate surface layout
         surfaceData = getSurfaceDataExecute();
-
-        //myCustomEvent = new MyCustomEvent(this);
-        //dataAcquisition = new DataAcquisition(this, myCustomEvent);
         dataAcquisition = new DataAcquisition(this);
         dialog = new Dialog(this, R.style.dialog_style);
 

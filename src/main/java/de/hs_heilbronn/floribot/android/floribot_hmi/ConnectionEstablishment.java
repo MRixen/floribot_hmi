@@ -35,39 +35,20 @@ public class ConnectionEstablishment extends BaseClass {
     private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
     private Button buttonConnect;
     private String masterId, topicPublisher, topicSubscriber, nodeGraphName;
-
     private WifiManager wifiManager;
     private PowerManager powerManager;
     private PowerManager.WakeLock wakeLock;
     private WifiManager.WifiLock wifiLock;
-
-
     private Handler connectionInitHandler;
     private ProgressDialog progressDialog;
-
     public static Intent nodeExecutorService;
     private SharedPreferences sharedPreferences;
-
     private BaseClass.ThemeColor[] themeColors;
-    //private int currentTheme;
-
     private ServiceResultReceiver serviceResultReceiver;
-
-/*    private ServiceConnection mConnection = new ServiceConnection() {
-        //Class for interacting with the main interface of the service.
-        public void onServiceConnected(ComponentName className, IBinder service) {
-        }
-
-        public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-        }
-    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.layout_main);
 
         // Get edit text and text view fields objects for masterID, etc.
@@ -75,7 +56,6 @@ public class ConnectionEstablishment extends BaseClass {
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
-
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
 
@@ -99,19 +79,13 @@ public class ConnectionEstablishment extends BaseClass {
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
         // Get object for theme colors to text color, etc.
         themeColors = getThemeColors();
-        //currentTheme = sharedPreferences.getInt("theme", 0);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         loadPreferences();
         setTheme();
-       // initActionBar();
-
-
-
         serviceResultReceiver = new ServiceResultReceiver(null);
 
         // Turn off power management
@@ -126,14 +100,12 @@ public class ConnectionEstablishment extends BaseClass {
                 wifiLock.release();
             }
         }
-
     }
 
     private void setTheme() {
 
         // Change text color of connect button
         buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-
         // Change text color of text fields
         editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
@@ -285,7 +257,6 @@ public class ConnectionEstablishment extends BaseClass {
                 }
 
                 // Check network state
-
                 //----------------------------------------------
 
                 // Enable wifi

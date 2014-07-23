@@ -29,8 +29,8 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     private Handler handlerForDrawThread;
     private SurfaceHolder holder;
     private Canvas canvas;
-    private Paint svPaint, svPaintDebug, svbPaint;
-    private int backgroundColor;//, foregroundColor;
+    private Paint svPaint, svbPaint;
+    private int backgroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
     private float svHalfSizeTopBeam, svHalSizeLeftBeam;
 
@@ -51,19 +51,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         svbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         svbPaint.setStyle(Paint.Style.FILL);
         svbPaint.setColor(context.getResources().getColor(R.color.GreyLight));
-
-       /* // -------------------------------------
-        // ONLY FOR DEBUG !!!
-        // -> For camera preview
-        // -------------------------------------
-        svPaintDebug = new Paint(Paint.ANTI_ALIAS_FLAG);
-        svPaintDebug.setStyle(Paint.Style.STROKE);
-        svPaintDebug.setStrokeWidth(5);
-        svPaintDebug.setColor(context.getResources().getColor(R.color.GreyLight));
-        // -------------------------------------*/
-
         holder.setFormat(PixelFormat.TRANSPARENT);
-
         svHalfSizeTopBeam = ((svRectArray[2] - svRectArray[0]) / 2);
         svHalSizeLeftBeam = ((svRectArray[7] - svRectArray[5]) / 2);
     }
@@ -130,12 +118,6 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         // Draw sensor visualization for left beam
         canvas.drawRect(svRectArray[4], svRectArray[5], svRectArray[6], svRectArray[7], svbPaint); // For grey beam background
         canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);
-       /* // -------------------------------------
-        // ONLY FOR DEBUG !!!
-        // -> For pseudo camera preview
-        // -------------------------------------
-        canvas.drawRect(svRectArray[8], svRectArray[9], svRectArray[10], svRectArray[11], svPaintDebug);
-        // -------------------------------------*/
     }
 
 
@@ -162,7 +144,6 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         // Load color from settings
         BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;
-       // this.foregroundColor = themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor;
 
         init(bundle);
 

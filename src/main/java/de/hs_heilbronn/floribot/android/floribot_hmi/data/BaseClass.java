@@ -166,29 +166,9 @@ public class BaseClass extends ActionBarActivity {
                 svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
                 // -------------------------------------
 
-                // -------------------------------------
-                // ONLY FOR DEBUG !!!
-                // -------------------------------------
-                // Create rectangle for pseudo camera preview
-                // -------------------------------------
-                // Distance from left display border to left side of rectangle
-                svRectArray[8] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-                // Distance from top display border to top side of rectangle
-                svRectArray[9] = factorHeight * (getRes(R.integer.svMarginTopInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-                // Distance from left display border to right side of rectangle
-                svRectArray[10] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewWidthInPx;
-                // Distance from top display border to bottom side of rectangle
-                svRectArray[11] = factorHeight * (getRes(R.integer.svMarginTopInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx;
-                // -------------------------------------
-                //pathQuantity++;
-
-
                 // Return surface data
                 Bundle surfaceData = new Bundle();
-                //surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
-                //surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
                 surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
-
                 return surfaceData;
             }
         });
@@ -232,7 +212,6 @@ public class BaseClass extends ActionBarActivity {
         switch(item.getItemId()) {
             case(R.id.popup_properties):
                 Intent settingsIntent = new Intent(this, Settings.class);
-
                 startActivity(settingsIntent);
                 break;
             case(R.id.popup_help):
@@ -252,11 +231,8 @@ public class BaseClass extends ActionBarActivity {
     }
 
     public void initActionBar() {
-        // Set up the action bar to show a dropdown list.
-
         bar = getSupportActionBar();
         // Set action bar parameters
-
         bar.setDisplayUseLogoEnabled(false);
         bar.setDisplayHomeAsUpEnabled(false);
         bar.setBackgroundDrawable(new ColorDrawable(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor));
@@ -264,7 +240,6 @@ public class BaseClass extends ActionBarActivity {
         bar.setDisplayShowTitleEnabled(false);
         bar.setDisplayShowTitleEnabled(true);
         bar.setTitle(titleName);
-
     }
 
     public void setActionBarTitle(String titleRes){
