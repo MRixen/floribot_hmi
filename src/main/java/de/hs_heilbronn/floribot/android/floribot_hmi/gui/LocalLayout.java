@@ -7,7 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity;
+import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
 
 /**
  * Created by mr on 22.05.14.
@@ -16,13 +16,13 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity;
  */
 public class LocalLayout extends Fragment {
 
-    private ExecuteActivity context;
+    private ControlMenu context;
     LocalLayoutManager layoutManagerInterface;
     private int localLayoutResource;
     private int drawable;
 
 
-    public LocalLayout(ExecuteActivity context) {
+    public LocalLayout(ControlMenu context) {
         this.context = context;
     }
 

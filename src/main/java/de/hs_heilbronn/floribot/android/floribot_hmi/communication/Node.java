@@ -28,8 +28,8 @@ public class Node extends AbstractNodeMain {
     private org.ros.node.topic.Subscriber<JoyFeedbackArray> subscriber;
     private org.ros.node.topic.Publisher<Joy> publisher;
 
-    public Thread t;
-    private Handler loopHandler = null;
+    public Thread nodeThread;
+    private Handler threadHandler = null;
     private final String topicSubscriber, topicPublisher, nodeGraphName;
     private final Context context;
 
@@ -38,7 +38,6 @@ public class Node extends AbstractNodeMain {
         this.topicSubscriber = topicSubscriber;
         this.topicPublisher = topicPublisher;
         this.nodeGraphName = nodeGraphName;
-
     }
 
     @Override
@@ -48,57 +47,50 @@ public class Node extends AbstractNodeMain {
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        // Create publisher
-        //publisher = connectedNode.newPublisher(topicPublisher, sensor_msgs.Joy._TYPE);
+        // Create publisher, subscriber and start thread
         publisher = connectedNode.newPublisher(topicPublisher, Joy._TYPE);
-        // Create subscriber
         subscriber = connectedNode.newSubscriber(topicSubscriber, sensor_msgs.JoyFeedbackArray._TYPE);
-
         startNodeThread();
     }
 
     public void startNodeThread() {
-
         // Start thread, if no thread is alive
-        if (t == null) {
+        if (nodeThread == null) {
             Log.d("@ExecutorNode->startNodeThread", "Start thread...");
-            t = new NodeThread();
-            t.start();
+            nodeThread = new NodeThread();
+            nodeThread.start();
         }
     }
 
     public void stopNodeThread(){
         try {
-            loopHandler.getLooper().quit();
+            threadHandler.getLooper().quit();
         }catch(Exception e){
             Log.d("@Subscriber#stopNodeThread#StopHandlerException: ", String.valueOf(e));
         }
         // Stop thread
         try {
-            while (t.isAlive()) {
+            while (nodeThread.isAlive()) {
             }
-            t = null;
+            nodeThread = null;
         }catch(Exception e){
             Log.d("@Subscriber#stopNodeThread#StopThreadException: ", String.valueOf(e));
         }
     }
 
     public class NodeThread extends Thread {
-
         public void run() {
-
             Log.d("@Subscriber->startNodeThread", "Node started...");
 
-                Looper.prepare();
+            Looper.prepare();
             Log.d("Subscriber:", Thread.currentThread().getName());
 
             // Handler to cancel the message loop
-            loopHandler = new Handler();
+            threadHandler = new Handler();
 
             // Handler to receive data and publish
             BaseClass.handlerForPublishingData = new Handler() {
                 public void handleMessage(Message msg) {
-
                     Bundle bundle = msg.getData();
 
                     if (bundle != null) {
@@ -114,8 +106,6 @@ public class Node extends AbstractNodeMain {
                         joyTest.setAxes(axesData);
                         joyTest.setButtons(buttonData);
                         publisher.publish(joyTest);
-
-
                     }
                 }
             };
@@ -130,10 +120,7 @@ public class Node extends AbstractNodeMain {
                     Log.d("@Subscriber->addMessageListener", "addMessageListener...");
                 }
             });
-
-
             Looper.loop();
-
         }
 
         public Publisher<Joy> getPublisher() {

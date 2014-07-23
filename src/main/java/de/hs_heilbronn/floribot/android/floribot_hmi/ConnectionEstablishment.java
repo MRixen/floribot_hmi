@@ -1,9 +1,7 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi;
 
 import android.app.ProgressDialog;
-import android.content.ComponentName;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -11,7 +9,6 @@ import android.graphics.drawable.StateListDrawable;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
@@ -31,7 +28,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
 import static android.os.Process.myPid;
 
-public class MainActivity extends BaseClass {
+public class ConnectionEstablishment extends BaseClass {
 
 
     private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
@@ -45,18 +42,18 @@ public class MainActivity extends BaseClass {
     private WifiManager.WifiLock wifiLock;
 
 
-    private Handler handler;
+    private Handler connectionInitHandler;
     private ProgressDialog progressDialog;
 
     public static Intent nodeExecutorService;
     private SharedPreferences sharedPreferences;
 
     private BaseClass.ThemeColor[] themeColors;
-    private int currentTheme;
+    //private int currentTheme;
 
     private ServiceResultReceiver serviceResultReceiver;
 
-    private ServiceConnection mConnection = new ServiceConnection() {
+/*    private ServiceConnection mConnection = new ServiceConnection() {
         //Class for interacting with the main interface of the service.
         public void onServiceConnected(ComponentName className, IBinder service) {
         }
@@ -65,7 +62,7 @@ public class MainActivity extends BaseClass {
             // This is called when the connection with the service has been
             // unexpectedly disconnected -- that is, its process crashed.
         }
-    };
+    };*/
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +99,7 @@ public class MainActivity extends BaseClass {
         nodeExecutorService = new Intent(this, NodeExecutorService.class);
         // Get object for theme colors to text color, etc.
         themeColors = getThemeColors();
-        currentTheme = sharedPreferences.getInt("theme", 0);
+        //currentTheme = sharedPreferences.getInt("theme", 0);
     }
 
     @Override
@@ -206,7 +203,7 @@ public class MainActivity extends BaseClass {
                 getEditTextFieldEntries();
 
                 if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
-                    handler = new Handler() {
+                    connectionInitHandler = new Handler() {
                         public void handleMessage(Message msg) {
                             Bundle stateBundle = msg.getData();
                             String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_node_init));
@@ -225,13 +222,13 @@ public class MainActivity extends BaseClass {
                                 startService(nodeExecutorService);
                             } else {
                                 progressDialog.cancel();
-                                Toast.makeText(MainActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
-                                Log.d("@MainActivity->handleMessage: ", "ErrorMessage: " + errorMessage);
+                                Toast.makeText(ConnectionEstablishment.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                Log.d("@ConnectionEstablishment->handleMessage: ", "ErrorMessage: " + errorMessage);
                             }
                         }
                     };
                     progressDialog.show();
-                    nodeInitialization();
+                    connectionInit();
                 } else {
                     if(masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0) Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
                     else {
@@ -247,9 +244,9 @@ public class MainActivity extends BaseClass {
         }
     }
 
-    public void nodeInitialization() {
+    public void connectionInit() {
 
-        Thread t = new Thread(){
+        Thread ConnectionInitThread = new Thread(){
             @Override
             public void run(){
                 boolean resultCode = true;
@@ -268,7 +265,7 @@ public class MainActivity extends BaseClass {
 
                 // Enable display wake lock
                 if(resultCode) {
-                    Log.d("@MainActivity->nodeInitialization: ", "Uri syntax ok.");
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Uri syntax ok.");
 
                     // Control power management
                     powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -293,7 +290,7 @@ public class MainActivity extends BaseClass {
 
                 // Enable wifi
                 if(resultCode) {
-                    Log.d("@MainActivity->nodeInitialization: ", "Display wake lock ok.");
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Display wake lock ok.");
                     // Check if airplane mode is on (need to be on to prevent call events)
                     if(Settings.System.getInt(getContentResolver(), Settings.System.AIRPLANE_MODE_ON, 0) != 0) {
                         wifiManager = (WifiManager) getSystemService(WIFI_SERVICE);
@@ -318,7 +315,7 @@ public class MainActivity extends BaseClass {
 
                 // Enable wifi lock
                 if(resultCode) {
-                    Log.d("@MainActivity->nodeInitialization: ", "Wifi on ok");
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Wifi on ok");
 
                     // Wifi wake lock
                     int wifiLockType = WifiManager.WIFI_MODE_FULL;
@@ -349,7 +346,7 @@ public class MainActivity extends BaseClass {
 
                 //
                 if(resultCode) {
-                    Log.d("@MainActivity->nodeInitialization: ", "Wifi wake lock ok.");
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Wifi wake lock ok.");
                     sendMessageToHandler("Connection establishment successful.", resultCode);
                 }
             }
@@ -360,10 +357,10 @@ public class MainActivity extends BaseClass {
                 bundle.putString(getResources().getString(R.string.error_message_node_init), errorMessage);
                 bundle.putBoolean(getResources().getString(R.string.state_init_publisher), state);
                 msg.setData(bundle);
-                handler.sendMessage(msg);
+                connectionInitHandler.sendMessage(msg);
             }
         };
-        t.start();
+        ConnectionInitThread.start();
     }
 
     public void getEditTextFieldEntries() {
@@ -398,14 +395,14 @@ public class MainActivity extends BaseClass {
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             switch(resultCode){
                 case(0):
-                    Log.d("@MainActivity->handleMessage: ", "Start service.");
-                    Intent executeActivity = new Intent(MainActivity.this, ExecuteActivity.class);
-                    startActivity(executeActivity);
+                    Log.d("@ConnectionEstablishment->handleMessage: ", "Start service.");
+                    Intent controlMenu = new Intent(ConnectionEstablishment.this, ControlMenu.class);
+                    startActivity(controlMenu);
                     overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                     break;
                 case(1):
-                    Log.d("@MainActivity->handleMessage: ", "Service stopped.");
-                    Toast.makeText(MainActivity.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_SHORT).show();
+                    Log.d("@ConnectionEstablishment->handleMessage: ", "Service stopped.");
+                    Toast.makeText(ConnectionEstablishment.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_SHORT).show();
                     // Turn off power management
                     if (wakeLock.isHeld()) {
                         wakeLock.release();

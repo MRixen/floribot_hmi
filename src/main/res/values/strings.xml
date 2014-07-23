@@ -145,5 +145,8 @@
 
     <string name="theme_prompt">Select theme</string>
     <string name="phone_calibration_area">Phone is not in calibration area!</string>
+    <string name="hint_master_destination">http://192.168.137.191:11311</string>
+    <string name="hint_topic_publisher">/joy</string>
+    <string name="hint_topic_subscriber">/joyFeedback</string>
 
 </resources>

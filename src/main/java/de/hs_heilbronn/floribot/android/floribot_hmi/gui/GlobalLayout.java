@@ -20,30 +20,24 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 /**
  * Created by mr on 20.05.14.
  *
- * With this class the global layout (surface view for bottom bar, top bar, etc.) is set
  */
 public class GlobalLayout extends android.view.SurfaceView implements Runnable{
 
     private SharedPreferences sharedPreferences;
-    private  Context context;
-
-    private Thread thread;
-    private Handler loopHandler1;
-
+    private Context context;
+    private Thread drawThread;
+    private Handler handlerForDrawThread;
     private SurfaceHolder holder;
     private Canvas canvas;
     private Paint svPaint, svPaintDebug, svbPaint;
-
-    private int backgroundColor, foregroundColor;
+    private int backgroundColor;//, foregroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
     private float svHalfSizeTopBeam, svHalSizeLeftBeam;
 
     public GlobalLayout(Context context) {
         super(context);
         this.context = context;
-
-        thread = null;
-
+        drawThread = null;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
@@ -58,7 +52,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         svbPaint.setStyle(Paint.Style.FILL);
         svbPaint.setColor(context.getResources().getColor(R.color.GreyLight));
 
-        // -------------------------------------
+       /* // -------------------------------------
         // ONLY FOR DEBUG !!!
         // -> For camera preview
         // -------------------------------------
@@ -66,7 +60,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         svPaintDebug.setStyle(Paint.Style.STROKE);
         svPaintDebug.setStrokeWidth(5);
         svPaintDebug.setColor(context.getResources().getColor(R.color.GreyLight));
-        // -------------------------------------
+        // -------------------------------------*/
 
         holder.setFormat(PixelFormat.TRANSPARENT);
 
@@ -87,7 +81,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         }
 
         Looper.prepare();
-        loopHandler1 = new Handler();
+        handlerForDrawThread = new Handler();
 
         try {
             canvas = holder.lockCanvas();
@@ -136,30 +130,29 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         // Draw sensor visualization for left beam
         canvas.drawRect(svRectArray[4], svRectArray[5], svRectArray[6], svRectArray[7], svbPaint); // For grey beam background
         canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);
-        // -------------------------------------
+       /* // -------------------------------------
         // ONLY FOR DEBUG !!!
         // -> For pseudo camera preview
         // -------------------------------------
         canvas.drawRect(svRectArray[8], svRectArray[9], svRectArray[10], svRectArray[11], svPaintDebug);
-        // -------------------------------------
+        // -------------------------------------*/
     }
 
 
     public void pause(){
-
             try {
-                loopHandler1.getLooper().quit();
-                loopHandler1 = null;
-                // Blocks thread until all operations are finished
-                thread.join();
+                handlerForDrawThread.getLooper().quit();
+                handlerForDrawThread = null;
+                // Blocks drawThread until all operations are finished
+                drawThread.join();
             }catch(Exception e){
                 Log.d("@GlobalLayout#pause: ", String.valueOf(e));
             }
-        thread = null;
+        drawThread = null;
     }
 
     public void setGlobalLayout(Bundle bundle, SurfaceView surface) {
-        // Stop old thread to provide new theme settings by chang
+        // Stop old drawThread to provide new theme settings by chang
         pause();
 
         // Set holder
@@ -169,14 +162,14 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         // Load color from settings
         BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;
-        this.foregroundColor = themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor;
+       // this.foregroundColor = themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor;
 
         init(bundle);
 
-        // Stop last draw thread and execute a new one
-        if (thread == null) {
-            thread = new Thread(this);
-            thread.start();
+        // Stop last draw drawThread and execute a new one
+        if (drawThread == null) {
+            drawThread = new Thread(this);
+            drawThread.start();
         }
     }
 }

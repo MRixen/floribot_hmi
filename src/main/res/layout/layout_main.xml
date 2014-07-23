@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity">
+    tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ConnectionEstablishment">
 
     <Button
         android:id="@+id/connect_button"
@@ -37,7 +37,8 @@
         android:layout_width="@dimen/editTextWidth"
         android:layout_alignTop="@id/textView_master_destination"
         android:layout_height="wrap_content"
-        android:textColorHint="#FFFFFF"
+        android:textColorHint="#d1cfcf"
+        android:hint="@string/hint_master_destination"
         android:background="@drawable/layout_edit_text"
         android:textSize="@dimen/textSize"
         android:inputType="textUri"
@@ -70,7 +71,8 @@
         android:id="@+id/editText_topic_publisher"
         android:layout_width="@dimen/editTextWidth"
         android:layout_height="wrap_content"
-        android:textColorHint="#FFFFFF"
+        android:textColorHint="#d1cfcf"
+        android:hint="@string/hint_topic_publisher"
         android:background="@drawable/layout_edit_text"
         android:inputType="text"
         android:textColor="#FFFFFF"
@@ -91,7 +93,7 @@
         android:layout_marginLeft="@dimen/textViewMarginLeft"
         android:layout_marginTop="15dp"
         android:textSize="@dimen/textSize"
-        android:text="@string/title_topic_publisher"
+        android:text="@string/title_topic_subscriber"
         android:background="@color/ModernBlue"
         android:textColor="#FFFFFF"
         android:paddingBottom="10dp"
@@ -104,7 +106,8 @@
         android:id="@+id/editText_topic_subscriber"
         android:layout_width="@dimen/editTextWidth"
         android:layout_height="wrap_content"
-        android:textColorHint="#FFFFFF"
+        android:textColorHint="#d1cfcf"
+        android:hint="@string/hint_topic_subscriber"
         android:background="@drawable/layout_edit_text"
         android:inputType="text"
         android:textColor="#FFFFFF"

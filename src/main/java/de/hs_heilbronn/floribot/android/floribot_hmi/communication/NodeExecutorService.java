@@ -22,7 +22,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.ScheduledExecutorService;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity;
+import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
@@ -33,35 +33,32 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
  */
 public class NodeExecutorService extends Service implements NodeMainExecutor {
 
-
     private static final int ONGOING_NOTIFICATION_ID = 1;
     private final NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
     private final IBinder binder = new LocalBinder();
-    private ResultReceiver resultReceiver;
+    private ResultReceiver serviceResultReceiver;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
         // Get parameter for connection establishment
         Bundle connectionData= intent.getBundleExtra(getResources().getString(R.string.shared_pref_connection_data));
         String masterId = connectionData.getString(getResources().getString(R.string.masterId));
         String topicPublisher = connectionData.getString(getResources().getString(R.string.topicPublisher));
         String topicSubscriber = connectionData.getString(getResources().getString(R.string.topicSubscriber));
         String nodeGraphName = connectionData.getString(getResources().getString(R.string.nodeGraphName));
-        resultReceiver = connectionData.getParcelable(getResources().getString(R.string.serviceResultReceiver));
+        serviceResultReceiver = connectionData.getParcelable(getResources().getString(R.string.serviceResultReceiver));
 
         URI uri = URI.create(masterId);
 
         // Bring service in foreground and provide access from notification bar
         Log.d("@NodeExecutorService#onCreate: ", "Start foreground");
         Notification notification = new Notification(R.drawable.ic_launcher, getString(R.string.ticker_message), System.currentTimeMillis());
-        Intent notificationIntent = new Intent(this, ExecuteActivity.class);
+        Intent notificationIntent = new Intent(this, ControlMenu.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(this, getString(R.string.notification_title), getString(R.string.notification_text), pendingIntent);
         startForeground(ONGOING_NOTIFICATION_ID, notification);
@@ -79,14 +76,13 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
             sendResult(1);
             stopSelf();
         }
-
         return START_STICKY;
     }
 
     public void sendResult(int resultCode){
         Bundle bundle = new Bundle();
         bundle.putInt(getResources().getString(R.string.resultCode), resultCode);
-        resultReceiver.send(resultCode, bundle);
+        serviceResultReceiver.send(resultCode, bundle);
     }
 
     @Override
@@ -114,9 +110,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     }
 
     @Override
-    public void execute(NodeMain nodeMain, NodeConfiguration nodeConfiguration, Collection<NodeListener> nodeListeners) {
-
-    }
+    public void execute(NodeMain nodeMain, NodeConfiguration nodeConfiguration, Collection<NodeListener> nodeListeners) {  }
 
     @Override
     public void execute(NodeMain nodeMain, NodeConfiguration nodeConfiguration) {
@@ -139,5 +133,4 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
             return NodeExecutorService.this;
         }
     }
-
 }

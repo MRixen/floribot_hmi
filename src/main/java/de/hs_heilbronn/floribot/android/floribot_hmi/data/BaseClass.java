@@ -23,10 +23,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.AboutActivity;
-import de.hs_heilbronn.floribot.android.floribot_hmi.HelpActivity;
+import de.hs_heilbronn.floribot.android.floribot_hmi.About;
+import de.hs_heilbronn.floribot.android.floribot_hmi.Help;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.SettingsActivity;
+import de.hs_heilbronn.floribot.android.floribot_hmi.Settings;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.Node;
 import sensor_msgs.JoyFeedback;
 
@@ -41,16 +41,10 @@ public class BaseClass extends ActionBarActivity {
     private String titleName;
     private int pxWidth, pxHeight;
     private float factorHeight, factorWidth;
-    float[] pointsArray;
-
     public static Node node;
     public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
     public static SubscriberInterface subscriberInterface;
-
     private SharedPreferences sharedPreferences;
-    private Dialog dialog;
-    private Window dialogWindow;
-
     private ActionBar bar;
     private BaseClass.ThemeColor[] themeColors;
     private static int[] bgColor, fgColor, tColor;
@@ -77,12 +71,7 @@ public class BaseClass extends ActionBarActivity {
         drawableDataBlue[1] = getResources().getDrawable(R.drawable.button_extension_modern_blue);
 
         themeColors = ThemeColor.values();
-
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Set dialog layout and style
-        dialog = new Dialog(this, R.style.dialog_style);
-        dialogWindow = dialog.getWindow();
 
         context = this;
     }
@@ -108,7 +97,7 @@ public class BaseClass extends ActionBarActivity {
     }
 
     public static enum ThemeColor{
-        // Background color, foreground color, text color
+        // Background color, foreground color, text color, color for 9PatchDraw images
         BlueLight(bgColor[0], fgColor[0], tColor[0], drawableDataBlue),
         GreenLight(bgColor[1], fgColor[1], tColor[1], drawableDataGreen);
 
@@ -148,15 +137,7 @@ public class BaseClass extends ActionBarActivity {
                 // Initialize surface data
                 SurfaceInit();
 
-
                 float[] svRectArray = new float[12];
-
-
-                int pathQuantity = 0; // Number of paths to draw
-
-                // -------------------------------------
-
-                // Create data for sensor visualization (This data is excluded from normal surface data)
                 // Note: Camera width need to be the full length of sensor visualization beam
                 float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
                 float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
@@ -199,13 +180,13 @@ public class BaseClass extends ActionBarActivity {
                 // Distance from top display border to bottom side of rectangle
                 svRectArray[11] = factorHeight * (getRes(R.integer.svMarginTopInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp)) + cameraViewHeightInPx;
                 // -------------------------------------
-                pathQuantity++;
+                //pathQuantity++;
 
 
                 // Return surface data
                 Bundle surfaceData = new Bundle();
-                surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
-                surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
+                //surfaceData.putFloatArray(context.getResources().getString(R.string.glPointArray), pointsArray);
+                //surfaceData.putInt(context.getResources().getString(R.string.glPathQuantity), pathQuantity);
                 surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
 
                 return surfaceData;
@@ -250,16 +231,16 @@ public class BaseClass extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch(item.getItemId()) {
             case(R.id.popup_properties):
-                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                Intent settingsIntent = new Intent(this, Settings.class);
 
                 startActivity(settingsIntent);
                 break;
             case(R.id.popup_help):
-                Intent HelpIntent = new Intent(this, HelpActivity.class);
+                Intent HelpIntent = new Intent(this, Help.class);
                 startActivity(HelpIntent);
                 break;
             case(R.id.popup_about):
-                Intent AboutIntent = new Intent(this, AboutActivity.class);
+                Intent AboutIntent = new Intent(this, About.class);
                 startActivity(AboutIntent);
                 break;
         }

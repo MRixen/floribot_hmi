@@ -14,7 +14,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.MyCustomEvent;
 
 
 /**
@@ -23,24 +22,24 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.communication.MyCustomEvent
 public class DataAcquisition extends Thread implements SensorEventListener {
 
     private final Context context;
-    private final MyCustomEvent myCustomEvent;
+    //private final MyCustomEvent myCustomEvent;
     private final Object object = new Object();
-    private Handler loopHandler;
+    private Handler threadHandler;
     private SensorManager sensorManager;
-    private AccEvent accEvent;
+    private AccelerationEvent accelerationEvent;
     private double alpha = 0;
     private boolean calibrateSensor;
     private Bundle stateBundle;
     private int[] buttonData = new int[10];
     private float[] axesData = new float[3];
     private boolean startCalibration;
-    private Thread thread;
+    private Thread dataAcquisitionThread;
     private boolean stopSending, phoneInArea;
     private Activity activity;
 
-    public DataAcquisition(Context context, MyCustomEvent myCustomEvent) {
+    public DataAcquisition(Context context) {
         this.context = context;
-        this.myCustomEvent = myCustomEvent;
+        //this.myCustomEvent = myCustomEvent;
         activity = new Activity();
     }
 
@@ -50,20 +49,20 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         final Sensor accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         // Start acc event executor
-        accEvent = new AccEvent(context);
-        accEvent.start();
+        accelerationEvent = new AccelerationEvent(context);
+        accelerationEvent.start();
 
         Looper.prepare();
         // Handler to cancel the message loop
-        loopHandler = new Handler();
+        threadHandler = new Handler();
 
-        // Handler to receive button states from executeActivity in main thread
+        // Handler to receive button states from executeActivity in main dataAcquisitionThread
         BaseClass.handlerForControlDataAcquisition = new Handler() {
             public void handleMessage(Message msg) {
 
                 stateBundle = msg.getData();
 
-                // Get button state array from main thread
+                // Get button state array from main dataAcquisitionThread
                 if (stateBundle != null) {
                     if (stateBundle.containsKey(context.getResources().getString(R.string.button_state_array))) {
                         synchronized (object) {
@@ -71,7 +70,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                             buttonData = stateBundle.getIntArray(context.getResources().getString(R.string.button_state_array));
                         }
                     }
-                    // Get axes data from main thread (only in manual drive mode with joystick buttons)
+                    // Get axes data from main dataAcquisitionThread (only in manual drive mode with joystick buttons)
                     if (stateBundle.containsKey(context.getResources().getString(R.string.speed))) {
                         Log.d("@DataAcquisition->run", "Get speed data");
                         float speed = (float) stateBundle.getInt(context.getResources().getString(R.string.speed));
@@ -90,7 +89,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         // Unregister sensor listener to provide new calibration by pressing the sensor mode button
                         unregisterSensorListener();
                         // Register sensor listener
-                        sensorManager.registerListener(DataAcquisition.this, accSensor, SensorManager.SENSOR_DELAY_NORMAL, loopHandler);
+                        sensorManager.registerListener(DataAcquisition.this, accSensor, SensorManager.SENSOR_DELAY_NORMAL, threadHandler);
                         Log.d("@DataAcquisition->registerAccEventListener", "start sensor calibration");
                     }
                     // Send response for automatic drive mode
@@ -110,7 +109,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         };
 
         // Registering acceleration event listener (for manual drive mode with joystick buttons)
-        accEvent.registerAccEventListener(new AccEvent.AccEventListener() {
+        accelerationEvent.registerAccEventListener(new AccelerationEvent.AccEventListener() {
             @Override
             public void customEvent() {
                 synchronized (object) {
@@ -131,16 +130,16 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     }
 
     public void startThread() {
-        if(thread == null){
-            thread = new Thread(this);
-            thread.start();
+        if(dataAcquisitionThread == null){
+            dataAcquisitionThread = new Thread(this);
+            dataAcquisitionThread.start();
         }
     }
 
     public void stopThread() {
         unregisterSensorListener();
-        if(accEvent.getEventListener() != null) accEvent.unregisterAccEventListener(null);
-        loopHandler.getLooper().quit();
+        if(accelerationEvent.getEventListener() != null) accelerationEvent.unregisterAccEventListener(null);
+        threadHandler.getLooper().quit();
     }
 
     private void unregisterSensorListener() {
@@ -156,7 +155,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
             float[] sensorData = event.values;
             if (!calibrateSensor) {
-                // If we want display in landscape (not in reverse landscape -> by default) then we need the positive of alpha!
+
                 //alpha = -(((Math.PI / 2) / 9.81) * sensorData[2]);
                 double gz = sensorData[2];
                 double g = 9.81;

@@ -19,7 +19,6 @@ import android.widget.ToggleButton;
 
 import java.util.List;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.MyCustomEvent;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataAcquisition;
@@ -28,7 +27,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
 import sensor_msgs.JoyFeedback;
 
 
-public class ExecuteActivity extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberInterface {
+public class ControlMenu extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberInterface {
 
     private Button button_sensor_calibration;
 
@@ -38,16 +37,14 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
     public static NodeExecutorService nodeExecutorService;
     private int speed;
-    private SeekBar seekBar_speed;
+    private SeekBar seekBar;
 
     private SurfaceView surface;
-
     private SharedPreferences sharedPreferences;
-
     private BaseClass.ThemeColor[] themeColors;
 
     private Bundle surfaceData;
-    private MyCustomEvent myCustomEvent;
+    //private MyCustomEvent myCustomEvent;
     private DataAcquisition dataAcquisition;
     private ToggleButton led_sensor, led_manual, led_auto;
     private Dialog dialog;
@@ -57,7 +54,6 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.layout_execute);
 
         buttonExit = (Button) findViewById(R.id.button_exit);
@@ -78,8 +74,9 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         // Generate surface layout
         surfaceData = getSurfaceDataExecute();
 
-        myCustomEvent = new MyCustomEvent(this);
-        dataAcquisition = new DataAcquisition(this, myCustomEvent);
+        //myCustomEvent = new MyCustomEvent(this);
+        //dataAcquisition = new DataAcquisition(this, myCustomEvent);
+        dataAcquisition = new DataAcquisition(this);
         dialog = new Dialog(this, R.style.dialog_style);
 
         setActionBarTitle(getResources().getString(R.string.title_activity_execute));
@@ -124,7 +121,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
     @Override
     public void onBackPressed() {
-        customDialog(getResources().getString(R.string.dialog_message_close_connection));
+        closeConnectionDialog(getResources().getString(R.string.dialog_message_close_connection));
     }
 
     public void onButtonClicked(View v){
@@ -147,11 +144,11 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
                 sendDataToDataAcquisition(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_sensor_calibration):
-                customDialog(getResources().getString(R.string.dialog_message_start_calibration));
+                closeConnectionDialog(getResources().getString(R.string.dialog_message_start_calibration));
                 break;
             case (R.id.button_exit):
-                // Stop publisher and return to MainActivity
-                customDialog(getResources().getString(R.string.dialog_message_close_connection));
+                // Stop publisher and return to ConnectionEstablishment
+                closeConnectionDialog(getResources().getString(R.string.dialog_message_close_connection));
                 break;
         }
     }
@@ -248,7 +245,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         if(calibration) bundle.putBoolean(getResources().getString(R.string.start_sensor_calibration), calibration);
 
         if(speed != -1){
-            // Check if actual speed is different from last to avoid for loop execution
+            // Check if actual speed is different from last to avoid loop execution
             if (speed != axesData[0]) {
                 for (int i = 0; i <= axesData.length - 1; i++) {
                     axesData[i] = speed;
@@ -273,7 +270,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
 
         // Callback method to set button references when layout is valid
         if(led_sensor.isChecked()){
-            seekBar_speed.setVisibility(View.INVISIBLE);
+            seekBar.setVisibility(View.INVISIBLE);
             Button sensor = (Button) findViewById(R.id.button_sensor);
             sensor.setOnTouchListener(this);
             setBackgroundForJoystickButtons(drawable);
@@ -283,7 +280,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             Button button_down = (Button) findViewById(R.id.button_down);
             Button button_left = (Button) findViewById(R.id.button_left);
             Button button_right = (Button) findViewById(R.id.button_right);
-            seekBar_speed = (SeekBar) findViewById(R.id.seek_bar_speed);
+            seekBar = (SeekBar) findViewById(R.id.seek_bar_speed);
 
             button_up.setOnTouchListener(this);
             button_down.setOnTouchListener(this);
@@ -291,13 +288,13 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
             button_right.setOnTouchListener(this);
             // Show seek bar (is set to invisible by pressing sensor button)
             if(led_manual.isChecked()) {
-                seekBar_speed.setVisibility(View.VISIBLE);
-                seekBar_speed.setOnSeekBarChangeListener(this);
+                seekBar.setVisibility(View.VISIBLE);
+                seekBar.setOnSeekBarChangeListener(this);
                 // Enable button for sensor drive mode
                 button_sensor_calibration.setEnabled(true);
             }
             else{
-                seekBar_speed.setVisibility(View.INVISIBLE);
+                seekBar.setVisibility(View.INVISIBLE);
                 button_sensor_calibration.setEnabled(false);
             }
             // Set background for joystick buttons
@@ -307,7 +304,7 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
     }
 
 
-    public void customDialog(final String message) {
+    public void closeConnectionDialog(final String message) {
 
         dialog.setContentView(R.layout.layout_dialog_publisher_exit);
         dialog.setCancelable(false);
@@ -359,8 +356,8 @@ public class ExecuteActivity extends BaseClass implements View.OnTouchListener, 
         dataAcquisition = null;
         // Stop executor node
         BaseClass.node.stopNodeThread();
-        stopService(MainActivity.nodeExecutorService);
-        // Go back to MainActivity
+        stopService(ConnectionEstablishment.nodeExecutorService);
+        // Go back to ConnectionEstablishment
         dialog.dismiss();
         finish();
     }

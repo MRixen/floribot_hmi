@@ -15,7 +15,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity"
+            android:name=".ConnectionEstablishment"
             android:label="@string/app_name"
             android:launchMode="singleTop"
             android:screenOrientation="reverseLandscape" >
@@ -25,10 +25,10 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="de.hs_heilbronn.floribot.android.floribot_hmi.ExecuteActivity"
+            android:name=".ControlMenu"
             android:label="@string/title_activity_execute"
             android:launchMode="singleTop"
-            android:parentActivityName="de.hs_heilbronn.floribot.android.floribot_hmi.MainActivity"
+            android:parentActivityName=".ConnectionEstablishment"
             android:screenOrientation="reverseLandscape" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -38,21 +38,21 @@
         <service android:name="de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService" ></service>
 
         <activity
-            android:name="de.hs_heilbronn.floribot.android.floribot_hmi.SettingsActivity"
+            android:name=".Settings"
             android:label="@string/title_activity_settings"
             android:screenOrientation="reverseLandscape"
             android:launchMode="singleInstance"
             android:noHistory="true">
         </activity>
         <activity
-            android:name="de.hs_heilbronn.floribot.android.floribot_hmi.AboutActivity"
+            android:name=".About"
             android:label="@string/title_activity_about"
             android:screenOrientation="reverseLandscape"
             android:launchMode="singleInstance"
             android:noHistory="true">
         </activity>
         <activity
-            android:name="de.hs_heilbronn.floribot.android.floribot_hmi.HelpActivity"
+            android:name=".Help"
             android:label="@string/title_activity_help"
             android:screenOrientation="reverseLandscape"
             android:launchMode="singleInstance"

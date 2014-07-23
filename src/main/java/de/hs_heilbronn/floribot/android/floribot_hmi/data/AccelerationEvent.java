@@ -10,26 +10,24 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.R;
  *
  * This class provides acceleration data for control with joystick buttons
  */
-public class AccEvent extends Thread{
+public class AccelerationEvent extends Thread{
 
     private final Context context;
     private boolean isRunning;
     private AccEventListener accEventListener;
 
-    public AccEvent(Context context) {
+    public AccelerationEvent(Context context) {
         this.context = context;
         isRunning = true;
     }
 
     public void registerAccEventListener(AccEventListener accEventListener) {
         this.accEventListener = accEventListener;
-
     }
 
     public void run() {
-        Log.d("@AccEvent->run", "AccEvent thread started");
+        Log.d("@AccelerationEvent->run", "AccelerationEvent thread started");
         while (true) {
-            //Log.d("@AccEvent->run", "inside while");
             if (this.accEventListener != null) {
                 this.accEventListener.customEvent();
             }
@@ -39,7 +37,6 @@ public class AccEvent extends Thread{
                 e.printStackTrace();
             }
             if(!isRunning) break;
-
         }
     }
 

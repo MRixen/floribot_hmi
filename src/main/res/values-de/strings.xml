@@ -121,5 +121,8 @@
     <string name="node_graph_name_header">Node name</string>
     <string name="theme_prompt">Theme wählen</string>
     <string name="phone_calibration_area">Gerät ist nicht in Kalibrierungsbereich!</string>
+    <string name="hint_master_destination">http://192.168.137.191:11311</string>
+    <string name="hint_topic_publisher">/joy</string>
+    <string name="hint_topic_subscriber">/joyFeedback</string>
 
 </resources>
