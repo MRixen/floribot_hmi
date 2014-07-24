@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,7 +104,6 @@ public class ConnectionEstablishment extends BaseClass {
     }
 
     private void setTheme() {
-
         // Change text color of connect button
         buttonConnect.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         // Change text color of text fields
@@ -347,7 +347,7 @@ public class ConnectionEstablishment extends BaseClass {
         editor.putString(getResources().getString(R.string.masterId), masterId);
         editor.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
         editor.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
-        editor.commit();
+        editor.apply();
     }
 
     private void loadPreferences(){

@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ConnectionEstablishment">
 
     <ScrollView
@@ -21,7 +20,7 @@
                 android:id="@+id/textView_about_app_description_part_one"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:text="@string/about_app_description_part_one" />
 
             <ImageView
@@ -37,7 +36,7 @@
                 android:id="@+id/textView_about_app_description_two"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_below="@id/imageView_about_app_description"
                 android:text="@string/about_app_description_part_two" />
 
@@ -45,7 +44,7 @@
                 android:id="@+id/textView_about_app_functions"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_below="@id/textView_about_app_description_two"
                 android:text="@string/about_app_functions" />
 
@@ -53,7 +52,7 @@
                 android:id="@+id/textView_app_author"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_below="@id/textView_about_app_functions"
                 android:text="@string/app_author" />
 

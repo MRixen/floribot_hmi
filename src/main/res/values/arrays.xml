@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="theme_items">
-        <item>Blue light</item>
-        <item>Green light</item>
+        <item>@string/blueTheme</item>
+        <item>@string/greenTheme</item>
     </string-array>
 </resources>

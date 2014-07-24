@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#ffffff"
     tools:context="de.hs_heilbronn.floribot.android.floribot_hmi.ConnectionEstablishment">
 
     <ScrollView
@@ -29,7 +28,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_below="@id/textView_help_connection_parameter"
                 android:src="@drawable/connection_establishment" />
 
@@ -45,7 +44,7 @@
                 android:id="@+id/imageView_help_sensor_control"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/textView_help_sensor_control"
                 android:src="@drawable/sensor_control" />
@@ -62,7 +61,7 @@
                 android:id="@+id/imageView_help_joystick_control"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/textView_help_joystick_control"
                 android:src="@drawable/button_control" />
@@ -79,7 +78,7 @@
                 android:id="@+id/imageView_help_auto_control"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/textView_help_auto_control"
                 android:src="@drawable/auto_control" />
@@ -96,7 +95,7 @@
                 android:id="@+id/imageView_help_exit_connection_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
+                android:layout_marginBottom="@dimen/bottomOffsetAboutHelp"
                 android:layout_centerHorizontal="true"
                 android:layout_below="@id/textView_help_exit_connection_text"
                 android:src="@drawable/close_connection" />
@@ -108,15 +107,6 @@
                 android:layout_marginBottom="5dp"
                 android:layout_below="@id/imageView_help_exit_connection_text"
                 android:text="@string/tip_text" />
-
-            <ImageView
-                android:id="@+id/imageView_help_tip_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="5dp"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@id/textView_help_tip_text"
-                android:src="@drawable/mode_led" />
         </RelativeLayout>
     </ScrollView>
 </RelativeLayout>

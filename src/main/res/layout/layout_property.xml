@@ -2,8 +2,7 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#ffffff">
+    android:layout_height="match_parent">
 
     <TextView
         android:id="@+id/header_one"
@@ -27,7 +26,7 @@
         android:layout_alignRight="@id/header_one"
         android:layout_below="@id/header_one"
         android:entries="@array/theme_items"
-        android:spinnerMode="dialog"
+        android:spinnerMode="dropdown"
         android:background="@drawable/spinner_drop_down_view_state"/>
     <TextView
         android:id="@+id/header_two"
@@ -49,6 +48,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/header_two"
         android:textSize="@dimen/textSize"
+        android:inputType="text"
+        android:hint="@string/nodename_hint"
         android:layout_alignLeft="@id/header_two"
         android:layout_alignRight="@id/header_two"
         android:background="@drawable/spinner_default_holo_light_am"/>

@@ -1,6 +1,5 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,7 +14,6 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -60,10 +58,10 @@ public class BaseClass extends ActionBarActivity {
         drawableDataGreen = new Drawable[2];
         drawableDataBlue = new Drawable[2];
         bgColor[0] = getResources().getColor(R.color.ModernWhite);
-        bgColor[1] = getResources().getColor(R.color.White);
+        bgColor[1] = getResources().getColor(R.color.ModernWhite);
         fgColor[0] = getResources().getColor(R.color.ModernBlue);
         fgColor[1] = getResources().getColor(R.color.ModernGreen);
-        tColor[0] = getResources().getColor(R.color.ModernWhite);
+        tColor[0] = getResources().getColor(R.color.White);
         tColor[1] = getResources().getColor(R.color.White);
         drawableDataGreen[0] = getResources().getDrawable(R.drawable.button_background_not_pressed_modern_green);
         drawableDataGreen[1] = getResources().getDrawable(R.drawable.button_extension_modern_green);
@@ -74,6 +72,12 @@ public class BaseClass extends ActionBarActivity {
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         context = this;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        getWindow().getDecorView().setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor);
     }
 
     @Override

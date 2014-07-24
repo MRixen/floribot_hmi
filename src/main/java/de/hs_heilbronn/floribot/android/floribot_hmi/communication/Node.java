@@ -102,10 +102,10 @@ public class Node extends AbstractNodeMain {
                         if (bundle.containsKey(context.getResources().getString(R.string.button_state_array)))
                             buttonData = bundle.getIntArray(context.getResources().getString(R.string.button_state_array));
                         // Send sensor data to robot
-                        Joy joyTest = publisher.newMessage();
-                        joyTest.setAxes(axesData);
-                        joyTest.setButtons(buttonData);
-                        publisher.publish(joyTest);
+                        Joy joyMessage = publisher.newMessage();
+                        joyMessage.setAxes(axesData);
+                        joyMessage.setButtons(buttonData);
+                        publisher.publish(joyMessage);
                     }
                 }
             };

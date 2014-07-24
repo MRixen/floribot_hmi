@@ -57,7 +57,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         BaseClass.handlerForControlDataAcquisition = new Handler() {
             public void handleMessage(Message msg) {
                 stateBundle = msg.getData();
-                // Get button state array from main dataAcquisitionThread
+                // Get button state array from main thread
                 if (stateBundle != null) {
                     if (stateBundle.containsKey(context.getResources().getString(R.string.button_state_array))) {
                         synchronized (object) {
@@ -65,7 +65,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                             buttonData = stateBundle.getIntArray(context.getResources().getString(R.string.button_state_array));
                         }
                     }
-                    // Get axes data from main dataAcquisitionThread (only in manual drive mode with joystick buttons)
+                    // Get axes data from main thread (only in manual drive mode with joystick buttons)
                     if (stateBundle.containsKey(context.getResources().getString(R.string.speed))) {
                         Log.d("@DataAcquisition->run", "Get speed data");
                         float speed = (float) stateBundle.getInt(context.getResources().getString(R.string.speed));
@@ -90,13 +90,13 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     // Send response for automatic drive mode
                     if(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal() == 1){
                         synchronized (object) {
-                            sendDataToNode(buttonData, null);
+                            sendDataToNode(buttonData, null, false);
                         }
                     }
                     // Send response for manual drive mode
                     else if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
                         synchronized (object) {
-                            sendDataToNode(buttonData, null);
+                            sendDataToNode(buttonData, null, false);
                         }
                     }
                 }
@@ -115,7 +115,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                                     buttonData[BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] == 1 ||
                                     buttonData[BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] == 1)){
                         Log.d("@DataAcquisition->run", "send data to publisher");
-                        sendDataToNode(buttonData, axesData);
+                        sendDataToNode(buttonData, axesData, false);
                     }
                 }
             }
@@ -182,7 +182,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 synchronized (object) {
                     // Send only if the sensor joystick button is pressed
                     if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
-                        sendDataToNode(buttonData, axesData);
+                        sendDataToNode(buttonData, axesData, true);
                     }
                 }
             }
@@ -192,7 +192,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    private void sendDataToNode(int[] buttonData, float[] axesData) {
+    private void sendDataToNode(int[] buttonData, float[] axesData, boolean mode) {
         Bundle bundle = new Bundle();
         Message msg1 = new Message();
         Message msg2 = new Message();
@@ -203,7 +203,17 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         msg1.setData(bundle);
         msg2.setData(bundle);
 
-        if(BaseClass.handlerForPublishingData != null) BaseClass.handlerForPublishingData.sendMessage(msg1);
-        if(BaseClass.handlerForVisualization != null) BaseClass.handlerForVisualization.sendMessage(msg2);
+        // Show sensor visualization only in drive mode with sensor
+        if(mode) {
+            if (BaseClass.handlerForPublishingData != null)
+                BaseClass.handlerForPublishingData.sendMessage(msg1);
+            if (BaseClass.handlerForVisualization != null)
+                BaseClass.handlerForVisualization.sendMessage(msg2);
+        }
+        else{
+            if (BaseClass.handlerForPublishingData != null) {
+                BaseClass.handlerForPublishingData.sendMessage(msg1);
+            }
+        }
     }
 }

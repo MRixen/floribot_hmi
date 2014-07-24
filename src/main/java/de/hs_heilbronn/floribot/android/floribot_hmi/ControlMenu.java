@@ -94,7 +94,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         // Set surface for execute activity
         if(surfaceData != null) globalLayout.setGlobalLayout(surfaceData, surface);
 
-        // Change button color to theme color
+       // Change button color to theme color
         // Therefor a new state list must be created
         StateListDrawable stateListDrawable = new StateListDrawable();
         stateListDrawable.addState(new int[] {android.R.attr.state_pressed}, getResources().getDrawable(R.drawable.button_background_pressed));

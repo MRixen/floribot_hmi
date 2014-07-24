@@ -9,10 +9,6 @@
 
     <dimen name="textViewMarginLeft">20dp</dimen>
     <dimen name="textSize">14sp</dimen>
-
-    <dimen name="beamHeight">40dp</dimen>
-    <dimen name="beamOffset">15dp</dimen>
-    <dimen name="connectButtonWidth">70dp</dimen>
     <!-- -->
 
     <!--PARAMETER FOR LAYOUT ON EXECUTE ACTIVITY-->
@@ -20,15 +16,10 @@
     <integer name="svBorderMarginInDp">5</integer>
     <integer name="svBeamWidthInDp">20</integer>
     <integer name="svOffsetInDp">10</integer>
-    <!--Parameter for bottom bar extension-->
-    <integer name="offsetToBottomBarExtensionInDp">2</integer>
-    <integer name="bottomBarExtensionWidthInDp">400</integer>
     <!-- -->
 
     <!--Parameter for global layout-->
     <integer name="svMarginTopInDp">15</integer>
-    <integer name="bottomBarHeightInDp">55</integer>
-    <integer name="bottomBarWidthInDp">100</integer>
     <!-- -->
 
     <!--PARAMETER FOR OVERFLOW MENU-->
@@ -36,7 +27,6 @@
     <dimen name="dialogTitleTextSize">20sp</dimen>
     <color name="dialogTextColor">#000000</color>
     <!--Parameter for spinner-->
-    <dimen name="dropDownWidth">200dp</dimen>
     <dimen name="seekBarMarginTop">15dp</dimen>
     <!-- -->
 
