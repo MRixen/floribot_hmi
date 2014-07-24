@@ -48,7 +48,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     private ToggleButton led_sensor, led_manual, led_auto;
     private Dialog dialog;
     private Button buttonExit;
-    private ImageView buttonExtension;
+    private ImageView bottomBarExtension;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         setContentView(R.layout.layout_execute);
 
         buttonExit = (Button) findViewById(R.id.button_exit);
-        buttonExtension = (ImageView) findViewById(R.id.button_extension);
+        bottomBarExtension = (ImageView) findViewById(R.id.button_extension);
 
         button_sensor_calibration = (Button) findViewById(R.id.button_sensor_calibration);
 
@@ -101,7 +101,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         stateListDrawable.addState(new int[] {-android.R.attr.state_pressed}, themeColors[sharedPreferences.getInt("theme", 0)].drawable[0]);
         buttonExit.setBackgroundDrawable(stateListDrawable);
         // Change button extension to theme color
-        buttonExtension.setBackgroundDrawable(themeColors[sharedPreferences.getInt("theme", 0)].drawable[1]);
+        bottomBarExtension.setBackgroundDrawable(themeColors[sharedPreferences.getInt("theme", 0)].drawable[1]);
     }
 
     @Override
