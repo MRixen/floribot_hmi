@@ -89,7 +89,7 @@ public class Node extends AbstractNodeMain {
             threadHandler = new Handler();
 
             // Handler to receive data and publish
-            BaseClass.handlerForPublishingData = new Handler() {
+            BaseClass.sendToNode = new Handler() {
                 public void handleMessage(Message msg) {
                     Bundle bundle = msg.getData();
 
@@ -116,7 +116,7 @@ public class Node extends AbstractNodeMain {
                 @Override
                 public void onNewMessage(JoyFeedbackArray message) {
                     List<JoyFeedback> messageList = message.getArray();
-                    BaseClass.subscriberInterface.subscriberCallback(messageList);
+                    BaseClass.subscriberMessageListener.onNewMessage(messageList);
                     Log.d("@Subscriber->addMessageListener", "addMessageListener...");
                 }
             });
@@ -126,5 +126,10 @@ public class Node extends AbstractNodeMain {
         public Publisher<Joy> getPublisher() {
             return publisher;
         }
+    }
+
+    // Interface for communication between subscriber and main thread
+    public interface SubscriberInterface {
+        public void subscriberCallback(List<JoyFeedback> message);
     }
 }

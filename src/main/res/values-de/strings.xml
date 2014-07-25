@@ -94,6 +94,8 @@
     <string name="theme_header">Theme</string>
     <string name="blueTheme">Leichtes Blau</string>
     <string name="greenTheme">Leichtes Grün</string>
+    <string name="landscape">Horizontal</string>
+    <string name="reverseLandscape">Umgekehrt Horizontal</string>
 
     <!--Parameter for main activity-->
     <string name="title_activity_main">Verbindung einrichten</string>
@@ -122,10 +124,12 @@
     <string name="dialog_title_publisher_exit">Warnung</string>
     <string name="node_graph_name_header">Node name</string>
     <string name="theme_prompt">Theme wählen</string>
+    <string name="orientation_prompt">Orientierung wählen</string>
     <string name="phone_calibration_area">Gerät ist nicht in Kalibrierungsbereich!</string>
     <string name="hint_master_destination">http://192.168.137.191:11311</string>
     <string name="hint_topic_publisher">/joy</string>
     <string name="hint_topic_subscriber">/joyFeedback</string>
     <string name="nodename_hint">floribot/hmi</string>
+    <string name="orientation_header">Orientierung</string>
 
 </resources>

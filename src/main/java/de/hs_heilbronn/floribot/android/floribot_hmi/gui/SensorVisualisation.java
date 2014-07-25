@@ -10,9 +10,15 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
@@ -21,8 +27,9 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
  * Created by mr on 20.05.14.
  *
  */
-public class GlobalLayout extends android.view.SurfaceView implements Runnable{
+public class SensorVisualisation extends android.view.SurfaceView implements Runnable{
 
+    private final Bundle surfaceDataBundle;
     private SharedPreferences sharedPreferences;
     private Context context;
     private Thread drawThread;
@@ -33,17 +40,97 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     private int backgroundColor;
     private float[] svRectArray = {0,0,0,0,0,0,0,0,0,0,0,0};
     private float svHalfSizeTopBeam, svHalSizeLeftBeam;
+    private int pxWidth, pxHeight;
+    private float factorHeight, factorWidth;
 
-    public GlobalLayout(Context context) {
+    public SensorVisualisation(Context context) {
         super(context);
         this.context = context;
         drawThread = null;
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        surfaceDataBundle = getSensorVisualisationData();
     }
 
-    public void init(Bundle bundle) {
+    public void SurfaceInit(){
+        // Calculate display size
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+
+        Log.d("@SurfaceInit", Thread.currentThread().getName());
+
+        pxWidth = displayMetrics.widthPixels;
+        pxHeight = displayMetrics.heightPixels;
+        float dpWidth = pxWidth / displayMetrics.density;
+        float dpHeight = pxHeight / displayMetrics.density;
+
+        // Factor dp to px
+        factorHeight = (pxHeight / dpHeight);
+        factorWidth = (pxWidth / dpWidth);
+    }
+
+    private int getRes(int res){
+        return context.getResources().getInteger(res);
+    }
+
+    public Bundle getSensorVisualisationData() {
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
+            @Override
+            public Bundle call() throws Exception {
+                Log.d("@DataSet->SurfaceDataExecute", Thread.currentThread().getName());
+                // Initialize surface data
+                SurfaceInit();
+
+                float[] svRectArray = new float[12];
+                // Note: Camera width need to be the full length of sensor visualization beam
+                float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
+                float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
+
+                // Create rectangle for top sensor visualization (visualization for steer amount)
+                // -------------------------------------
+                // Distance from left display border to left side of rectangle
+                svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from top display border to top side of rectangle
+                svRectArray[1] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp));
+                // Distance from left display border to right side of rectangle
+                svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
+                // Distance from top display border to bottom side of rectangle
+                svRectArray[3] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
+                // -------------------------------------
+
+                // Create rectangle for left sensor visualization (visualization for drive amount)
+                // -------------------------------------
+                // Distance from left display border to left side of rectangle
+                svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
+                // Distance from top display border to top side of rectangle
+                svRectArray[5] = factorHeight * (getRes(R.integer.svMarginTopInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
+                // Distance from left display border to right side of rectangle
+                svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
+                // Distance from top display border to bottom side of rectangle
+                svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
+                // -------------------------------------
+
+                // Return surface data
+                Bundle surfaceData = new Bundle();
+                surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
+                return surfaceData;
+            }
+        });
+
+        try {
+            return result.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void init() {
         // Load draw array for sensor visualization
-        if (bundle.containsKey(context.getResources().getString(R.string.svArray))) svRectArray = bundle.getFloatArray(context.getResources().getString(R.string.svArray));
+        if(surfaceDataBundle != null){
+            if (surfaceDataBundle.containsKey(context.getResources().getString(R.string.svArray))){
+                svRectArray = surfaceDataBundle.getFloatArray(context.getResources().getString(R.string.svArray));
+            }
+        }
 
         svPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         svPaint.setStyle(Paint.Style.FILL);
@@ -81,7 +168,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         }
 
         // Handler to receive and visualize sensor data
-        BaseClass.handlerForVisualization = new Handler() {
+        BaseClass.sendToSensorVisualization = new Handler() {
             public void handleMessage(Message msg) {
                 Bundle bundle = msg.getData();
 
@@ -121,21 +208,21 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
     }
 
 
-    public void pause(){
+    public void pauseSensorVisualisation(){
             try {
                 handlerForDrawThread.getLooper().quit();
                 handlerForDrawThread = null;
                 // Blocks drawThread until all operations are finished
                 drawThread.join();
             }catch(Exception e){
-                Log.d("@GlobalLayout#pause: ", String.valueOf(e));
+                Log.d("@GlobalLayout#pauseSensorVisualisation: ", String.valueOf(e));
             }
         drawThread = null;
     }
 
-    public void setGlobalLayout(Bundle bundle, SurfaceView surface) {
-        // Stop old drawThread to provide new theme settings by chang
-        pause();
+    public void startSensorVisualisation(SurfaceView surface) {
+        // Stop old drawThread to provide new theme settings
+        pauseSensorVisualisation();
 
         // Set holder
         surface.setZOrderOnTop(false);
@@ -145,7 +232,7 @@ public class GlobalLayout extends android.view.SurfaceView implements Runnable{
         BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;
 
-        init(bundle);
+        init();
 
         // Stop last draw drawThread and execute a new one
         if (drawThread == null) {

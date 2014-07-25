@@ -54,7 +54,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         threadHandler = new Handler();
 
         // Handler to receive button states from executeActivity in main dataAcquisitionThread
-        BaseClass.handlerForControlDataAcquisition = new Handler() {
+        BaseClass.sendToDataAcquisition = new Handler() {
             public void handleMessage(Message msg) {
                 stateBundle = msg.getData();
                 // Get button state array from main thread
@@ -205,14 +205,14 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
         // Show sensor visualization only in drive mode with sensor
         if(mode) {
-            if (BaseClass.handlerForPublishingData != null)
-                BaseClass.handlerForPublishingData.sendMessage(msg1);
-            if (BaseClass.handlerForVisualization != null)
-                BaseClass.handlerForVisualization.sendMessage(msg2);
+            if (BaseClass.sendToNode != null)
+                BaseClass.sendToNode.sendMessage(msg1);
+            if (BaseClass.sendToSensorVisualization != null)
+                BaseClass.sendToSensorVisualization.sendMessage(msg2);
         }
         else{
-            if (BaseClass.handlerForPublishingData != null) {
-                BaseClass.handlerForPublishingData.sendMessage(msg1);
+            if (BaseClass.sendToNode != null) {
+                BaseClass.sendToNode.sendMessage(msg1);
             }
         }
     }

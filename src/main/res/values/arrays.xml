@@ -4,4 +4,8 @@
         <item>@string/blueTheme</item>
         <item>@string/greenTheme</item>
     </string-array>
+    <string-array name="orientation_items">
+        <item>@string/landscape</item>
+        <item>@string/reverseLandscape</item>
+    </string-array>
 </resources>

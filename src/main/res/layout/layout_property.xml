@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/header_one"
+        android:id="@+id/header_theme"
         android:textStyle="bold"
         android:text="@string/theme_header"
         android:textSize="@dimen/headerTextSize"
@@ -18,40 +18,65 @@
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"/>
     <Spinner
-        android:id="@+id/spinner_one"
+        android:id="@+id/spinner_theme"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:prompt="@string/theme_prompt"
-        android:layout_alignLeft="@id/header_one"
-        android:layout_alignRight="@id/header_one"
-        android:layout_below="@id/header_one"
+        android:layout_alignLeft="@id/header_theme"
+        android:layout_alignRight="@id/header_theme"
+        android:layout_below="@id/header_theme"
         android:entries="@array/theme_items"
         android:spinnerMode="dropdown"
         android:background="@drawable/spinner_drop_down_view_state"/>
     <TextView
-        android:id="@+id/header_two"
+        android:id="@+id/header_node_name"
         android:textStyle="bold"
         android:text="@string/node_graph_name_header"
         android:textSize="@dimen/headerTextSize"
         android:textColor="#000000"
         android:background="#ffffff"
-        android:layout_alignLeft="@id/header_one"
-        android:layout_alignRight="@id/header_one"
+        android:layout_alignLeft="@id/header_theme"
+        android:layout_alignRight="@id/header_theme"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/spinner_one"
+        android:layout_below="@id/spinner_theme"
         android:layout_marginBottom="10dp"
         android:layout_marginTop="10dp"/>
     <EditText
-        android:id="@+id/editText_node_graph_name"
+        android:id="@+id/editText_node_name"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header_two"
+        android:layout_below="@id/header_node_name"
         android:textSize="@dimen/textSize"
         android:inputType="text"
         android:hint="@string/nodename_hint"
-        android:layout_alignLeft="@id/header_two"
-        android:layout_alignRight="@id/header_two"
+        android:layout_alignLeft="@id/header_node_name"
+        android:layout_alignRight="@id/header_node_name"
         android:background="@drawable/spinner_default_holo_light_am"/>
+    <TextView
+        android:id="@+id/header_orientation"
+        android:textStyle="bold"
+        android:text="@string/orientation_header"
+        android:textSize="@dimen/headerTextSize"
+        android:textColor="#000000"
+        android:background="#ffffff"
+        android:layout_below="@id/editText_node_name"
+        android:layout_alignLeft="@id/header_theme"
+        android:layout_alignRight="@id/header_theme"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"/>
+    <Spinner
+        android:id="@+id/spinner_orientation"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:prompt="@string/orientation_prompt"
+        android:layout_alignLeft="@id/header_orientation"
+        android:layout_alignRight="@id/header_orientation"
+        android:layout_below="@id/header_orientation"
+        android:entries="@array/orientation_items"
+        android:spinnerMode="dropdown"
+        android:background="@drawable/spinner_drop_down_view_state"/>
 
 </RelativeLayout>

@@ -10,16 +10,10 @@ import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
-import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.About;
 import de.hs_heilbronn.floribot.android.floribot_hmi.Help;
@@ -40,8 +34,8 @@ public class BaseClass extends ActionBarActivity {
     private int pxWidth, pxHeight;
     private float factorHeight, factorWidth;
     public static Node node;
-    public static Handler handlerForPublishingData = null, handlerForControlDataAcquisition = null, handlerForVisualization = null;
-    public static SubscriberInterface subscriberInterface;
+    public static Handler sendToNode = null, sendToDataAcquisition = null, sendToSensorVisualization = null;
+    public static SubscriberMessageListener subscriberMessageListener;
     private SharedPreferences sharedPreferences;
     private ActionBar bar;
     private BaseClass.ThemeColor[] themeColors;
@@ -116,82 +110,9 @@ public class BaseClass extends ActionBarActivity {
         }
     }
 
-    public void SurfaceInit(){
-        // Calculate display size
-        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-
-        Log.d("@SurfaceInit", Thread.currentThread().getName());
-
-        pxWidth = displayMetrics.widthPixels;
-        pxHeight = displayMetrics.heightPixels;
-        float dpWidth = pxWidth / displayMetrics.density;
-        float dpHeight = pxHeight / displayMetrics.density;
-
-        // Factor dp to px
-        factorHeight = (pxHeight / dpHeight);
-        factorWidth = (pxWidth / dpWidth);
-    }
-
-    public Bundle getSurfaceDataExecute() {
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<Bundle> result = executorService.submit(new Callable<Bundle>() {
-            @Override
-            public Bundle call() throws Exception {
-                Log.d("@DataSet->SurfaceDataExecute", Thread.currentThread().getName());
-                // Initialize surface data
-                SurfaceInit();
-
-                float[] svRectArray = new float[12];
-                // Note: Camera width need to be the full length of sensor visualization beam
-                float cameraViewWidthInPx = getRes(R.integer.cameraViewWidthInPx);
-                float cameraViewHeightInPx = getRes(R.integer.cameraViewHeightInPx);
-
-                // Create rectangle for top sensor visualization (visualization for steer amount)
-                // -------------------------------------
-                // Distance from left display border to left side of rectangle
-                svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-                // Distance from top display border to top side of rectangle
-                svRectArray[1] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp));
-                // Distance from left display border to right side of rectangle
-                svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
-                // Distance from top display border to bottom side of rectangle
-                svRectArray[3] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
-                // -------------------------------------
-
-                // Create rectangle for left sensor visualization (visualization for drive amount)
-                // -------------------------------------
-                // Distance from left display border to left side of rectangle
-                svRectArray[4] = factorWidth * getRes(R.integer.svBorderMarginInDp);
-                // Distance from top display border to top side of rectangle
-                svRectArray[5] = factorHeight * (getRes(R.integer.svMarginTopInDp)  + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
-                // Distance from left display border to right side of rectangle
-                svRectArray[6] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
-                // Distance from top display border to bottom side of rectangle
-                svRectArray[7] = svRectArray[5] + cameraViewHeightInPx;
-                // -------------------------------------
-
-                // Return surface data
-                Bundle surfaceData = new Bundle();
-                surfaceData.putFloatArray(context.getResources().getString(R.string.svArray), svRectArray);
-                return surfaceData;
-            }
-        });
-
-        try {
-            return result.get();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-    
-    private int getRes(int res){
-        return context.getResources().getInteger(res);
-    }
-
     // Interface for communication between subscriber and main thread
-    public interface SubscriberInterface {
-        public void subscriberCallback(List<JoyFeedback> message);
+    public interface SubscriberMessageListener {
+        public void onNewMessage(List<JoyFeedback> message);
     }
 
     @Override

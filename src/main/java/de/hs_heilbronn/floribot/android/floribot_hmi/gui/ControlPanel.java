@@ -14,41 +14,41 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
  *
  * This class set the fragments for the joystick buttons
  */
-public class LocalLayout extends Fragment {
+public class ControlPanel extends Fragment {
 
     private ControlMenu context;
-    LocalLayoutManager layoutManagerInterface;
+    OnControlPanelChangeListener onControlPanelChangeListener;
     private int localLayoutResource;
     private int drawable;
 
 
-    public LocalLayout(ControlMenu context) {
+    public ControlPanel(ControlMenu context) {
         this.context = context;
     }
 
-    public void setLocalLayout(int frameLayout, int localLayoutResource, int drawable) {
+    public void setControlPanel(int frameLayout, int localLayoutResource, int drawable) {
         this.localLayoutResource = localLayoutResource;
         this.drawable = drawable;
         if (this.localLayoutResource != 0) {
             context.getSupportFragmentManager().beginTransaction().replace(frameLayout, this).commit();
-            if(layoutManagerInterface != null) layoutManagerInterface.localLayoutCallback(drawable);
+            if(onControlPanelChangeListener != null) onControlPanelChangeListener.onControlPanelChanged(drawable);
         }
         else{
             context.getSupportFragmentManager().beginTransaction().remove(this).commit();
-            layoutManagerInterface = null;
+            onControlPanelChangeListener = null;
         }
 
     }
 
-    public interface LocalLayoutManager{
-        public void localLayoutCallback(int drawable);
+    public interface OnControlPanelChangeListener {
+        public void onControlPanelChanged(int drawable);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try{
-            layoutManagerInterface = (LocalLayoutManager) activity;
+            onControlPanelChangeListener = (OnControlPanelChangeListener) activity;
         }catch(ClassCastException e){
             throw new ClassCastException((activity.toString() + " must implement LocalLayoutManager"));
         }
@@ -62,6 +62,6 @@ public class LocalLayout extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        layoutManagerInterface.localLayoutCallback(drawable);
+        onControlPanelChangeListener.onControlPanelChanged(drawable);
     }
 }

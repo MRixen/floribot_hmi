@@ -22,28 +22,24 @@ import java.util.List;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataAcquisition;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.GlobalLayout;
-import de.hs_heilbronn.floribot.android.floribot_hmi.gui.LocalLayout;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.ControlPanel;
+import de.hs_heilbronn.floribot.android.floribot_hmi.gui.SensorVisualisation;
 import sensor_msgs.JoyFeedback;
 
 
-public class ControlMenu extends BaseClass implements View.OnTouchListener, LocalLayout.LocalLayoutManager, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberInterface {
+public class ControlMenu extends BaseClass implements View.OnTouchListener, ControlPanel.OnControlPanelChangeListener, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberMessageListener {
 
     private Button button_sensor_calibration;
 
-    private GlobalLayout globalLayout;
-    private LocalLayout localLayout;
+    private SensorVisualisation sensorVisualisation;
+    private ControlPanel controlPanel;
     private RelativeLayout relativeLayout;
-
     public static NodeExecutorService nodeExecutorService;
     private int speed;
     private SeekBar seekBar;
-
     private SurfaceView surface;
     private SharedPreferences sharedPreferences;
     private BaseClass.ThemeColor[] themeColors;
-
-    private Bundle surfaceData;
     private DataAcquisition dataAcquisition;
     private ToggleButton led_sensor, led_manual, led_auto;
     private Dialog dialog;
@@ -64,14 +60,12 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         led_sensor = (ToggleButton) findViewById(R.id.led_sensor);
         led_manual = (ToggleButton) findViewById(R.id.led_manual);
 
-        BaseClass.subscriberInterface = this;
+        BaseClass.subscriberMessageListener = this;
 
         surface = (SurfaceView) findViewById(R.id.surface_execute);
 
-        globalLayout = new GlobalLayout(this);
-        localLayout = new LocalLayout(this);
-        // Generate surface layout
-        surfaceData = getSurfaceDataExecute();
+        sensorVisualisation = new SensorVisualisation(this);
+        controlPanel = new ControlPanel(this);
         dataAcquisition = new DataAcquisition(this);
         dialog = new Dialog(this, R.style.dialog_style);
 
@@ -91,10 +85,9 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     @Override
     protected void onResume() {
         super.onResume();
-        // Set surface for execute activity
-        if(surfaceData != null) globalLayout.setGlobalLayout(surfaceData, surface);
+        sensorVisualisation.startSensorVisualisation(surface);
 
-       // Change button color to theme color
+        // Change button color to theme color
         // Therefor a new state list must be created
         StateListDrawable stateListDrawable = new StateListDrawable();
         stateListDrawable.addState(new int[] {android.R.attr.state_pressed}, getResources().getDrawable(R.drawable.button_background_pressed));
@@ -107,7 +100,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     @Override
     protected void onPause() {
         super.onPause();
-        globalLayout.pause();
+        sensorVisualisation.pauseSensorVisualisation();
     }
 
     @Override
@@ -127,7 +120,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
                 led_manual.setChecked(true);
                 led_auto.setChecked(false);
                 led_sensor.setChecked(false);
-                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
+                controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                 // Send data to publisher
                 sendDataToDataAcquisition(BaseClass.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
@@ -136,7 +129,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
                 led_sensor.setChecked(false);
                 led_manual.setChecked(false);
                 led_auto.setChecked(true);
-                localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
+                controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                 sendDataToDataAcquisition(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
                 break;
             case (R.id.button_sensor_calibration):
@@ -251,7 +244,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
         }
 
         msg.setData(bundle);
-        BaseClass.handlerForControlDataAcquisition.sendMessage(msg);
+        BaseClass.sendToDataAcquisition.sendMessage(msg);
 
     }
     
@@ -260,7 +253,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     }
 
     @Override
-    public void localLayoutCallback(int drawable) {
+    public void onControlPanelChanged(int drawable) {
         // Get layout for joystick buttons
         relativeLayout = (RelativeLayout) findViewById(R.id.joystick_buttons);
 
@@ -321,7 +314,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
                 // Set sensor toggle button state to false if user click cancel
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
                     led_sensor.setChecked(false);
-                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
+                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_joystick_active);
                     }
                 dialog.dismiss();
             }
@@ -339,7 +332,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
                     dialog.dismiss();
                     led_sensor.setChecked(true);
-                    localLayout.setLocalLayout(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
+                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_joystick_button, R.drawable.ic_sensor_active);
                     sendDataToDataAcquisition(-1, 0, 0, -1, true);
                 }
             }
@@ -375,14 +368,14 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Loca
     }
 
     @Override
-    public void subscriberCallback(List<JoyFeedback> messageList) {
+    public void onNewMessage(List<JoyFeedback> messageList) {
             /*switch(object.getId()){
                 case(0):
                     // Set led for manual mode
                     if(object.getIntensity() > 0 && !(manualIntensity > 0)){
                         manualIntensity = object.getIntensity();
                         setFeedbackLed(led_manual,true);
-                        Log.d("@subscriberCallback", "led feedback");
+                        Log.d("@onNewMessage", "led feedback");
                     }
                     else{
                         manualIntensity = object.getIntensity();
