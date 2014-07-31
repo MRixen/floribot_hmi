@@ -106,7 +106,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         // Registering acceleration event listener (for manual drive mode with joystick buttons)
         accelerationEvent.registerAccEventListener(new AccelerationEvent.AccEventListener() {
             @Override
-            public void customEvent() {
+            public void accEvent() {
                 synchronized (object) {
                     // Send only data if one of the joystick button is pressed
                     if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1 &&

@@ -30,7 +30,6 @@ import static android.os.Process.myPid;
 
 public class ConnectionEstablishment extends BaseClass {
 
-
     private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
     private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
     private Button buttonConnect;
@@ -49,7 +48,7 @@ public class ConnectionEstablishment extends BaseClass {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.layout_main);
+        setContentView(R.layout.layout_connectionestablishment);
 
         // Get edit text and text view fields objects for masterID, etc.
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
@@ -84,6 +83,7 @@ public class ConnectionEstablishment extends BaseClass {
     @Override
     protected void onResume() {
         super.onResume();
+        // Here you can call your method for new option in the settings activity
         loadPreferences();
         setTheme();
         serviceResultReceiver = new ServiceResultReceiver(null);
@@ -372,7 +372,7 @@ public class ConnectionEstablishment extends BaseClass {
                     break;
                 case(1):
                     Log.d("@ConnectionEstablishment->handleMessage: ", "Service stopped.");
-                    Toast.makeText(ConnectionEstablishment.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ConnectionEstablishment.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_LONG).show();
                     // Turn off power management
                     if (wakeLock.isHeld()) {
                         wakeLock.release();

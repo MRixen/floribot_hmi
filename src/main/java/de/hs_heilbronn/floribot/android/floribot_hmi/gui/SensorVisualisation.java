@@ -51,11 +51,11 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         surfaceDataBundle = getSensorVisualisationData();
     }
 
-    public void SurfaceInit(){
+    public void calculateDimensions(){
         // Calculate display size
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
 
-        Log.d("@SurfaceInit", Thread.currentThread().getName());
+        Log.d("@calculateDimensions", Thread.currentThread().getName());
 
         pxWidth = displayMetrics.widthPixels;
         pxHeight = displayMetrics.heightPixels;
@@ -78,7 +78,7 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
             public Bundle call() throws Exception {
                 Log.d("@DataSet->SurfaceDataExecute", Thread.currentThread().getName());
                 // Initialize surface data
-                SurfaceInit();
+                calculateDimensions();
 
                 float[] svRectArray = new float[12];
                 // Note: Camera width need to be the full length of sensor visualization beam
@@ -124,7 +124,7 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         }
     }
 
-    public void init() {
+    public void surfaceInit() {
         // Load draw array for sensor visualization
         if(surfaceDataBundle != null){
             if (surfaceDataBundle.containsKey(context.getResources().getString(R.string.svArray))){
@@ -207,7 +207,6 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);
     }
 
-
     public void pauseSensorVisualisation(){
             try {
                 handlerForDrawThread.getLooper().quit();
@@ -232,7 +231,7 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();
         this.backgroundColor = themeColors[sharedPreferences.getInt("theme", 0)].backgroundColor;
 
-        init();
+        surfaceInit();
 
         // Stop last draw drawThread and execute a new one
         if (drawThread == null) {

@@ -127,9 +127,4 @@ public class Node extends AbstractNodeMain {
             return publisher;
         }
     }
-
-    // Interface for communication between subscriber and main thread
-    public interface SubscriberInterface {
-        public void subscriberCallback(List<JoyFeedback> message);
-    }
 }

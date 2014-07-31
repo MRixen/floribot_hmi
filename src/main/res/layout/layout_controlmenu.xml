@@ -23,7 +23,7 @@
 
     <ImageView
         android:id="@+id/button_extension"
-        android:layout_width="350dp"
+        android:layout_width="240dp"
         android:layout_height="60dp"
         android:background="@drawable/button_extension_modern_blue"
         android:layout_alignParentRight="true"
@@ -35,7 +35,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginRight="65dp"
+        android:layout_marginRight="35dp"
         android:layout_marginBottom="5dp"
         android:layout_toLeftOf="@id/button_exit"
         android:onClick="onButtonClicked"
@@ -52,12 +52,21 @@
         android:onClick="onButtonClicked"
         android:background="@drawable/control_mode_auto_selector" />
 
+    <ImageView
+        android:id="@+id/button_extension_sensor"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:background="@drawable/button_extension_modern_blue"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="338dp"
+        android:layout_alignParentBottom="true"/>
+
     <Button
         android:id="@+id/button_sensor_calibration"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        android:layout_marginRight="40dp"
+        android:layout_marginRight="60dp"
         android:layout_marginBottom="5dp"
         android:enabled="false"
         android:layout_toLeftOf="@id/button_auto"

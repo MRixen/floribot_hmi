@@ -84,8 +84,8 @@
     <!--Parameter for service-->
     <string name="ticker_message">Starte service...</string>
     <string name="notification_text">Klicken für zurück.</string>
-    <string name="notification_title">FloriBot</string>
-    <string name="serviceStopped">Service kann nicht gestartet werden.</string>
+    <string name="notification_title">FloriBot HMI - Control menu</string>
+    <string name="serviceStopped">Service kann nicht gestartet werden.\nMöglicherweise ist das Wlan noch nicht vollständig initialisiert.</string>
 
     <!--Overflow parameter-->
     <string name="title_activity_help">Hilfe</string>
@@ -112,7 +112,7 @@
     <string name="connection_establishment_error_wifi_lock">Dauerhaftes Einschalten von Wlan fehgeschlagen!</string>
 
     <!--Parameter for execute activity-->
-    <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in Ausgangsposition!</string>
+    <string name="dialog_message_start_calibration">Bitte halten Sie ihr Gerät in eine Ausgangsorientierung!</string>
     <string name="dialog_negative_button">Abbrechen</string>
     <string name="dialog_positive_button">OK</string>
     <string name="dialog_message_close_connection">Verbindung beenden?</string>

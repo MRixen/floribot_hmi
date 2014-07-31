@@ -31,8 +31,6 @@ public class BaseClass extends ActionBarActivity {
 
     private static Context context;
     private String titleName;
-    private int pxWidth, pxHeight;
-    private float factorHeight, factorWidth;
     public static Node node;
     public static Handler sendToNode = null, sendToDataAcquisition = null, sendToSensorVisualization = null;
     public static SubscriberMessageListener subscriberMessageListener;

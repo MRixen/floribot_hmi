@@ -103,7 +103,7 @@
     <!--Parameter for service-->
     <string name="ticker_message">Start service...</string>
     <string name="notification_text">Tab to get back.</string>
-    <string name="notification_title">FloriBot</string>
+    <string name="notification_title">FloriBot HMI - Control menu</string>
 
     <!--Overflow parameter-->
     <string name="title_activity_help">Help</string>
@@ -130,7 +130,7 @@
     <string name="connection_establishment_error_wifi_lock">No wifi wake lock established!</string>
 
     <!--Parameter for execute activity-->
-    <string name="dialog_message_start_calibration">Hold your phone in start position!</string>
+    <string name="dialog_message_start_calibration">Hold your phone in start orientation!</string>
     <string name="dialog_negative_button">Cancel</string>
     <string name="dialog_positive_button">OK</string>
     <string name="dialog_message_close_connection">Close connection?</string>
@@ -142,9 +142,9 @@
 
     <!--Parameter for layout management-->
     <string name="dialog_title_publisher_exit">Warning</string>
-    <string name="toast_enter_all">You need to set connection parameter!</string>
+    <string name="toast_enter_all">You need to set the connection parameter!</string>
     <string name="node_graph_name_header">Node name</string>
-    <string name="serviceStopped">Cannot start service.</string>
+    <string name="serviceStopped">Cannot start service.\nMaybe your wifi isn\'t initialized yet.</string>
 
 
     <string name="theme_prompt">Select theme</string>
