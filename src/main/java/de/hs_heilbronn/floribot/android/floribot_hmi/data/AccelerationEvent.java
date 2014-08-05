@@ -29,7 +29,7 @@ public class AccelerationEvent extends Thread{
         Log.d("@AccelerationEvent->run", "AccelerationEvent thread started");
         while (true) {
             if (this.accEventListener != null) {
-                this.accEventListener.accEvent();
+                this.accEventListener.onAccEvent();
             }
             try {
                 Thread.sleep(context.getResources().getInteger(R.integer.custom_event_delay));
@@ -47,7 +47,7 @@ public class AccelerationEvent extends Thread{
 
 
     public interface AccEventListener {
-        public void accEvent();
+        public void onAccEvent();
     }
 
     public AccEventListener getEventListener(){

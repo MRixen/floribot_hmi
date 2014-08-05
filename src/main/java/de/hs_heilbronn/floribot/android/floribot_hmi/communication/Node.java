@@ -16,6 +16,7 @@ import org.ros.node.topic.Publisher;
 import java.util.List;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
+import de.hs_heilbronn.floribot.android.floribot_hmi.data.AccelerationEvent;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import sensor_msgs.Joy;
 import sensor_msgs.JoyFeedback;
@@ -121,10 +122,6 @@ public class Node extends AbstractNodeMain {
                 }
             });
             Looper.loop();
-        }
-
-        public Publisher<Joy> getPublisher() {
-            return publisher;
         }
     }
 }

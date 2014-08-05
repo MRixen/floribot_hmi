@@ -1,11 +1,13 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Bundle;
 import android.os.Message;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceView;
 import android.view.View;
@@ -19,7 +21,6 @@ import android.widget.ToggleButton;
 
 import java.util.List;
 
-import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.DataAcquisition;
 import de.hs_heilbronn.floribot.android.floribot_hmi.gui.ControlPanel;
@@ -27,14 +28,12 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.gui.SensorVisualisation;
 import sensor_msgs.JoyFeedback;
 
 
-public class ControlMenu extends BaseClass implements View.OnTouchListener, ControlPanel.OnControlPanelChangeListener, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberMessageListener {
+public class ControlMenu extends BaseClass implements View.OnTouchListener, ControlPanel.OnControlPanelListener, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberMessageListener, BaseClass.SensorCalibrationListener {
 
     private Button button_sensor_calibration;
-
     private SensorVisualisation sensorVisualisation;
     private ControlPanel controlPanel;
     private RelativeLayout relativeLayout;
-    public static NodeExecutorService nodeExecutorService;
     private int speed;
     private SeekBar seekBar;
     private SurfaceView surface;
@@ -44,15 +43,19 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
     private ToggleButton led_sensor, led_manual, led_auto;
     private Dialog dialog;
     private Button buttonExit;
-    private ImageView bottomBarExtension;
+    private ImageView bottomBarMiddle, bottomBarLeft;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_controlmenu);
 
+        int defaultOrientation = getIntent().getIntExtra("orientation", 0);
+
         buttonExit = (Button) findViewById(R.id.button_exit);
-        bottomBarExtension = (ImageView) findViewById(R.id.button_extension);
+        bottomBarMiddle = (ImageView) findViewById(R.id.bottom_bar_middle);
+        bottomBarLeft = (ImageView) findViewById(R.id.bottom_bar_left);
+
 
         button_sensor_calibration = (Button) findViewById(R.id.button_sensor_calibration);
 
@@ -61,21 +64,24 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         led_manual = (ToggleButton) findViewById(R.id.led_manual);
 
         BaseClass.subscriberMessageListener = this;
+        BaseClass.sensorCalibrationListener = this;
 
         surface = (SurfaceView) findViewById(R.id.surface_execute);
 
         sensorVisualisation = new SensorVisualisation(this);
         controlPanel = new ControlPanel(this);
-        dataAcquisition = new DataAcquisition(this);
         dialog = new Dialog(this, R.style.dialog_style);
+        dataAcquisition = new DataAcquisition(this, defaultOrientation);
 
         setActionBarTitle(getResources().getString(R.string.title_activity_execute));
+
     }
+
 
     @Override
     protected void onStart() {
         super.onStart();
-        nodeExecutorService = new NodeExecutorService();
+        //nodeExecutorService = new NodeExecutorService();
         sharedPreferences = getSharedPreferences();
         themeColors = getThemeColors();
         // Start data acquisition thread
@@ -85,8 +91,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
     @Override
     protected void onResume() {
         super.onResume();
-        sensorVisualisation.
-        startSensorVisualisation(surface);
+        sensorVisualisation.startSensorVisualisation(surface);
 
         // Change button color to theme color
         // Therefor a new state list must be created
@@ -95,23 +100,19 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         stateListDrawable.addState(new int[] {-android.R.attr.state_pressed}, themeColors[sharedPreferences.getInt("theme", 0)].drawable[0]);
         buttonExit.setBackgroundDrawable(stateListDrawable);
         // Change button extension to theme color
-        bottomBarExtension.setBackgroundDrawable(themeColors[sharedPreferences.getInt("theme", 0)].drawable[1]);
+        bottomBarMiddle.setBackgroundDrawable(themeColors[sharedPreferences.getInt("theme", 0)].drawable[1]);
+        bottomBarLeft.setBackgroundDrawable(themeColors[sharedPreferences.getInt("theme", 0)].drawable[2]);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        sensorVisualisation.pauseSensorVisualisation();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
+        sensorVisualisation.stopSensorVisualisation();
     }
 
     @Override
     public void onBackPressed() {
-        Dialog(getResources().getString(R.string.dialog_message_close_connection));
+        showDialog(getResources().getString(R.string.dialog_message_close_connection));
     }
 
     public void onButtonClicked(View v){
@@ -121,6 +122,8 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 led_manual.setChecked(true);
                 led_auto.setChecked(false);
                 led_sensor.setChecked(false);
+                // Enable button for sensor drive mode
+                button_sensor_calibration.setEnabled(true);
                 controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_active);
                 // Send data to publisher
                 sendToDataAcquisition(BaseClass.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, -1, false);
@@ -130,15 +133,16 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 led_sensor.setChecked(false);
                 led_manual.setChecked(false);
                 led_auto.setChecked(true);
-                controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_active);
-                sendToDataAcquisition(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, -1, false);
+                button_sensor_calibration.setEnabled(false);
+                controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_auto_active);
+                sendToDataAcquisition(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, 0, false);
                 break;
             case (R.id.button_sensor_calibration):
-                Dialog(getResources().getString(R.string.dialog_message_start_calibration));
+                showDialog(getResources().getString(R.string.dialog_message_start_calibration));
                 break;
             case (R.id.button_exit):
                 // Stop publisher and return to ConnectionEstablishment
-                Dialog(getResources().getString(R.string.dialog_message_close_connection));
+                showDialog(getResources().getString(R.string.dialog_message_close_connection));
                 break;
         }
     }
@@ -162,7 +166,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 }
                 break;
             case(R.id.button_up):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
@@ -170,13 +174,13 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, speed, false);
+                        sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal(), driveCmd, 0, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
                 break;
             case(R.id.button_down):
-                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled() || led_auto.isChecked()){
+                if(!led_sensor.isChecked() && button_sensor_calibration.isEnabled()){
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
@@ -184,7 +188,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
+                        sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal(), driveCmd, 0, false);
                         setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
@@ -194,12 +198,14 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
-                        setBackgroundForJoystickButtons(R.drawable.ic_joystick_left);
+                        if(led_auto.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_auto_left);
+                        if(led_manual.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_left);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, -speed, false);
-                        setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
+                        sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal(), driveCmd, 0, false);
+                        if(led_auto.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_auto_active);
+                        if(led_manual.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
                 break;
@@ -208,12 +214,14 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                     if (event.getAction() == MotionEvent.ACTION_DOWN) {
                         driveCmd = 1;
                         sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
-                        setBackgroundForJoystickButtons(R.drawable.ic_joystick_right);
+                        if(led_auto.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_auto_right);
+                        if(led_manual.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_right);
                     }
                     if (event.getAction() == MotionEvent.ACTION_UP) {
                         driveCmd = 0;
-                        sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, speed, false);
-                        setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
+                        sendToDataAcquisition(-1, BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal(), driveCmd, 0, false);
+                        if(led_auto.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_auto_active);
+                        if(led_manual.isChecked()) setBackgroundForJoystickButtons(R.drawable.ic_joystick_active);
                     }
                 }
                 break;
@@ -221,21 +229,23 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         return false;
     }
 
-    private void sendToDataAcquisition(int mode, int driveCmd, int cmdValue, int speed, boolean calibration){
+    private void sendToDataAcquisition(int mode, int driveMode, int driveCmd, int speed, boolean calibration){
         int[] buttonData = new int[10];
         int[] axesData = new int[3];
         Bundle bundle = new Bundle();
         Message msg = new Message();
 
-        buttonData[driveCmd] = cmdValue;
+        buttonData[driveMode] = driveCmd;
         if(mode != -1) buttonData[mode] = 1;
 
         bundle.putIntArray(getResources().getString(R.string.button_state_array), buttonData);
 
-        if(calibration) bundle.putBoolean(getResources().getString(R.string.start_sensor_calibration), calibration);
+        if(calibration){
+            bundle.putBoolean(getResources().getString(R.string.start_sensor_calibration), calibration);
+        }
 
         if(speed != -1){
-            // Check if actual speed is different from last to avoid loop execution
+            // Check if actual speed is different from last
             if (speed != axesData[0]) {
                 for (int i = 0; i <= axesData.length - 1; i++) {
                     axesData[i] = speed;
@@ -254,7 +264,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
     }
 
     @Override
-    public void onControlPanelChanged(int drawable) {
+    public void onControlPanelLoaded(int drawable) {
         // Get layout for joystick buttons
         relativeLayout = (RelativeLayout) findViewById(R.id.joystick_buttons);
 
@@ -265,36 +275,35 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
             sensor.setOnTouchListener(this);
             setBackgroundForJoystickButtons(drawable);
         }
-        if(led_manual.isChecked() && !led_sensor.isChecked() || led_auto.isChecked()){
+        if(led_manual.isChecked() && !led_sensor.isChecked()){
             Button button_up = (Button) findViewById(R.id.button_up);
             Button button_down = (Button) findViewById(R.id.button_down);
             Button button_left = (Button) findViewById(R.id.button_left);
             Button button_right = (Button) findViewById(R.id.button_right);
             seekBar = (SeekBar) findViewById(R.id.seek_bar_speed);
+            seekBar.setProgress(0);
 
             button_up.setOnTouchListener(this);
             button_down.setOnTouchListener(this);
             button_left.setOnTouchListener(this);
             button_right.setOnTouchListener(this);
-            // Show seek bar (is set to invisible by pressing sensor button)
-            if(led_manual.isChecked()) {
-                seekBar.setVisibility(View.VISIBLE);
-                seekBar.setOnSeekBarChangeListener(this);
-                // Enable button for sensor drive mode
-                button_sensor_calibration.setEnabled(true);
-            }
-            else{
-                seekBar.setVisibility(View.INVISIBLE);
-                button_sensor_calibration.setEnabled(false);
-            }
+            seekBar.setVisibility(View.VISIBLE);
+            seekBar.setOnSeekBarChangeListener(this);
             // Set background for joystick buttons
             setBackgroundForJoystickButtons(drawable);
-
+        }
+        if(led_auto.isChecked()){
+            Button button_left = (Button) findViewById(R.id.button_left);
+            Button button_right = (Button) findViewById(R.id.button_right);
+            button_left.setOnTouchListener(this);
+            button_right.setOnTouchListener(this);
+            seekBar.setVisibility(View.INVISIBLE);
+            setBackgroundForJoystickButtons(drawable);
         }
     }
 
 
-    public void Dialog(final String message) {
+    public void showDialog(final String message) {
 
         dialog.setContentView(R.layout.layout_dialog);
         dialog.setCancelable(false);
@@ -331,14 +340,19 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 }
                 // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
                 if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                    dialog.dismiss();
+                    //dialog.dismiss();
+                    sendToDataAcquisition(DriveMode.MANUAL_DRIVE.ordinal(), BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), 1, 0, true);
                     led_sensor.setChecked(true);
                     controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_sensor_active);
-                    sendToDataAcquisition(-1, 0, 0, -1, true);
                 }
             }
         });
         dialog.show();
+    }
+
+    @Override
+    public void onCalibrationSuccess() {
+        dialog.dismiss();
     }
 
     private void onExit(){
@@ -346,7 +360,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         dataAcquisition = null;
         // Stop executor node
         BaseClass.node.stopNodeThread();
-        stopService(ConnectionEstablishment.nodeExecutorService);
+        //stopService(ConnectionEstablishment.nodeExecutorService);
         // Go back to ConnectionEstablishment
         dialog.dismiss();
         finish();

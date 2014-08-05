@@ -1,6 +1,7 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,6 +14,7 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
+import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 
 
@@ -23,22 +25,26 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
     private final Context context;
     private final Object object = new Object();
+    private final int defaultOrientation;
     private Handler threadHandler;
     private SensorManager sensorManager;
     private AccelerationEvent accelerationEvent;
     private double alpha = 0;
-    private boolean calibrateSensor;
     private Bundle stateBundle;
     private int[] buttonData = new int[10];
     private float[] axesData = new float[3];
-    private boolean startCalibration;
     private Thread dataAcquisitionThread;
-    private boolean stopSending, phoneInArea;
+    private boolean calibrateSensor, stopSending, phoneInArea;
     private Activity activity;
+    private double g = 10;
+    private float gz;
+    private int driveMode;
 
-    public DataAcquisition(Context context) {
+    public DataAcquisition(Context context, int defaultOrientation) {
         this.context = context;
+        this.defaultOrientation = defaultOrientation;
         activity = new Activity();
+        driveMode = -1;
     }
 
     public void run() {
@@ -78,48 +84,54 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                             }
                         }
                     }
+                    // Send response for automatic drive mode and wait for answer from robot to enable the control buttons
+                    // NOTE: This isn't implemented yet! There is no response from the robot.
+                    if(buttonData[BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal()] == 1){
+                        synchronized (object) {
+                            sendDataToNode(buttonData, null, false);
+                        }
+                        driveMode = BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal();
+                    }
+                    // Send response for manual drive mode and wait for answer from robot to enable the control buttons
+                    // NOTE: This isn't implemented yet! There is no response from the robot.
+                    if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
+                        synchronized (object) {
+                            sendDataToNode(buttonData, null, false);
+                        }
+                        driveMode = BaseClass.DriveMode.MANUAL_DRIVE.ordinal();
+                    }
+                    if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
+                        driveMode = BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal();
+                    }
                     // Check if the user want to calibrate sensor
                     if (stateBundle.containsKey(context.getResources().getString(R.string.start_sensor_calibration))) {
-                        startCalibration = stateBundle.getBoolean(context.getResources().getString(R.string.start_sensor_calibration));
+                        calibrateSensor = stateBundle.getBoolean(context.getResources().getString(R.string.start_sensor_calibration));
                         // Unregister sensor listener to provide new calibration by pressing the sensor mode button
                         unregisterSensorListener();
                         // Register sensor listener
                         sensorManager.registerListener(DataAcquisition.this, accSensor, SensorManager.SENSOR_DELAY_NORMAL, threadHandler);
                         Log.d("@DataAcquisition->registerAccEventListener", "start sensor calibration");
                     }
-                    // Send response for automatic drive mode
-                    if(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal() == 1){
-                        synchronized (object) {
-                            sendDataToNode(buttonData, null, false);
-                        }
-                    }
-                    // Send response for manual drive mode
-                    else if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
-                        synchronized (object) {
-                            sendDataToNode(buttonData, null, false);
-                        }
-                    }
                 }
+                Log.d("driveMode", String.valueOf(driveMode));
             }
+
         };
 
-        // Registering acceleration event listener (for manual drive mode with joystick buttons)
-        accelerationEvent.registerAccEventListener(new AccelerationEvent.AccEventListener() {
-            @Override
-            public void accEvent() {
-                synchronized (object) {
-                    // Send only data if one of the joystick button is pressed
-                    if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1 &&
-                            ( buttonData[BaseClass.DriveMode.MOVE_FORWARD_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[BaseClass.DriveMode.MOVE_BACKWARD_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[BaseClass.DriveMode.TURN_LEFT_WITH_BUTTON.ordinal()] == 1 ||
-                                    buttonData[BaseClass.DriveMode.TURN_RIGHT_WITH_BUTTON.ordinal()] == 1)){
-                        Log.d("@DataAcquisition->run", "send data to publisher");
-                        sendDataToNode(buttonData, axesData, false);
+
+            // Registering acceleration event listener (for manual drive mode with joystick buttons)
+            accelerationEvent.registerAccEventListener(new AccelerationEvent.AccEventListener() {
+                @Override
+                public void onAccEvent() {
+                    synchronized (object) {
+                        if(driveMode == BaseClass.DriveMode.MANUAL_DRIVE.ordinal() || driveMode == BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal()) {
+                            Log.d("@DataAcquisition->accelerationEvent", String.valueOf(driveMode));
+                            sendDataToNode(buttonData, axesData, false);
+                        }
                     }
                 }
-            }
-        });
+            });
+
         Looper.loop();
     }
 
@@ -138,7 +150,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
     private void unregisterSensorListener() {
         sensorManager.unregisterListener(DataAcquisition.this);
-        calibrateSensor = false;
+        //calibrateSensor = false;
         stopSending = false;
         phoneInArea = false;
     }
@@ -146,43 +158,114 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            /*Here you need to add some code to differentiate between two landscape modes (landscape and reverseLandscape)*/
 
-            float[] sensorData = event.values;
-            if (!calibrateSensor) {
-                double gz = sensorData[2];
-                double g = 9.81;
-                alpha = -(Math.PI/2)+Math.acos(gz / g);
-                calibrateSensor = true;
-            }
+            float[] sensorEventValues = event.values;
 
-            double[] Ry = {-Math.sin(alpha), 0, Math.cos(alpha)};
-            float[] axesData = new float[3];
+            /*Check if the default config is portrait*/
+            if(defaultOrientation == 1) {
+                Log.d("orientation", "portrait");
+                if (calibrateSensor) {
+                    gz = sensorEventValues[2];
+                    alpha = -(Math.PI / 2) + Math.acos(gz / g);
+                    calibrateSensor = false;
+                }
 
-            for (int i = 0; i < sensorData.length; i++) {
+                float[] sensorData = new float[3];
+                double[] Ry = {-Math.sin(alpha), 0, Math.cos(alpha)};
+
+                for (int i = 0; i < sensorEventValues.length; i++) {
                     // Calculate z value only
-                    axesData[1] += Ry[i] * sensorData[i];
-            }
-            axesData[0] = -sensorData[1];
-            // Check if phone is in calibration area
-            // Phone is in calibration area when the first sensor value is smaller than 1
-            if(!phoneInArea && !stopSending) {
-                if (Math.abs(axesData[1]) >= 1) {
-                    stopSending = true;
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(context,context.getResources().getString(R.string.phone_calibration_area),Toast.LENGTH_LONG).show();
+                    sensorData[1] += Ry[i] * sensorEventValues[i];
+                }
+                sensorData[0] = -sensorEventValues[1];
+                // Check if phone is in calibration area
+                // Phone is in calibration area when the first sensor value is smaller than 1
+                if (!phoneInArea && !stopSending) {
+                    if (gz > g || Math.abs(sensorData[1]) >= 1) {
+                        stopSending = true;
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, context.getResources().getString(R.string.phone_calibration_area), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        phoneInArea = true;
+                        // dismiss dialog
+                        BaseClass.sensorCalibrationListener.onCalibrationSuccess();
+                    }
+                }
+
+                /*Send data when dead man button is pressed*/
+                if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 0) {
+                    // Send sensor data to robot if calibration is successfully
+                    if (!stopSending) {
+                        Log.d("sensorEventValues", sensorData[0] + " / " + sensorData[1] + " / " + sensorData[2]);
+                        synchronized (object) {
+                            sendDataToNode(buttonData, sensorData, true);
                         }
-                    });
-                } else phoneInArea = true;
+                    }
+                }
+                /*Send null for axesData when the sensor button is pressed and the dead man button is not pressed*/
+                else if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 0 ||
+                        (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1)){
+                    synchronized (object) {
+                        sendDataToNode(buttonData, null, true);
+                    }
+                }
             }
-            // Send sensor data to robot if calibration is successfully
-            if(!stopSending) {
-                Log.d("sensorData", axesData[0] + " / " + axesData[1] + " / " + axesData[2]);
-                synchronized (object) {
-                    // Send only if the sensor joystick button is pressed
-                    if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1) {
-                        sendDataToNode(buttonData, axesData, true);
+            //Check if the default config is landscape
+            else if(defaultOrientation == 2){
+                Log.d("orientation", "landscape");
+                if (calibrateSensor) {
+                    double gz = sensorEventValues[2];
+
+                    alpha = -(Math.PI / 2) - Math.acos(gz / g);
+                    calibrateSensor = false;
+                }
+
+                float[] sensorData = new float[3];
+                double[] Rx = {0, Math.sin(alpha), Math.cos(alpha)};
+
+                for (int i = 0; i < sensorEventValues.length; i++) {
+                    // Calculate z value only
+                    sensorData[1] += Rx[i] * sensorEventValues[i];
+                }
+                sensorData[1] = -sensorData[1];
+                sensorData[0] = sensorEventValues[0];
+                // Check if phone is in calibration area
+                // Phone is in calibration area when the first sensor value is smaller than 1
+                if (!phoneInArea && !stopSending) {
+                    if (gz > g || Math.abs(sensorData[1]) >= 1) {
+                        stopSending = true;
+                        activity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(context, context.getResources().getString(R.string.phone_calibration_area), Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        phoneInArea = true;
+                        // dismiss dialog
+                        BaseClass.sensorCalibrationListener.onCalibrationSuccess();
+                    }
+                }
+                /*Send data when dead man button is pressed*/
+                if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 0) {
+                    // Send sensor data to robot if calibration is successfully
+                    if (!stopSending) {
+                        Log.d("sensorEventValues", sensorData[0] + " / " + sensorData[1] + " / " + sensorData[2]);
+                        synchronized (object) {
+                            sendDataToNode(buttonData, sensorData, true);
+                        }
+                    }
+                }
+                /*Send null for axesData when the sensor button is pressed and the dead man button is not pressed*/
+                else if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 0 ||
+                        (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1)){
+                    synchronized (object) {
+                        sendDataToNode(buttonData, null, true);
                     }
                 }
             }
@@ -192,7 +275,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    private void sendDataToNode(int[] buttonData, float[] axesData, boolean mode) {
+    private void sendDataToNode(int[] buttonData, float[] axesData, boolean showVisualization) {
         Bundle bundle = new Bundle();
         Message msg1 = new Message();
         Message msg2 = new Message();
@@ -203,8 +286,8 @@ public class DataAcquisition extends Thread implements SensorEventListener {
         msg1.setData(bundle);
         msg2.setData(bundle);
 
-        // Show sensor visualization only in drive mode with sensor
-        if(mode) {
+        // Show sensor visualization only in drive showVisualization with sensor
+        if(showVisualization) {
             if (BaseClass.sendToNode != null)
                 BaseClass.sendToNode.sendMessage(msg1);
             if (BaseClass.sendToSensorVisualization != null)

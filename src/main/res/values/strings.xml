@@ -65,16 +65,16 @@
     <!--PARAMETER FOR HELP DIALOG-->
     <string name="help_connection_parameter_text">
         <large><b>Connection establishment:</b></large>
-        \n<small>1. Enter ROS Master-Address in the first field.</small>\n
-        <small>2. Enter topic name of the publisher (send data to robot). </small>\n
-        <small>3. Enter topic name of the subscriber (receive data from robot).</small>
+        \n<small>1. Enter ROS Master-Address in the first field.</small>
+        \n<small>2. Enter topic name of the publisher (send data to robot). </small>
+        \n<small>3. Enter topic name of the subscriber (receive data from robot).</small>
     </string>
     <string name="help_sensor_control_text">
         <large><b>Control with acceleration sensor:</b></large>
         \n<small>1. Press the button for manual control mode.</small>
-        \n<small>2. Press the calibration button to get custom start orientation.</small>\n
-        <small>3. Confirm the initial position of your phone.</small>\n
-        <small>4. Move your phone and press the dead man\'s push button to control the robot.</small>
+        \n<small>2. Press the calibration button to get custom start orientation.</small>
+        \n<small>3. Confirm the initial position of your phone.</small>
+        \n<small>4. Move your phone and press the dead man\'s push button to control the robot.</small>
     </string>
     <string name="help_joystick_control_text">
         <large><b>Control with joystick buttons:</b></large>
@@ -88,8 +88,8 @@
         \n<small>2. Press the specific button to set the first turn of the robot.</small>
     </string>
     <string name="help_exit_connection_text">
-        <large><b>Close connection:</b></large>\n
-        <small>1. Press the exit button to close the connection.</small>
+        <large><b>Close connection:</b></large>
+        \n<small>1. Press the exit button to close the connection.</small>
         <small>2. Confirm by pressing ok.</small>
     </string>
          <string name="tip_text">
@@ -130,7 +130,7 @@
     <string name="connection_establishment_error_wifi_lock">No wifi wake lock established!</string>
 
     <!--Parameter for execute activity-->
-    <string name="dialog_message_start_calibration">Hold your phone in start orientation!</string>
+    <string name="dialog_message_start_calibration">Please hold your phone in start orientation!</string>
     <string name="dialog_negative_button">Cancel</string>
     <string name="dialog_positive_button">OK</string>
     <string name="dialog_message_close_connection">Close connection?</string>
@@ -144,7 +144,7 @@
     <string name="dialog_title_publisher_exit">Warning</string>
     <string name="toast_enter_all">You need to set the connection parameter!</string>
     <string name="node_graph_name_header">Node name</string>
-    <string name="serviceStopped">Cannot start service.\nMaybe your wifi isn\'t initialized yet.</string>
+    <string name="serviceStopped">Can\'t start node.</string>
 
 
     <string name="theme_prompt">Select theme</string>
@@ -155,5 +155,6 @@
     <string name="hint_topic_subscriber">/joyFeedback</string>
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientation</string>
+    <string name="toast_whitespace">Whitespaces in connection parameter are not allowed!</string>
 
 </resources>

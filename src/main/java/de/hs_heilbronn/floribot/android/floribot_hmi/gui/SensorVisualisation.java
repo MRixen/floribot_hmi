@@ -33,8 +33,8 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
     private SharedPreferences sharedPreferences;
     private Context context;
     private Thread drawThread;
-    private Handler handlerForDrawThread;
-    private SurfaceHolder holder;
+    private Handler threadHandler;
+    private SurfaceHolder surfaceHolder;
     private Canvas canvas;
     private Paint svPaint, svbPaint;
     private int backgroundColor;
@@ -54,8 +54,6 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
     public void calculateDimensions(){
         // Calculate display size
         DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
-
-        Log.d("@calculateDimensions", Thread.currentThread().getName());
 
         pxWidth = displayMetrics.widthPixels;
         pxHeight = displayMetrics.heightPixels;
@@ -90,11 +88,11 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
                 // Distance from left display border to left side of rectangle
                 svRectArray[0] = factorWidth * (getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp) + getRes(R.integer.svOffsetInDp));
                 // Distance from top display border to top side of rectangle
-                svRectArray[1] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp));
+                svRectArray[1] = factorHeight * (getRes(R.integer.svMarginTopInDp));
                 // Distance from left display border to right side of rectangle
                 svRectArray[2] = svRectArray[0] + cameraViewWidthInPx;
                 // Distance from top display border to bottom side of rectangle
-                svRectArray[3] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBorderMarginInDp) + getRes(R.integer.svBeamWidthInDp));
+                svRectArray[3] = factorHeight * (getRes(R.integer.svMarginTopInDp) + getRes(R.integer.svBeamWidthInDp));
                 // -------------------------------------
 
                 // Create rectangle for left sensor visualization (visualization for drive amount)
@@ -138,7 +136,7 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         svbPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         svbPaint.setStyle(Paint.Style.FILL);
         svbPaint.setColor(context.getResources().getColor(R.color.GreyLight));
-        holder.setFormat(PixelFormat.TRANSPARENT);
+        surfaceHolder.setFormat(PixelFormat.TRANSPARENT);
         svHalfSizeTopBeam = ((svRectArray[2] - svRectArray[0]) / 2);
         svHalSizeLeftBeam = ((svRectArray[7] - svRectArray[5]) / 2);
     }
@@ -148,7 +146,7 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         long timeElapsed;
         long startTime = System.nanoTime();
 
-        while (!holder.getSurface().isValid()) {
+        while (!surfaceHolder.getSurface().isValid()) {
             timeElapsed = (System.nanoTime() - startTime) / context.getResources().getInteger(R.integer.DIVIDER);
             if (timeElapsed >= context.getResources().getInteger(R.integer.deadTimeSurfaceValidation)) {
                 break;
@@ -156,12 +154,12 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         }
 
         Looper.prepare();
-        handlerForDrawThread = new Handler();
+        threadHandler = new Handler();
 
         try {
-            canvas = holder.lockCanvas();
-            drawLayout(0,0);
-            holder.unlockCanvasAndPost(canvas);
+            canvas = surfaceHolder.lockCanvas();
+            drawLayout(0, 0);
+            surfaceHolder.unlockCanvasAndPost(canvas);
         }
         catch(Exception e){
             Log.e("@GlobalLayout#run: ", "Exception: " + e);
@@ -180,9 +178,9 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
 
                         if (axesData != null) {
                             try {
-                                canvas = holder.lockCanvas();
+                                canvas = surfaceHolder.lockCanvas();
                                 drawLayout(axesData[1], axesData[0]);
-                                holder.unlockCanvasAndPost(canvas);
+                                surfaceHolder.unlockCanvasAndPost(canvas);
                             } catch (Exception e) {
                                 Log.e("@GlobalLayout#handleMessage: ", "Exception: " + e);
                             }
@@ -207,25 +205,25 @@ public class SensorVisualisation extends android.view.SurfaceView implements Run
         canvas.drawRect(svRectArray[4], svRectArray[5] + svHalSizeLeftBeam - translation*10, svRectArray[6], svRectArray[7] - svHalSizeLeftBeam, svPaint);
     }
 
-    public void pauseSensorVisualisation(){
+    public void stopSensorVisualisation(){
             try {
-                handlerForDrawThread.getLooper().quit();
-                handlerForDrawThread = null;
+                threadHandler.getLooper().quit();
+                threadHandler = null;
                 // Blocks drawThread until all operations are finished
                 drawThread.join();
             }catch(Exception e){
-                Log.d("@GlobalLayout#pauseSensorVisualisation: ", String.valueOf(e));
+                Log.d("@GlobalLayout#stopSensorVisualisation: ", String.valueOf(e));
             }
         drawThread = null;
     }
 
     public void startSensorVisualisation(SurfaceView surface) {
         // Stop old drawThread to provide new theme settings
-        pauseSensorVisualisation();
+        stopSensorVisualisation();
 
-        // Set holder
+        // Set surfaceHolder
         surface.setZOrderOnTop(false);
-        holder = surface.getHolder();
+        surfaceHolder = surface.getHolder();
 
         // Load color from settings
         BaseClass.ThemeColor[] themeColors = BaseClass.ThemeColor.values();

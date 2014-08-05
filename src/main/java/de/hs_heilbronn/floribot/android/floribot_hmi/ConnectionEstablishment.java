@@ -3,6 +3,7 @@ package de.hs_heilbronn.floribot.android.floribot_hmi;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
@@ -14,7 +15,9 @@ import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -44,6 +47,8 @@ public class ConnectionEstablishment extends BaseClass {
     private SharedPreferences sharedPreferences;
     private BaseClass.ThemeColor[] themeColors;
     private ServiceResultReceiver serviceResultReceiver;
+    private boolean serviceIsRunning;
+    private int defaultOrientation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +74,8 @@ public class ConnectionEstablishment extends BaseClass {
         sharedPreferences = getSharedPreferences();
 
         setActionBarTitle(getResources().getString(R.string.title_activity_main));
+
+        defaultOrientation = getDefaultOrientation();
     }
 
     @Override
@@ -84,22 +91,11 @@ public class ConnectionEstablishment extends BaseClass {
     protected void onResume() {
         super.onResume();
         // Here you can call your method for new option in the settings activity
+        if(serviceIsRunning) stopService(nodeExecutorService);
         loadPreferences();
         setTheme();
         serviceResultReceiver = new ServiceResultReceiver(null);
-
-        // Turn off power management
-        if(wakeLock != null) {
-            if (wakeLock.isHeld()) {
-                wakeLock.release();
-            }
-        }
-        // Turn off wifi management
-        if(wifiLock != null) {
-            if (wifiLock.isHeld()) {
-                wifiLock.release();
-            }
-        }
+        releaseWakeLocks();
     }
 
     private void setTheme() {
@@ -157,14 +153,27 @@ public class ConnectionEstablishment extends BaseClass {
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         android.os.Process.killProcess(myPid());
+    }
+
+    public int getDefaultOrientation() {
+
+        /*When enabling different screen orientation in the settings menu yot need to check the current orientation
+        * to calculate correct angle for coordinate transformation in DataAcquisition.
+        * NOTE: This method is to enable robot control with a tablet device in the usability-test.
+        * Normally this app doesn't support tablets!*/
+        WindowManager windowManager =  (WindowManager) getSystemService(WINDOW_SERVICE);
+        Configuration config = getResources().getConfiguration();
+        int rotation = windowManager.getDefaultDisplay().getRotation();
+
+        if ( ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) && config.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                || ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) && config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
+            return Configuration.ORIENTATION_LANDSCAPE;
+        } else {
+            return Configuration.ORIENTATION_PORTRAIT;
+        }
     }
 
     public void onButtonClicked(View v) {
@@ -174,32 +183,37 @@ public class ConnectionEstablishment extends BaseClass {
                 getEditTextFieldEntries();
 
                 if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
-                    connectionInitHandler = new Handler() {
-                        public void handleMessage(Message msg) {
-                            Bundle stateBundle = msg.getData();
-                            String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_node_init));
-                            Boolean state = stateBundle.getBoolean(getResources().getString(R.string.state_init_publisher));
-                            if (state) {
-                                progressDialog.cancel();
-                                Bundle connectionData = new Bundle();
-                                connectionData.putString(getResources().getString(R.string.masterId), masterId);
-                                connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
-                                connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
+                    if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) {
+                        connectionInitHandler = new Handler() {
+                            public void handleMessage(Message msg) {
+                                Bundle stateBundle = msg.getData();
+                                String errorMessage = stateBundle.getString(getResources().getString(R.string.error_message_node_init));
+                                Boolean state = stateBundle.getBoolean(getResources().getString(R.string.state_init_publisher));
+                                if (state) {
+                                    progressDialog.cancel();
+                                    Bundle connectionData = new Bundle();
+                                    connectionData.putString(getResources().getString(R.string.masterId), masterId);
+                                    connectionData.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
+                                    connectionData.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
 
-                                connectionData.putString(getResources().getString(R.string.nodeGraphName), sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
-                                connectionData.putParcelable(getResources().getString(R.string.serviceResultReceiver), serviceResultReceiver);
-                                nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
-                                // Start service
-                                startService(nodeExecutorService);
-                            } else {
-                                progressDialog.cancel();
-                                Toast.makeText(ConnectionEstablishment.this, errorMessage, Toast.LENGTH_SHORT).show();
-                                Log.d("@ConnectionEstablishment->handleMessage: ", "ErrorMessage: " + errorMessage);
+                                    connectionData.putString(getResources().getString(R.string.nodeGraphName), sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
+                                    connectionData.putParcelable(getResources().getString(R.string.serviceResultReceiver), serviceResultReceiver);
+                                    nodeExecutorService.putExtra(getResources().getString(R.string.shared_pref_connection_data), connectionData);
+                                    // Start service
+                                    startService(nodeExecutorService);
+                                } else {
+                                    progressDialog.cancel();
+                                    Toast.makeText(ConnectionEstablishment.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                    Log.d("@ConnectionEstablishment->handleMessage: ", "ErrorMessage: " + errorMessage);
+                                }
                             }
-                        }
-                    };
-                    progressDialog.show();
-                    connectionInit();
+                        };
+                        progressDialog.show();
+                        connectionInit();
+                    }
+                    else {
+                        Toast.makeText(this, getResources().getString(R.string.toast_whitespace), Toast.LENGTH_LONG).show();
+                    }
                 } else {
                     if(masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0) Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
                     else {
@@ -355,6 +369,21 @@ public class ConnectionEstablishment extends BaseClass {
         editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.topicSubscriber), ""));
     }
 
+    private void releaseWakeLocks() {
+        // Turn off power management
+        if(wakeLock != null) {
+            if (wakeLock.isHeld()) {
+                wakeLock.release();
+            }
+        }
+        // Turn off wifi management
+        if(wifiLock != null) {
+            if (wifiLock.isHeld()) {
+                wifiLock.release();
+            }
+        }
+    }
+
     class ServiceResultReceiver extends ResultReceiver
     {
         public ServiceResultReceiver(Handler handler) {
@@ -365,24 +394,23 @@ public class ConnectionEstablishment extends BaseClass {
         protected void onReceiveResult(int resultCode, Bundle resultData) {
             switch(resultCode){
                 case(0):
-                    Log.d("@ConnectionEstablishment->handleMessage: ", "Start service.");
+                    Log.d("@ConnectionEstablishment->handleMessage: ", "Service started.");
+                    serviceIsRunning = true;
                     Intent controlMenu = new Intent(ConnectionEstablishment.this, ControlMenu.class);
+                    controlMenu.putExtra("orientation", defaultOrientation);
                     startActivity(controlMenu);
                     overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                     break;
                 case(1):
                     Log.d("@ConnectionEstablishment->handleMessage: ", "Service stopped.");
                     Toast.makeText(ConnectionEstablishment.this,getResources().getString(R.string.serviceStopped),Toast.LENGTH_LONG).show();
-                    // Turn off power management
-                    if (wakeLock.isHeld()) {
-                        wakeLock.release();
-                    }
-                    // Turn off wifi management
-                    if (wifiLock.isHeld()) {
-                        wifiLock.release();
-                    }
+                    releaseWakeLocks();
                     break;
             }
         }
+
+
     }
+
+
 }

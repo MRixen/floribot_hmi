@@ -4,7 +4,6 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ResultReceiver;
@@ -33,9 +32,9 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
  */
 public class NodeExecutorService extends Service implements NodeMainExecutor {
 
-    private static final int ONGOING_NOTIFICATION_ID = 1;
+    private static final int notificationId = 1;
     private final NodeMainExecutor nodeMainExecutor = DefaultNodeMainExecutor.newDefault();
-    private final IBinder binder = new LocalBinder();
+    //private final IBinder binder = new LocalBinder();
     private ResultReceiver serviceResultReceiver;
 
     @Override
@@ -61,7 +60,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         Intent notificationIntent = new Intent(this, ControlMenu.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(this, getString(R.string.notification_title), getString(R.string.notification_text), pendingIntent);
-        startForeground(ONGOING_NOTIFICATION_ID, notification);
+        startForeground(notificationId, notification);
 
         // Start ExecutorNode (publisher, subscriber)
         try {
@@ -85,11 +84,6 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         serviceResultReceiver.send(resultCode, bundle);
     }
 
-    @Override
-    public IBinder onBind(Intent intent) {
-        Log.d("@onBind: ", "Bind to service...");
-        return binder;
-    }
 
     @Override
     public boolean onUnbind(Intent intent) {
@@ -102,6 +96,13 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
         Log.d("@onDestroy: ", "Destroy service...");
         shutdownNodeMain(BaseClass.node);
         super.onDestroy();
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        /*Log.d("@onBind: ", "Bind to service...");
+        return binder;*/
+        return null;
     }
 
     @Override
@@ -121,6 +122,7 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
     public void shutdownNodeMain(NodeMain nodeMain) {
         Log.d("@shutdownNodeMain: ", "Shutdown publisher...");
         nodeMainExecutor.shutdownNodeMain(nodeMain);
+        shutdown();
     }
 
     @Override
@@ -128,9 +130,9 @@ public class NodeExecutorService extends Service implements NodeMainExecutor {
 
     }
 
-    public class LocalBinder extends Binder {
+/*    public class LocalBinder extends Binder {
         public NodeExecutorService getService() {
             return NodeExecutorService.this;
         }
-    }
+    }*/
 }

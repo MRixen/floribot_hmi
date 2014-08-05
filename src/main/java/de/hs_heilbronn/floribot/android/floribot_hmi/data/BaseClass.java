@@ -1,6 +1,5 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
@@ -27,13 +26,13 @@ import sensor_msgs.JoyFeedback;
  *
  * This class provides global data for all classes
  */
-public class BaseClass extends ActionBarActivity {
+public class BaseClass extends ActionBarActivity{
 
-    private static Context context;
     private String titleName;
     public static Node node;
     public static Handler sendToNode = null, sendToDataAcquisition = null, sendToSensorVisualization = null;
     public static SubscriberMessageListener subscriberMessageListener;
+    public static SensorCalibrationListener sensorCalibrationListener;
     private SharedPreferences sharedPreferences;
     private ActionBar bar;
     private BaseClass.ThemeColor[] themeColors;
@@ -47,8 +46,8 @@ public class BaseClass extends ActionBarActivity {
         bgColor = new int[2];
         fgColor = new int[2];
         tColor = new int[2];
-        drawableDataGreen = new Drawable[2];
-        drawableDataBlue = new Drawable[2];
+        drawableDataGreen = new Drawable[3];
+        drawableDataBlue = new Drawable[3];
         bgColor[0] = getResources().getColor(R.color.ModernWhite);
         bgColor[1] = getResources().getColor(R.color.ModernWhite);
         fgColor[0] = getResources().getColor(R.color.ModernBlue);
@@ -56,14 +55,14 @@ public class BaseClass extends ActionBarActivity {
         tColor[0] = getResources().getColor(R.color.White);
         tColor[1] = getResources().getColor(R.color.White);
         drawableDataGreen[0] = getResources().getDrawable(R.drawable.button_background_not_pressed_modern_green);
-        drawableDataGreen[1] = getResources().getDrawable(R.drawable.button_extension_modern_green);
+        drawableDataGreen[1] = getResources().getDrawable(R.drawable.bottom_bar_middle_modern_green);
+        drawableDataGreen[2] = getResources().getDrawable(R.drawable.bottom_bar_left_modern_green);
         drawableDataBlue[0] = getResources().getDrawable(R.drawable.button_background_not_pressed_modern_blue);
-        drawableDataBlue[1] = getResources().getDrawable(R.drawable.button_extension_modern_blue);
+        drawableDataBlue[1] = getResources().getDrawable(R.drawable.bottom_bar_middle_modern_blue);
+        drawableDataBlue[2] = getResources().getDrawable(R.drawable.bottom_bar_left_modern_blue);
 
         themeColors = ThemeColor.values();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-        context = this;
     }
 
     @Override
@@ -111,6 +110,10 @@ public class BaseClass extends ActionBarActivity {
     // Interface for communication between subscriber and main thread
     public interface SubscriberMessageListener {
         public void onNewMessage(List<JoyFeedback> message);
+    }
+
+    public interface SensorCalibrationListener {
+        public void onCalibrationSuccess();
     }
 
     @Override

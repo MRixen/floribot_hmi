@@ -16,52 +16,52 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
  */
 public class ControlPanel extends Fragment {
 
-    private ControlMenu context;
-    OnControlPanelChangeListener onControlPanelChangeListener;
-    private int localLayoutResource;
+    private ControlMenu controlMenu;
+    private OnControlPanelListener onControlPanelListener;
+    private int layoutResource;
     private int drawable;
 
 
-    public ControlPanel(ControlMenu context) {
-        this.context = context;
+    public ControlPanel(ControlMenu controlMenu) {
+        this.controlMenu = controlMenu;
     }
 
-    public void setControlPanel(int frameLayout, int localLayoutResource, int drawable) {
-        this.localLayoutResource = localLayoutResource;
+    public void setControlPanel(int frameLayout, int layoutResource, int drawable) {
+        this.layoutResource = layoutResource;
         this.drawable = drawable;
-        if (this.localLayoutResource != 0) {
-            context.getSupportFragmentManager().beginTransaction().replace(frameLayout, this).commit();
-            if(onControlPanelChangeListener != null) onControlPanelChangeListener.onControlPanelChanged(drawable);
+        if (this.layoutResource != 0) {
+            controlMenu.getSupportFragmentManager().beginTransaction().replace(frameLayout, this).commit();
+            if(onControlPanelListener != null) onControlPanelListener.onControlPanelLoaded(drawable);
         }
         else{
-            context.getSupportFragmentManager().beginTransaction().remove(this).commit();
-            onControlPanelChangeListener = null;
+            controlMenu.getSupportFragmentManager().beginTransaction().remove(this).commit();
+            onControlPanelListener = null;
         }
 
     }
 
-    public interface OnControlPanelChangeListener {
-        public void onControlPanelChanged(int drawable);
+    public interface OnControlPanelListener {
+        public void onControlPanelLoaded(int drawable);
     }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try{
-            onControlPanelChangeListener = (OnControlPanelChangeListener) activity;
+            onControlPanelListener = (OnControlPanelListener) activity;
         }catch(ClassCastException e){
-            throw new ClassCastException((activity.toString() + " must implement LocalLayoutManager"));
+            throw new ClassCastException((activity.toString() + " must implement OnControlPanelListener"));
         }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
-        return inflater.inflate(localLayoutResource, container, false);
+        return inflater.inflate(layoutResource, container, false);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        onControlPanelChangeListener.onControlPanelChanged(drawable);
+        onControlPanelListener.onControlPanelLoaded(drawable);
     }
 }

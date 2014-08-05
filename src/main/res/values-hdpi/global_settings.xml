@@ -6,6 +6,7 @@
     <dimen name="textViewWidth">130dp</dimen>
     <dimen name="editTextWidth">210dp</dimen>
     <dimen name="editTextMarginTop">30dp</dimen>
+    <dimen name="textViewMarginTop">15dp</dimen>
 
     <dimen name="textViewMarginLeft">20dp</dimen>
     <dimen name="textSize">14sp</dimen>

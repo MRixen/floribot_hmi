@@ -85,7 +85,7 @@
     <string name="ticker_message">Starte service...</string>
     <string name="notification_text">Klicken für zurück.</string>
     <string name="notification_title">FloriBot HMI - Control menu</string>
-    <string name="serviceStopped">Service kann nicht gestartet werden.\nMöglicherweise ist das Wlan noch nicht vollständig initialisiert.</string>
+    <string name="serviceStopped">Node kann nicht gestartet werden.</string>
 
     <!--Overflow parameter-->
     <string name="title_activity_help">Hilfe</string>
@@ -125,11 +125,12 @@
     <string name="node_graph_name_header">Node name</string>
     <string name="theme_prompt">Theme wählen</string>
     <string name="orientation_prompt">Orientierung wählen</string>
-    <string name="phone_calibration_area">Gerät ist nicht in Kalibrierungsbereich!</string>
+    <string name="phone_calibration_area">Gerät ist nicht im Kalibrierungsbereich!</string>
     <string name="hint_master_destination">http://192.168.137.191:11311</string>
     <string name="hint_topic_publisher">/joy</string>
     <string name="hint_topic_subscriber">/joyFeedback</string>
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientierung</string>
+    <string name="toast_whitespace">Leerzeichen sind in den Verbindungsparametern nicht erlaubt!</string>
 
 </resources>
