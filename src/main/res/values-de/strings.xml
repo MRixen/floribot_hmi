@@ -85,7 +85,7 @@
     <string name="ticker_message">Starte service...</string>
     <string name="notification_text">Klicken für zurück.</string>
     <string name="notification_title">FloriBot HMI - Control menu</string>
-    <string name="serviceStopped">Node kann nicht gestartet werden.</string>
+    <string name="serviceStopped">Node kann nicht gestartet werden. Bitte Netzwerk überprüfen.</string>
 
     <!--Overflow parameter-->
     <string name="title_activity_help">Hilfe</string>
@@ -132,5 +132,6 @@
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientierung</string>
     <string name="toast_whitespace">Leerzeichen sind in den Verbindungsparametern nicht erlaubt!</string>
+    <string name="toast_is_tablet">Tablets werden nicht unterstützt. Bitte anderes Gerät verwenden!</string>
 
 </resources>

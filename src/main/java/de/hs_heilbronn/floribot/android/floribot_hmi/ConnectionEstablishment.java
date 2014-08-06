@@ -22,10 +22,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.net.URI;
 import java.net.URISyntaxException;
-
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.BaseClass;
 
@@ -179,8 +177,10 @@ public class ConnectionEstablishment extends BaseClass {
     public void onButtonClicked(View v) {
         switch (v.getId()) {
             case (R.id.connect_button):
+                boolean isTablet = checkTabletUsage();
 
-                getEditTextFieldEntries();
+                if (!isTablet){
+                    getEditTextFieldEntries();
 
                 if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
                     if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) {
@@ -203,30 +203,37 @@ public class ConnectionEstablishment extends BaseClass {
                                     startService(nodeExecutorService);
                                 } else {
                                     progressDialog.cancel();
-                                    Toast.makeText(ConnectionEstablishment.this, errorMessage, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ConnectionEstablishment.this, errorMessage, Toast.LENGTH_LONG).show();
                                     Log.d("@ConnectionEstablishment->handleMessage: ", "ErrorMessage: " + errorMessage);
                                 }
                             }
                         };
                         progressDialog.show();
                         connectionInit();
-                    }
-                    else {
+                    } else {
                         Toast.makeText(this, getResources().getString(R.string.toast_whitespace), Toast.LENGTH_LONG).show();
                     }
                 } else {
-                    if(masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0) Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
+                    if (masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0)
+                        Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
                     else {
                         if (masterId.length() == 0)
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
                         if (topicPublisher.length() == 0 || topicSubscriber.length() == 0)
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_topic), Toast.LENGTH_SHORT).show();
-                        if(nodeGraphName.length() == 0)
+                        if (nodeGraphName.length() == 0)
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_node_graph_name), Toast.LENGTH_SHORT).show();
                     }
                 }
+            }
+                else Toast.makeText(this, getResources().getString(R.string.toast_is_tablet), Toast.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    private boolean checkTabletUsage() {
+        int screenSize = getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK;
+        return screenSize == Configuration.SCREENLAYOUT_SIZE_XLARGE;
     }
 
     public void connectionInit() {

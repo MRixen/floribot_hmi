@@ -5,7 +5,7 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/header_theme"
+        android:id="@+id/textView_theme_header"
         android:textStyle="bold"
         android:text="@string/theme_header"
         android:textSize="@dimen/headerTextSize"
@@ -22,21 +22,21 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:prompt="@string/theme_prompt"
-        android:layout_alignLeft="@id/header_theme"
-        android:layout_alignRight="@id/header_theme"
-        android:layout_below="@id/header_theme"
+        android:layout_alignLeft="@id/textView_theme_header"
+        android:layout_alignRight="@id/textView_theme_header"
+        android:layout_below="@id/textView_theme_header"
         android:entries="@array/theme_items"
         android:spinnerMode="dropdown"
         android:background="@drawable/spinner_drop_down_view_state"/>
     <TextView
-        android:id="@+id/header_node_name"
+        android:id="@+id/textView_node_name"
         android:textStyle="bold"
         android:text="@string/node_graph_name_header"
         android:textSize="@dimen/headerTextSize"
         android:textColor="#000000"
         android:background="#ffffff"
-        android:layout_alignLeft="@id/header_theme"
-        android:layout_alignRight="@id/header_theme"
+        android:layout_alignLeft="@id/textView_theme_header"
+        android:layout_alignRight="@id/textView_theme_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/spinner_theme"
@@ -46,14 +46,14 @@
         android:id="@+id/editText_node_name"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/header_node_name"
+        android:layout_below="@id/textView_node_name"
         android:textSize="@dimen/textSize"
         android:inputType="text"
         android:hint="@string/nodename_hint"
-        android:layout_alignLeft="@id/header_node_name"
-        android:layout_alignRight="@id/header_node_name"
+        android:layout_alignLeft="@id/textView_node_name"
+        android:layout_alignRight="@id/textView_node_name"
         android:background="@drawable/spinner_default_holo_light_am"/>
-    <TextView
+<!--    <TextView
         android:id="@+id/header_orientation"
         android:textStyle="bold"
         android:text="@string/orientation_header"
@@ -77,6 +77,6 @@
         android:layout_below="@id/header_orientation"
         android:entries="@array/orientation_items"
         android:spinnerMode="dropdown"
-        android:background="@drawable/spinner_drop_down_view_state"/>
+        android:background="@drawable/spinner_drop_down_view_state"/>-->
 
 </RelativeLayout>

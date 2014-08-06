@@ -1,7 +1,6 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -13,8 +12,6 @@ import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
-
-import de.hs_heilbronn.floribot.android.floribot_hmi.ControlMenu;
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 
 
@@ -162,8 +159,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
             float[] sensorEventValues = event.values;
 
-            /*Check if the default config is portrait*/
-            if(defaultOrientation == 1) {
                 Log.d("orientation", "portrait");
                 if (calibrateSensor) {
                     gz = sensorEventValues[2];
@@ -214,61 +209,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         sendDataToNode(buttonData, null, true);
                     }
                 }
-            }
-            //Check if the default config is landscape
-            else if(defaultOrientation == 2){
-                Log.d("orientation", "landscape");
-                if (calibrateSensor) {
-                    double gz = sensorEventValues[2];
-
-                    alpha = -(Math.PI / 2) - Math.acos(gz / g);
-                    calibrateSensor = false;
-                }
-
-                float[] sensorData = new float[3];
-                double[] Rx = {0, Math.sin(alpha), Math.cos(alpha)};
-
-                for (int i = 0; i < sensorEventValues.length; i++) {
-                    // Calculate z value only
-                    sensorData[1] += Rx[i] * sensorEventValues[i];
-                }
-                sensorData[1] = -sensorData[1];
-                sensorData[0] = sensorEventValues[0];
-                // Check if phone is in calibration area
-                // Phone is in calibration area when the first sensor value is smaller than 1
-                if (!phoneInArea && !stopSending) {
-                    if (gz > g || Math.abs(sensorData[1]) >= 1) {
-                        stopSending = true;
-                        activity.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(context, context.getResources().getString(R.string.phone_calibration_area), Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    } else {
-                        phoneInArea = true;
-                        // dismiss dialog
-                        BaseClass.sensorCalibrationListener.onCalibrationSuccess();
-                    }
-                }
-                /*Send data when dead man button is pressed*/
-                if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 0) {
-                    // Send sensor data to robot if calibration is successfully
-                    if (!stopSending) {
-                        Log.d("sensorEventValues", sensorData[0] + " / " + sensorData[1] + " / " + sensorData[2]);
-                        synchronized (object) {
-                            sendDataToNode(buttonData, sensorData, true);
-                        }
-                    }
-                }
-                /*Send null for axesData when the sensor button is pressed and the dead man button is not pressed*/
-                else if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 0 ||
-                        (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1)){
-                    synchronized (object) {
-                        sendDataToNode(buttonData, null, true);
-                    }
-                }
-            }
         }
     }
 

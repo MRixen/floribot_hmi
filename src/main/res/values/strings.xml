@@ -144,7 +144,7 @@
     <string name="dialog_title_publisher_exit">Warning</string>
     <string name="toast_enter_all">You need to set the connection parameter!</string>
     <string name="node_graph_name_header">Node name</string>
-    <string name="serviceStopped">Can\'t start node.</string>
+    <string name="serviceStopped">Can\'t start node. Please check your network.</string>
 
 
     <string name="theme_prompt">Select theme</string>
@@ -156,5 +156,6 @@
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientation</string>
     <string name="toast_whitespace">Whitespaces in connection parameter are not allowed!</string>
+    <string name="toast_is_tablet">Tablets are not supported. Please use another device!</string>
 
 </resources>
