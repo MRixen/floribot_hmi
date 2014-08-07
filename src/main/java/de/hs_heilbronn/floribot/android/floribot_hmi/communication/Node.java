@@ -118,7 +118,7 @@ public class Node extends AbstractNodeMain {
                 public void onNewMessage(JoyFeedbackArray message) {
                     List<JoyFeedback> messageList = message.getArray();
                     BaseClass.subscriberMessageListener.onNewMessage(messageList);
-                    Log.d("@Subscriber->addMessageListener", "addMessageListener...");
+
                 }
             });
             Looper.loop();

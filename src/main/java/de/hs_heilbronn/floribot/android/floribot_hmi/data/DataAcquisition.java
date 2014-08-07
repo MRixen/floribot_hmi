@@ -159,7 +159,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
             float[] sensorEventValues = event.values;
 
-                Log.d("orientation", "portrait");
+
                 if (calibrateSensor) {
                     gz = sensorEventValues[2];
                     alpha = -(Math.PI / 2) + Math.acos(gz / g);
@@ -175,14 +175,14 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 }
                 sensorData[0] = -sensorEventValues[1];
                 // Check if phone is in calibration area
-                // Phone is in calibration area when the first sensor value is smaller than 1
+                // Phone is in calibration area when the first sensor value (x) is bigger 0 and last (z) is smaller 0
                 if (!phoneInArea && !stopSending) {
-                    if (gz > g || Math.abs(sensorData[1]) >= 1) {
+                    if (Math.abs(gz) > g || ( sensorEventValues[0] > 0 || sensorEventValues[2] < 0 )) {
                         stopSending = true;
                         activity.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Toast.makeText(context, context.getResources().getString(R.string.phone_calibration_area), Toast.LENGTH_LONG).show();
+                                Toast.makeText(context, context.getResources().getString(R.string.phone_calibration_area), Toast.LENGTH_SHORT).show();
                             }
                         });
                     } else {
@@ -196,7 +196,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 if (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 0) {
                     // Send sensor data to robot if calibration is successfully
                     if (!stopSending) {
-                        Log.d("sensorEventValues", sensorData[0] + " / " + sensorData[1] + " / " + sensorData[2]);
+                        //Log.d("sensorEventValues", sensorData[0] + " / " + sensorData[1] + " / " + sensorData[2]);
                         synchronized (object) {
                             sendDataToNode(buttonData, sensorData, true);
                         }
