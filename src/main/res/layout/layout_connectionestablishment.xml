@@ -5,7 +5,7 @@
     tools:controlMenu="de.hs_heilbronn.floribot.android.floribot_hmi.ConnectionEstablishment">
 
     <Button
-        android:id="@+id/connect_button"
+        android:id="@+id/connectButton"
         android:layout_width="130dp"
         android:layout_height="60dp"
         android:textColor="#ffffff"

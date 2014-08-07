@@ -31,7 +31,7 @@
     </RelativeLayout>
 
     <Button
-        android:id="@+id/button_right"
+        android:id="@+id/buttonRight"
         android:layout_marginRight="-5dp"
         android:layout_alignRight="@id/joystick_buttons"
         android:layout_alignTop="@id/joystick_buttons"
@@ -41,7 +41,7 @@
         android:layout_height="60dp" />
 
     <Button
-        android:id="@+id/button_left"
+        android:id="@+id/buttonLeft"
         android:layout_alignTop="@id/joystick_buttons"
         android:layout_alignLeft="@id/joystick_buttons"
         android:layout_marginLeft="0dp"
@@ -51,7 +51,7 @@
         android:layout_height="60dp" />
 
     <Button
-        android:id="@+id/button_up"
+        android:id="@+id/buttonUp"
         android:layout_alignTop="@id/joystick_buttons"
         android:layout_alignLeft="@id/joystick_buttons"
         android:layout_marginLeft="38dp"
@@ -60,7 +60,7 @@
         android:layout_height="50dp" />
 
     <Button
-        android:id="@+id/button_down"
+        android:id="@+id/buttonDown"
         android:layout_alignBottom="@id/joystick_buttons"
         android:layout_marginBottom="-2dp"
         android:layout_alignLeft="@id/joystick_buttons"
@@ -71,7 +71,7 @@
         android:paddingRight="30dp" />
 
     <Button
-        android:id="@+id/button_sensor"
+        android:id="buttonDeadMan"
         android:layout_marginLeft="21dp"
         android:layout_alignTop="@id/joystick_buttons"
         android:layout_alignLeft="@id/joystick_buttons"

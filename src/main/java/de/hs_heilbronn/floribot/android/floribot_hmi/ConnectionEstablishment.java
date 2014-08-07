@@ -61,7 +61,7 @@ public class ConnectionEstablishment extends BaseClass {
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
 
-        buttonConnect = (Button) findViewById(R.id.connect_button);
+        buttonConnect = (Button) findViewById(R.id.connectButton);
 
         // Get objects for progressbar (adjustment for amount of acceleration)
         progressDialog = new ProgressDialog(this);
@@ -176,14 +176,16 @@ public class ConnectionEstablishment extends BaseClass {
 
     public void onButtonClicked(View v) {
         switch (v.getId()) {
-            case (R.id.connect_button):
+            case (R.id.connectButton):
                 boolean isTablet = checkTabletUsage();
 
-                if (!isTablet){
-                    getEditTextFieldEntries();
+                if (!isTablet) {
+                    boolean paramValid = parameterValidation();
+                    if (paramValid) {
 
-                if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
-                    if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) {
+
+                /*if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {*/
+                        //if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) {
                         connectionInitHandler = new Handler() {
                             public void handleMessage(Message msg) {
                                 Bundle stateBundle = msg.getData();
@@ -210,10 +212,11 @@ public class ConnectionEstablishment extends BaseClass {
                         };
                         progressDialog.show();
                         connectionInit();
-                    } else {
+                        //}
+                    /*else {
                         Toast.makeText(this, getResources().getString(R.string.toast_whitespace), Toast.LENGTH_LONG).show();
                     }
-                } else {
+                }*/ /*else {
                     if (masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0)
                         Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
                     else {
@@ -224,11 +227,33 @@ public class ConnectionEstablishment extends BaseClass {
                         if (nodeGraphName.length() == 0)
                             Toast.makeText(this, getResources().getString(R.string.toast_enter_node_graph_name), Toast.LENGTH_SHORT).show();
                     }
+                }*/
+                    }
                 }
-            }
-                else Toast.makeText(this, getResources().getString(R.string.toast_is_tablet), Toast.LENGTH_LONG).show();
+                else
+                    Toast.makeText(this, getResources().getString(R.string.toast_is_tablet), Toast.LENGTH_LONG).show();
                 break;
         }
+    }
+
+    private boolean parameterValidation() {
+        getEditTextFieldEntries();
+        if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {
+            if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) return true;
+            else Toast.makeText(this, getResources().getString(R.string.toast_whitespace), Toast.LENGTH_LONG).show();
+            }
+        else{
+            if (masterId.length() == 0)
+                Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
+            if (topicPublisher.length() == 0 || topicSubscriber.length() == 0)
+                Toast.makeText(this, getResources().getString(R.string.toast_enter_topic), Toast.LENGTH_SHORT).show();
+            if (nodeGraphName.length() == 0)
+                Toast.makeText(this, getResources().getString(R.string.toast_enter_node_graph_name), Toast.LENGTH_SHORT).show();
+        }
+
+        return false;
+
+
     }
 
     private boolean checkTabletUsage() {
