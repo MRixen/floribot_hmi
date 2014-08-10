@@ -71,7 +71,7 @@
         android:paddingRight="30dp" />
 
     <Button
-        android:id="buttonDeadMan"
+        android:id="@+id/buttonDeadman"
         android:layout_marginLeft="21dp"
         android:layout_alignTop="@id/joystick_buttons"
         android:layout_alignLeft="@id/joystick_buttons"

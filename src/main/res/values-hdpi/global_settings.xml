@@ -3,13 +3,16 @@
 
     <!--PARAMETER FOR LAYOUT ON MAIN ACTIVITY-->
     <!--Parameter for middle bar-->
-    <dimen name="textViewWidth">130dp</dimen>
+    <dimen name="textViewWidth">150dp</dimen>
+    <dimen name="textViewWidthExampleText">360dp</dimen>
     <dimen name="editTextWidth">210dp</dimen>
-    <dimen name="editTextMarginTop">30dp</dimen>
+    <dimen name="editTextMarginTop">27dp</dimen>
     <dimen name="textViewMarginTop">15dp</dimen>
-
     <dimen name="textViewMarginLeft">20dp</dimen>
-    <dimen name="textSize">14sp</dimen>
+
+    <dimen name="textSizeSmall">8sp</dimen>
+    <dimen name="textSizeNormal">14sp</dimen>
+    <dimen name="headerTextSize">18sp</dimen>
     <!-- -->
 
     <!--PARAMETER FOR LAYOUT ON EXECUTE ACTIVITY-->
@@ -17,9 +20,6 @@
     <integer name="svBorderMarginInDp">5</integer>
     <integer name="svBeamWidthInDp">20</integer>
     <integer name="svOffsetInDp">10</integer>
-    <!-- -->
-
-    <!--Parameter for global layout-->
     <integer name="svMarginTopInDp">15</integer>
     <!-- -->
 
@@ -27,15 +27,20 @@
     <!--Parameter for dialog box-->
     <dimen name="dialogTitleTextSize">20sp</dimen>
     <color name="dialogTextColor">#000000</color>
-    <!--Parameter for spinner-->
     <dimen name="seekBarMarginTop">15dp</dimen>
     <!-- -->
 
-    <!--ONLY FOR DEBUG
-    -> For camera preview -->
+    <dimen name="strokeWidthOne">1dp</dimen>
+    <dimen name="strokeWidthTwo">4dp</dimen>
+    <dimen name="strokeWidthThree">8dp</dimen>
+
+    <!-- For pseudo camera preview -->
     <integer name="cameraViewWidthInPx">400</integer>
     <integer name="cameraViewHeightInPx">200</integer>
     <!-- -->
+
+    <!--Parameter for Help, About activity-->
+    <dimen name="bottomOffsetAboutHelp">10dp</dimen>
 
     <!--Parameter for connection establishment-->
     <integer name="deadTimeWakeLockWifi">20</integer> <!--unit: second-->
@@ -45,6 +50,5 @@
     <integer name="custom_event_delay">100</integer>
     <integer name="DIVIDER">1000000000</integer>
     <!-- -->
-
 
 </resources>

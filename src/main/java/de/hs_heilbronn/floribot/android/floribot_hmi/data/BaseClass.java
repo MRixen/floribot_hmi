@@ -1,5 +1,7 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.data;
 
+import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
@@ -11,6 +13,11 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.List;
 
@@ -174,6 +181,61 @@ public class BaseClass extends ActionBarActivity{
 
     public BaseClass.ThemeColor[] getThemeColors(){
         return themeColors;
+    }
+
+    public class CustomDialog extends Dialog{
+
+        private final ImageView imageViewOrientationExample1, imageViewOrientationExample2;
+        private TextView textViewMessage, textViewExample;
+        private Button okButton, cancelButton;
+        private String message;
+
+        public CustomDialog(Context context, int theme) {
+            super(context, theme);
+            setContentView(R.layout.layout_dialog);
+            setCancelable(false);
+            setTitle(getString(R.string.dialog_title));
+
+            Window dialogWindow = this.getWindow();
+            dialogWindow.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.ModernRed)));
+            dialogWindow.setTitleColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+
+            okButton = (Button) this.findViewById(R.id.positive_button);
+            cancelButton = (Button) this.findViewById(R.id.negative_button);
+            textViewMessage = (TextView) this.findViewById(R.id.textView_dialog);
+            textViewExample = (TextView) this.findViewById(R.id.textView_orientation_example_text);
+
+            imageViewOrientationExample1 = (ImageView) this.findViewById(R.id.imageView_orientation_example1);
+            imageViewOrientationExample2 = (ImageView) this.findViewById(R.id.imageView_orientation_example2);
+        }
+
+        public Button getPositiveButton(){
+            return okButton;
+        }
+
+        public Button getNegativeButton(){
+            return cancelButton;
+        }
+
+        public String getText(){
+            return message;
+        }
+
+        public void showDialog(String message, boolean visible) {
+            if(visible){
+                imageViewOrientationExample1.setVisibility(View.VISIBLE);
+                imageViewOrientationExample2.setVisibility(View.VISIBLE);
+                textViewExample.setVisibility(View.VISIBLE);
+            }
+            else{
+                imageViewOrientationExample1.setVisibility(View.INVISIBLE);
+                imageViewOrientationExample2.setVisibility(View.INVISIBLE);
+                textViewExample.setVisibility(View.INVISIBLE);
+            }
+            this.message = message;
+            textViewMessage.setText(message);
+            show();
+        }
     }
 
 }

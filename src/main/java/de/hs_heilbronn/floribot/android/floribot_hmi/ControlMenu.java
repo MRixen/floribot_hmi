@@ -26,7 +26,7 @@ import de.hs_heilbronn.floribot.android.floribot_hmi.gui.SensorVisualisation;
 import sensor_msgs.JoyFeedback;
 
 
-public class ControlMenu extends BaseClass implements View.OnTouchListener, ControlPanel.OnControlPanelListener, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberMessageListener, BaseClass.SensorCalibrationListener {
+public class ControlMenu extends BaseClass implements View.OnTouchListener, ControlPanel.OnControlPanelListener, SeekBar.OnSeekBarChangeListener, BaseClass.SubscriberMessageListener, BaseClass.SensorCalibrationListener, View.OnClickListener {
 
     private Button buttonSensor;
     private SensorVisualisation sensorVisualisation;
@@ -42,13 +42,12 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
     private Dialog dialog;
     private Button buttonExit;
     private ImageView bottomBarMiddle, bottomBarLeft;
+    private CustomDialog customDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.layout_controlmenu);
-
-        int defaultOrientation = getIntent().getIntExtra("orientation", 0);
 
         buttonExit = (Button) findViewById(R.id.buttonExit);
         bottomBarMiddle = (ImageView) findViewById(R.id.bottom_bar_middle);
@@ -69,9 +68,15 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         sensorVisualisation = new SensorVisualisation(this);
         controlPanel = new ControlPanel(this);
         dialog = new Dialog(this, R.style.dialog_style);
-        dataAcquisition = new DataAcquisition(this, defaultOrientation);
+        dataAcquisition = new DataAcquisition(this);
 
         setActionBarTitle(getResources().getString(R.string.title_activity_execute));
+
+        customDialog = new CustomDialog(this, R.style.dialog_style);
+        Button positiveButton = customDialog.getPositiveButton();
+        positiveButton.setOnClickListener(this);
+        Button negativeButton = customDialog.getNegativeButton();
+        negativeButton.setOnClickListener(this);
 
     }
 
@@ -110,7 +115,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
 
     @Override
     public void onBackPressed() {
-        showDialog(getResources().getString(R.string.dialog_message_close_connection));
+        customDialog.showDialog(getResources().getString(R.string.dialog_message_close_connection), false);
     }
 
     public void onButtonClicked(View v){
@@ -124,7 +129,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 buttonSensor.setEnabled(true);
                 controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_active);
                 // Send data to publisher
-                sendToDataAcquisition(BaseClass.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, -1, false);
+                sendToDataAcquisition(BaseClass.DriveMode.MANUAL_DRIVE.ordinal(), 0, 0, 0, false);
                 break;
             case (R.id.buttonAuto):
                 speed = 0;
@@ -136,11 +141,11 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
                 sendToDataAcquisition(BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal(), 0, 0, 0, false);
                 break;
             case (R.id.buttonSensor):
-                showDialog(getResources().getString(R.string.dialog_message_start_calibration));
+                customDialog.showDialog(getResources().getString(R.string.dialog_message_start_calibration), true);
                 break;
             case (R.id.buttonExit):
                 // Stop publisher and return to ConnectionEstablishment
-                showDialog(getResources().getString(R.string.dialog_message_close_connection));
+                customDialog.showDialog(getResources().getString(R.string.dialog_message_close_connection), false);
                 break;
         }
     }
@@ -150,16 +155,17 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
 
         int driveCmd;
 
+
         switch (v.getId()) {
-            case (R.id.buttonDeadMan):
+            case (R.id.buttonDeadman):
                 if (event.getAction() == MotionEvent.ACTION_DOWN && led_sensor.isChecked()) {
                     driveCmd = 1;
-                    sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
+                    sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, 0, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_pressed);
                 }
                 if (event.getAction() == MotionEvent.ACTION_UP && led_sensor.isChecked()) {
                     driveCmd = 0;
-                    sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, -1, false);
+                    sendToDataAcquisition(-1, BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), driveCmd, 0, false);
                     setBackgroundForJoystickButtons(R.drawable.ic_sensor_active);
                 }
                 break;
@@ -242,7 +248,7 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
             bundle.putBoolean(getResources().getString(R.string.start_sensor_calibration), calibration);
         }
 
-        if(speed != -1){
+        if(speed != 0){
             // Check if actual speed is different from last
             if (speed != axesData[0]) {
                 for (int i = 0; i <= axesData.length - 1; i++) {
@@ -265,12 +271,13 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
     public void onControlPanelLoaded(int drawable) {
         // Get layout for joystick buttons
         relativeLayout = (RelativeLayout) findViewById(R.id.joystick_buttons);
+        seekBar = (SeekBar) findViewById(R.id.seek_bar_speed);
 
         // Callback method to set button references when layout is valid
         if(led_sensor.isChecked()){
             seekBar.setVisibility(View.INVISIBLE);
-            Button sensor = (Button) findViewById(R.id.buttonDeadMan);
-            sensor.setOnTouchListener(this);
+            Button button_deadman = (Button) findViewById(R.id.buttonDeadman);
+            button_deadman.setOnTouchListener(this);
             setBackgroundForJoystickButtons(drawable);
         }
         if(led_manual.isChecked() && !led_sensor.isChecked()){
@@ -278,15 +285,15 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
             Button button_down = (Button) findViewById(R.id.buttonDown);
             Button button_left = (Button) findViewById(R.id.buttonLeft);
             Button button_right = (Button) findViewById(R.id.buttonRight);
-            seekBar = (SeekBar) findViewById(R.id.seek_bar_speed);
-            seekBar.setProgress(0);
 
             button_up.setOnTouchListener(this);
             button_down.setOnTouchListener(this);
             button_left.setOnTouchListener(this);
             button_right.setOnTouchListener(this);
+
             seekBar.setVisibility(View.VISIBLE);
             seekBar.setOnSeekBarChangeListener(this);
+            seekBar.setProgress(0);
             // Set background for joystick buttons
             setBackgroundForJoystickButtons(drawable);
         }
@@ -298,54 +305,6 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
             seekBar.setVisibility(View.INVISIBLE);
             setBackgroundForJoystickButtons(drawable);
         }
-    }
-
-
-    public void showDialog(final String message) {
-
-        dialog.setContentView(R.layout.layout_dialog);
-        dialog.setCancelable(false);
-        dialog.setTitle(getString(R.string.dialog_title_publisher_exit));
-
-        Window dialogWindow = dialog.getWindow();
-        dialogWindow.setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.ModernRed)));
-        dialogWindow.setTitleColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
-
-        TextView textView = (TextView) dialog.findViewById(R.id.textView_exit_publisher);
-        textView.setText(message);
-
-        Button okButton = (Button) dialog.findViewById(R.id.positive_button);
-        Button cancelButton = (Button) dialog.findViewById(R.id.negative_button);
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Set sensor toggle button state to false if user click cancel
-                if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                    led_sensor.setChecked(false);
-                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_active);
-                }
-                dialog.dismiss();
-            }
-        });
-        okButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Show dialog to disconnect publisher and do some stuff
-                if (message.equals(getResources().getString(R.string.dialog_message_close_connection))) {
-                    // Stop acquisition threads if they are still alive
-                    onExit();
-                    overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
-                }
-                // Show dialog to calibrate for start position (by manual drive with sensor) and do some stuff
-                if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
-                    //dialog.dismiss();
-                    sendToDataAcquisition(DriveMode.MANUAL_DRIVE.ordinal(), BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), 1, 0, true);
-                    led_sensor.setChecked(true);
-                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_sensor_active);
-                }
-            }
-        });
-        dialog.show();
     }
 
     @Override
@@ -421,4 +380,29 @@ public class ControlMenu extends BaseClass implements View.OnTouchListener, Cont
         });
     }
 
+    @Override
+    public void onClick(View v) {
+        String message = customDialog.getText();
+        switch(v.getId()){
+            case(R.id.positive_button):
+                if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
+                    sendToDataAcquisition(DriveMode.MANUAL_DRIVE.ordinal(), BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal(), 1, 0, true);
+                    led_sensor.setChecked(true);
+                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_sensor_active);
+                }
+                if(message.equals(getResources().getString(R.string.dialog_message_close_connection))){
+                    onExit();
+                    overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
+                }
+                else customDialog.dismiss();
+                break;
+            case(R.id.negative_button):
+                if (message.equals(getResources().getString(R.string.dialog_message_start_calibration))) {
+                    led_sensor.setChecked(false);
+                    controlPanel.setControlPanel(R.id.fragment_container, R.layout.layout_controlpanel, R.drawable.ic_joystick_active);
+                }
+                customDialog.dismiss();
+                break;
+        }
+    }
 }

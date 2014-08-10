@@ -22,7 +22,6 @@ public class DataAcquisition extends Thread implements SensorEventListener {
 
     private final Context context;
     private final Object object = new Object();
-    private final int defaultOrientation;
     private Handler threadHandler;
     private SensorManager sensorManager;
     private AccelerationEvent accelerationEvent;
@@ -37,9 +36,8 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     private float gz;
     private int driveMode;
 
-    public DataAcquisition(Context context, int defaultOrientation) {
+    public DataAcquisition(Context context) {
         this.context = context;
-        this.defaultOrientation = defaultOrientation;
         activity = new Activity();
         driveMode = -1;
     }
@@ -64,13 +62,14 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 if (stateBundle != null) {
                     if (stateBundle.containsKey(context.getResources().getString(R.string.button_state_array))) {
                         synchronized (object) {
-                            Log.d("@DataAcquisition->run", "Get button data");
+                           // Log.d("@DataAcquisition->run", "Get button data");
                             buttonData = stateBundle.getIntArray(context.getResources().getString(R.string.button_state_array));
                         }
                     }
+                    axesData = new float[3];
                     // Get axes data from main thread (only in manual drive mode with joystick buttons)
                     if (stateBundle.containsKey(context.getResources().getString(R.string.speed))) {
-                        Log.d("@DataAcquisition->run", "Get speed data");
+                        //Log.d("@DataAcquisition->run", "Get speed data");
                         float speed = (float) stateBundle.getInt(context.getResources().getString(R.string.speed));
                         // Check if actual speed is different from last to avoid for loop execution
                         synchronized (object) {
@@ -83,6 +82,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     }
                     // Send response for automatic drive mode and wait for answer from robot to enable the control buttons
                     // NOTE: This isn't implemented yet! There is no response from the robot.
+                    // Set drive mode for automatic mode
                     if(buttonData[BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal()] == 1){
                         synchronized (object) {
                             sendDataToNode(buttonData, null, false);
@@ -91,12 +91,15 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                     }
                     // Send response for manual drive mode and wait for answer from robot to enable the control buttons
                     // NOTE: This isn't implemented yet! There is no response from the robot.
-                    if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
+                    // Set drive mode to control with arrow buttons
+                    if(buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] != 1){
+                        unregisterSensorListener();
+                        driveMode = BaseClass.DriveMode.MANUAL_DRIVE.ordinal();
                         synchronized (object) {
                             sendDataToNode(buttonData, null, false);
                         }
-                        driveMode = BaseClass.DriveMode.MANUAL_DRIVE.ordinal();
                     }
+                    // Set drive mode for control with sensor
                     if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1){
                         driveMode = BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal();
                     }
@@ -110,7 +113,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         Log.d("@DataAcquisition->registerAccEventListener", "start sensor calibration");
                     }
                 }
-                Log.d("driveMode", String.valueOf(driveMode));
+                //Log.d("driveMode", String.valueOf(driveMode));
             }
 
         };
@@ -122,7 +125,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                 public void onAccEvent() {
                     synchronized (object) {
                         if(driveMode == BaseClass.DriveMode.MANUAL_DRIVE.ordinal() || driveMode == BaseClass.DriveMode.AUTOMATIC_DRIVE.ordinal()) {
-                            Log.d("@DataAcquisition->accelerationEvent", String.valueOf(driveMode));
+                            //Log.d("@DataAcquisition->accelerationEvent", String.valueOf(driveMode));
                             sendDataToNode(buttonData, axesData, false);
                         }
                     }
@@ -156,9 +159,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             /*Here you need to add some code to differentiate between two landscape modes (landscape and reverseLandscape)*/
-
             float[] sensorEventValues = event.values;
-
 
                 if (calibrateSensor) {
                     gz = sensorEventValues[2];
@@ -202,7 +203,7 @@ public class DataAcquisition extends Thread implements SensorEventListener {
                         }
                     }
                 }
-                /*Send null for axesData when the sensor button is pressed and the dead man button is not pressed*/
+                /*Send null for axesData when the sensor calibration button is pressed and the dead man button is not pressed*/
                 else if(buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 0 ||
                         (buttonData[BaseClass.DriveMode.MOVE_ROBOT_WITH_IMU.ordinal()] == 1 && buttonData[BaseClass.DriveMode.MANUAL_DRIVE.ordinal()] == 1)){
                     synchronized (object) {

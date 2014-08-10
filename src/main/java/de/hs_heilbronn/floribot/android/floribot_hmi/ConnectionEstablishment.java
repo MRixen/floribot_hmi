@@ -22,6 +22,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import de.hs_heilbronn.floribot.android.floribot_hmi.communication.NodeExecutorService;
@@ -31,8 +34,12 @@ import static android.os.Process.myPid;
 
 public class ConnectionEstablishment extends BaseClass {
 
-    private EditText editTextMasterId, editTextTopicPublisher, editTextTopicSubscriber;
-    private TextView textViewMasterId, textViewTopicPublisher, textViewTopicSubscriber;
+    private EditText editTextMasterId, editTextTopicPublisher,
+            editTextTopicSubscriber, editTextNodeGraphName;
+    private TextView textViewMasterId, textViewTopicPublisher,
+            textViewTopicSubscriber, textViewNodeName,
+            textViewMasterIdExampleText, textViewTopicPublisherExampleText,
+            textViewTopicSubscriberExampleText, textViewNodeNameExampleText;
     private Button buttonConnect;
     private String masterId, topicPublisher, topicSubscriber, nodeGraphName;
     private WifiManager wifiManager;
@@ -46,7 +53,6 @@ public class ConnectionEstablishment extends BaseClass {
     private BaseClass.ThemeColor[] themeColors;
     private ServiceResultReceiver serviceResultReceiver;
     private boolean serviceIsRunning;
-    private int defaultOrientation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,9 +63,17 @@ public class ConnectionEstablishment extends BaseClass {
         editTextMasterId = (EditText) findViewById(R.id.editText_master_destination);
         editTextTopicPublisher = (EditText) findViewById(R.id.editText_topic_publisher);
         editTextTopicSubscriber = (EditText) findViewById(R.id.editText_topic_subscriber);
+        editTextNodeGraphName = (EditText) findViewById(R.id.editText_node_name);
+
         textViewMasterId = (TextView) findViewById(R.id.textView_master_destination);
         textViewTopicPublisher = (TextView) findViewById(R.id.textView_topic_publisher);
         textViewTopicSubscriber = (TextView) findViewById(R.id.textView_topic_subscriber);
+        textViewNodeName = (TextView) findViewById(R.id.textView_node_name);
+
+        textViewNodeNameExampleText = (TextView) findViewById(R.id.textView_node_name_example);
+        textViewMasterIdExampleText = (TextView) findViewById(R.id.textView_master_destination_example);
+        textViewTopicPublisherExampleText = (TextView) findViewById(R.id.textView_topic_publisher_example);
+        textViewTopicSubscriberExampleText = (TextView) findViewById(R.id.textView_topic_subscriber_example);
 
         buttonConnect = (Button) findViewById(R.id.connectButton);
 
@@ -72,8 +86,6 @@ public class ConnectionEstablishment extends BaseClass {
         sharedPreferences = getSharedPreferences();
 
         setActionBarTitle(getResources().getString(R.string.title_activity_main));
-
-        defaultOrientation = getDefaultOrientation();
     }
 
     @Override
@@ -94,6 +106,26 @@ public class ConnectionEstablishment extends BaseClass {
         setTheme();
         serviceResultReceiver = new ServiceResultReceiver(null);
         releaseWakeLocks();
+
+        if (checkTabletUsage()) {
+            buttonConnect.setEnabled(false);
+            final CustomDialog customDialog = new CustomDialog(this, R.style.dialog_style);
+            Button negativeButton = customDialog.getNegativeButton();
+            negativeButton.setVisibility(View.INVISIBLE);
+            Button positiveButton = customDialog.getPositiveButton();
+            positiveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    switch(v.getId()){
+                        case(R.id.positive_button):
+                            customDialog.dismiss();
+                            onDestroy();
+                            break;
+                    }
+                }
+            });
+            customDialog.showDialog(getResources().getString(R.string.dialog_message_on_tablet), false);
+        }
     }
 
     private void setTheme() {
@@ -103,14 +135,22 @@ public class ConnectionEstablishment extends BaseClass {
         editTextMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         editTextTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         editTextTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        editTextNodeGraphName.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
 
         textViewMasterId.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         textViewTopicPublisher.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
         textViewTopicSubscriber.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
+        textViewNodeName.setTextColor(themeColors[sharedPreferences.getInt("theme", 0)].textColor);
 
         textViewMasterId.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
         textViewTopicPublisher.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
         textViewTopicSubscriber.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewNodeName.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+
+        textViewMasterIdExampleText.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewTopicPublisherExampleText.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewTopicSubscriberExampleText.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
+        textViewNodeNameExampleText.setBackgroundColor(themeColors[sharedPreferences.getInt("theme", 0)].foregroundColor);
 
         // Change background color of text fields
         // Get shape id's from layer list of editText fields
@@ -124,11 +164,12 @@ public class ConnectionEstablishment extends BaseClass {
         strokes[1] = getResources().getDimensionPixelSize(R.dimen.strokeWidthTwo);
         strokes[2] = getResources().getDimensionPixelSize(R.dimen.strokeWidthThree);
         // Get background (layer list) of editText fields
-        LayerDrawable[] bgTextFields = new LayerDrawable[3];
+        LayerDrawable[] bgTextFields = new LayerDrawable[4];
         bgTextFields[0] = (LayerDrawable) editTextMasterId.getBackground();
         bgTextFields[1] = (LayerDrawable) editTextTopicPublisher.getBackground();
         bgTextFields[2] = (LayerDrawable) editTextTopicSubscriber.getBackground();
-        // Change shapes background color of the layer lists from editText fields
+        bgTextFields[3] = (LayerDrawable) editTextNodeGraphName.getBackground();
+        // Change background color of editText fields
         for(int i=0;i<bgTextFields.length;i++){
             for(int j=0;j<shapes.length;j++) {
                 GradientDrawable layerTextFields = (GradientDrawable) bgTextFields[i].findDrawableByLayerId(shapes[j]);
@@ -156,36 +197,14 @@ public class ConnectionEstablishment extends BaseClass {
         android.os.Process.killProcess(myPid());
     }
 
-    public int getDefaultOrientation() {
-
-        /*When enabling different screen orientation in the settings menu yot need to check the current orientation
-        * to calculate correct angle for coordinate transformation in DataAcquisition.
-        * NOTE: This method is to enable robot control with a tablet device in the usability-test.
-        * Normally this app doesn't support tablets!*/
-        WindowManager windowManager =  (WindowManager) getSystemService(WINDOW_SERVICE);
-        Configuration config = getResources().getConfiguration();
-        int rotation = windowManager.getDefaultDisplay().getRotation();
-
-        if ( ((rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) && config.orientation == Configuration.ORIENTATION_LANDSCAPE)
-                || ((rotation == Surface.ROTATION_90 || rotation == Surface.ROTATION_270) && config.orientation == Configuration.ORIENTATION_PORTRAIT)) {
-            return Configuration.ORIENTATION_LANDSCAPE;
-        } else {
-            return Configuration.ORIENTATION_PORTRAIT;
-        }
-    }
-
     public void onButtonClicked(View v) {
         switch (v.getId()) {
             case (R.id.connectButton):
                 boolean isTablet = checkTabletUsage();
 
-                if (!isTablet) {
+
                     boolean paramValid = parameterValidation();
                     if (paramValid) {
-
-
-                /*if (masterId.length() != 0 && topicPublisher.length() != 0 && topicSubscriber.length() != 0 && nodeGraphName.length() != 0) {*/
-                        //if (!masterId.contains(" ") && !topicPublisher.contains(" ") && !topicSubscriber.contains(" ") && !nodeGraphName.contains(" ")) {
                         connectionInitHandler = new Handler() {
                             public void handleMessage(Message msg) {
                                 Bundle stateBundle = msg.getData();
@@ -212,26 +231,8 @@ public class ConnectionEstablishment extends BaseClass {
                         };
                         progressDialog.show();
                         connectionInit();
-                        //}
-                    /*else {
-                        Toast.makeText(this, getResources().getString(R.string.toast_whitespace), Toast.LENGTH_LONG).show();
                     }
-                }*/ /*else {
-                    if (masterId.length() == 0 && topicSubscriber.length() == 0 & topicPublisher.length() == 0)
-                        Toast.makeText(this, getResources().getString(R.string.toast_enter_all), Toast.LENGTH_SHORT).show();
-                    else {
-                        if (masterId.length() == 0)
-                            Toast.makeText(this, getResources().getString(R.string.toast_enter_master), Toast.LENGTH_SHORT).show();
-                        if (topicPublisher.length() == 0 || topicSubscriber.length() == 0)
-                            Toast.makeText(this, getResources().getString(R.string.toast_enter_topic), Toast.LENGTH_SHORT).show();
-                        if (nodeGraphName.length() == 0)
-                            Toast.makeText(this, getResources().getString(R.string.toast_enter_node_graph_name), Toast.LENGTH_SHORT).show();
-                    }
-                }*/
-                    }
-                }
-                else
-                    Toast.makeText(this, getResources().getString(R.string.toast_is_tablet), Toast.LENGTH_LONG).show();
+
                 break;
         }
     }
@@ -264,6 +265,8 @@ public class ConnectionEstablishment extends BaseClass {
     public void connectionInit() {
 
         Thread ConnectionInitThread = new Thread(){
+            public URI uriTemp;
+
             @Override
             public void run(){
                 boolean resultCode = true;
@@ -273,7 +276,7 @@ public class ConnectionEstablishment extends BaseClass {
 
                 // Check uri syntax
                 try {
-                    new URI(masterId);
+                    uriTemp = new URI(masterId);
                 } catch (URISyntaxException e) {
                     resultCode = false;
                     sendMessageToHandler(getResources().getString(R.string.connection_establishment_error_uri_syntax), resultCode);
@@ -360,9 +363,38 @@ public class ConnectionEstablishment extends BaseClass {
                 }
                 //----------------------------------------------
 
+                // Try to ping to remote pc
+                if(resultCode) {
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Wifi wake lock ok");
+                    Runtime runtime = Runtime.getRuntime();
+
+                    try{
+                        InetAddress inetAddress = InetAddress.getByName("MR-Ubuntu");
+                        String masterIp = inetAddress.getHostAddress();
+
+                        Process  executedProgram = runtime.exec("/system/bin/ping -c 1 " + masterIp);
+                        int exitValue = executedProgram.waitFor();
+
+                        if(exitValue == 0)resultCode = true;
+                        else{
+                            resultCode = false;
+                            sendMessageToHandler(getResources().getString(R.string.connection_establishment_ping_error), false);
+                        }
+                    }
+                    catch (InterruptedException ignore){
+                        ignore.printStackTrace();
+                        Log.d("connectionInit->InterruptedException", String.valueOf(ignore));
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                        Log.d("connectionInit->IOException", String.valueOf(e));
+                    }
+
+                }
+
                 //
                 if(resultCode) {
-                    Log.d("@ConnectionEstablishment->connectionInit: ", "Wifi wake lock ok.");
+                    Log.d("@ConnectionEstablishment->connectionInit: ", "Ping to master ok");
                     sendMessageToHandler("Connection establishment successful.", resultCode);
                 }
             }
@@ -383,8 +415,7 @@ public class ConnectionEstablishment extends BaseClass {
         masterId = editTextMasterId.getText().toString();
         topicPublisher = editTextTopicPublisher.getText().toString();
         topicSubscriber = editTextTopicSubscriber.getText().toString();
-        nodeGraphName = sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), "");
-
+        nodeGraphName = editTextNodeGraphName.getText().toString();
     }
 
     private void savePreferences() {
@@ -392,6 +423,7 @@ public class ConnectionEstablishment extends BaseClass {
         editor.putString(getResources().getString(R.string.masterId), masterId);
         editor.putString(getResources().getString(R.string.topicPublisher), topicPublisher);
         editor.putString(getResources().getString(R.string.topicSubscriber), topicSubscriber);
+        editor.putString(getResources().getString(R.string.nodeGraphName), nodeGraphName);
         editor.apply();
     }
 
@@ -399,6 +431,7 @@ public class ConnectionEstablishment extends BaseClass {
         editTextMasterId.setText(sharedPreferences.getString(getResources().getString(R.string.masterId), ""));
         editTextTopicPublisher.setText(sharedPreferences.getString(getResources().getString(R.string.topicPublisher), ""));
         editTextTopicSubscriber.setText(sharedPreferences.getString(getResources().getString(R.string.topicSubscriber), ""));
+        editTextNodeGraphName.setText(sharedPreferences.getString(getResources().getString(R.string.nodeGraphName), ""));
     }
 
     private void releaseWakeLocks() {
@@ -429,7 +462,6 @@ public class ConnectionEstablishment extends BaseClass {
                     Log.d("@ConnectionEstablishment->handleMessage: ", "Service started.");
                     serviceIsRunning = true;
                     Intent controlMenu = new Intent(ConnectionEstablishment.this, ControlMenu.class);
-                    controlMenu.putExtra("orientation", defaultOrientation);
                     startActivity(controlMenu);
                     overridePendingTransition(R.anim.anim_in, R.anim.anim_out);
                     break;

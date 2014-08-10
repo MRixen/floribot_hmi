@@ -141,9 +141,9 @@
     <string name="title_exit_button_execute">Exit</string>
 
     <!--Parameter for layout management-->
-    <string name="dialog_title_publisher_exit">Warning</string>
+    <string name="dialog_title">Warning</string>
     <string name="toast_enter_all">You need to set the connection parameter!</string>
-    <string name="node_graph_name_header">Node name</string>
+    <string name="node_graph_name_header">Node name:</string>
     <string name="serviceStopped">Can\'t start node. Please check your network.</string>
 
 
@@ -156,6 +156,15 @@
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientation</string>
     <string name="toast_whitespace">Whitespaces in connection parameter are not allowed!</string>
-    <string name="toast_is_tablet">Tablets are not supported. Please use another device!</string>
+    <string name="connection_establishment_ping_error">Host computer isn\'t reachable.</string>
+    <string name="node_name_example_text">Bsp.: teleop</string>
+
+    <!--Parameter for settings activity-->
+    <string name="title_save_button_preferences">Save</string>
+    <string name="subscriber_topic_example_text">Bsp.: /joy_feedback</string>
+    <string name="publisher_topic_example_text">Bsp.: /joy</string>
+    <string name="master_address_example_text">Bsp.: http://141.7.24.119:11311</string>
+    <string name="dialog_message_on_tablet">Tablets are not supported. Please use another device!.</string>
+    <string name="textView_example_orientation">Example orientation:</string>
 
 </resources>

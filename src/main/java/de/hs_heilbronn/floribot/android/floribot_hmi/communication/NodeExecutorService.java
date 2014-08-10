@@ -11,6 +11,7 @@ import android.util.Log;
 
 import org.ros.address.InetAddressFactory;
 import org.ros.exception.RosRuntimeException;
+import org.ros.internal.node.RegistrantListener;
 import org.ros.node.DefaultNodeMainExecutor;
 import org.ros.node.NodeConfiguration;
 import org.ros.node.NodeListener;

@@ -1,19 +1,29 @@
 package de.hs_heilbronn.floribot.android.floribot_hmi.communication;
 
 import android.content.Context;
+import android.net.nsd.NsdManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 
+import org.ros.internal.node.RegistrantListener;
+import org.ros.internal.node.client.Registrar;
+import org.ros.internal.node.topic.SubscriberIdentifier;
+import org.ros.internal.node.xmlrpc.XmlRpcEndpoint;
 import org.ros.message.MessageListener;
 import org.ros.namespace.GraphName;
 import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
+import org.ros.node.NodeListener;
+import org.ros.node.topic.DefaultPublisherListener;
 import org.ros.node.topic.Publisher;
+import org.ros.node.topic.PublisherListener;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import de.hs_heilbronn.floribot.android.floribot_hmi.R;
 import de.hs_heilbronn.floribot.android.floribot_hmi.data.AccelerationEvent;
@@ -25,7 +35,7 @@ import sensor_msgs.JoyFeedbackArray;
 /**
  * Created by mr on 12.06.14.
  */
-public class Node extends AbstractNodeMain {
+public class Node extends AbstractNodeMain implements RegistrantListener<Joy>{
     private org.ros.node.topic.Subscriber<JoyFeedbackArray> subscriber;
     private org.ros.node.topic.Publisher<Joy> publisher;
 
@@ -47,10 +57,11 @@ public class Node extends AbstractNodeMain {
     }
 
     @Override
-    public void onStart(ConnectedNode connectedNode) {
+    public void onStart(final ConnectedNode connectedNode) {
         // Create publisher, subscriber and start thread
         publisher = connectedNode.newPublisher(topicPublisher, Joy._TYPE);
         subscriber = connectedNode.newSubscriber(topicSubscriber, sensor_msgs.JoyFeedbackArray._TYPE);
+
         startNodeThread();
     }
 
@@ -78,6 +89,28 @@ public class Node extends AbstractNodeMain {
             Log.d("@Subscriber#stopNodeThread#StopThreadException: ", String.valueOf(e));
         }
     }
+
+    @Override
+    public void onMasterRegistrationSuccess(Joy joy) {
+        Log.d("onMasterRegistrationSuccess", "onMasterRegistrationSuccess");
+
+    }
+
+    @Override
+    public void onMasterRegistrationFailure(Joy joy) {
+        Log.d("onMasterRegistrationSuccess", "onMasterRegistrationSuccess");
+    }
+
+    @Override
+    public void onMasterUnregistrationSuccess(Joy joy) {
+        Log.d("onMasterRegistrationSuccess", "onMasterRegistrationSuccess");
+    }
+
+    @Override
+    public void onMasterUnregistrationFailure(Joy joy) {
+        Log.d("onMasterRegistrationSuccess", "onMasterRegistrationSuccess");
+    }
+
 
     public class NodeThread extends Thread {
         public void run() {
@@ -124,4 +157,5 @@ public class Node extends AbstractNodeMain {
             Looper.loop();
         }
     }
+
 }

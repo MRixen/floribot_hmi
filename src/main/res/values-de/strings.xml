@@ -85,7 +85,7 @@
     <string name="ticker_message">Starte service...</string>
     <string name="notification_text">Klicken für zurück.</string>
     <string name="notification_title">FloriBot HMI - Control menu</string>
-    <string name="serviceStopped">Node kann nicht gestartet werden. Bitte Netzwerk überprüfen.</string>
+    <string name="serviceStopped">Node kann nicht gestartet werden. Bitte Netzwerk prüfen.</string>
 
     <!--Overflow parameter-->
     <string name="title_activity_help">Hilfe</string>
@@ -121,8 +121,8 @@
     <string name="title_topic_subscriber">Subscriber-Topic: </string>
     <string name="title_activity_execute">Steuerungsmenü</string>
     <string name="title_exit_button_execute">Beenden</string>
-    <string name="dialog_title_publisher_exit">Warnung</string>
-    <string name="node_graph_name_header">Node name</string>
+    <string name="dialog_title">Warnung</string>
+    <string name="node_graph_name_header">Node name:</string>
     <string name="theme_prompt">Theme wählen</string>
     <string name="orientation_prompt">Orientierung wählen</string>
     <string name="phone_calibration_area">Gerät ist nicht im Kalibrierungsbereich!</string>
@@ -132,6 +132,14 @@
     <string name="nodename_hint">floribot/hmi</string>
     <string name="orientation_header">Orientierung</string>
     <string name="toast_whitespace">Leerzeichen sind in den Verbindungsparametern nicht erlaubt!</string>
-    <string name="toast_is_tablet">Tablets werden nicht unterstützt. Bitte anderes Gerät verwenden!</string>
+    <string name="connection_establishment_ping_error">Host ist nicht erreichbar.</string>
+    <string name="node_name_example_text">Bsp.: teleop</string>
+
+    <!--Parameter for settings activity-->
+    <string name="title_save_button_preferences">Speichern</string>
+    <string name="subscriber_topic_example_text">Bsp.: /joy_feedback</string>
+    <string name="publisher_topic_example_text">Bsp.: /joy</string>
+    <string name="dialog_message_on_tablet">Tablets werden nicht unterstützt. Bitte anderes Gerät verwenden!</string>
+    <string name="textView_example_orientation">Beispiel Orientierung:</string>
 
 </resources>
